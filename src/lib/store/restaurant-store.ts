@@ -109,9 +109,21 @@ class RestaurantStore {
 
       if (storedTables) this.state.tables = JSON.parse(storedTables);
       if (storedOrders) this.state.orders = JSON.parse(storedOrders);
-      if (storedMenu) this.state.menuItems = JSON.parse(storedMenu);
-      if (storedCategories) this.state.categories = JSON.parse(storedCategories);
       if (storedPayments) this.state.payments = JSON.parse(storedPayments);
+
+      if (storedCategories) {
+        const parsedCats = JSON.parse(storedCategories);
+        if (parsedCats.some((c: { id: string }) => c.id === 'cat-chinese')) {
+          this.state.categories = parsedCats;
+          if (storedMenu) this.state.menuItems = JSON.parse(storedMenu);
+        } else {
+          this.state.categories = INITIAL_CATEGORIES;
+          this.state.menuItems = INITIAL_MENU_ITEMS;
+        }
+      } else {
+        this.state.categories = INITIAL_CATEGORIES;
+        this.state.menuItems = INITIAL_MENU_ITEMS;
+      }
       if (storedRole) {
         const role = storedRole as UserRole;
         this.state.activeRole = role;

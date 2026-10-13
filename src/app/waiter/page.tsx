@@ -323,36 +323,99 @@ export default function WaiterDashboardPage() {
                   </button>
                 </div>
 
-                {/* Category Pills */}
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-                  <button
-                    onClick={() => setSelectedCategory('ALL')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-                      selectedCategory === 'ALL'
-                        ? 'bg-amber-500 text-slate-950'
-                        : 'bg-slate-950 text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    All Categories
-                  </button>
-                  {state.categories.map((cat) => (
+                {/* Cuisine Category Selector */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-[11px] text-slate-400 font-semibold px-0.5">
+                    <span>Select Cuisine / Category:</span>
+                    <span className="text-amber-400 font-bold">
+                      {selectedCategory === 'ALL'
+                        ? `All Dishes (${filteredMenuItems.length})`
+                        : `${state.categories.find((c) => c.id === selectedCategory)?.name || 'Filtered'} (${filteredMenuItems.length})`}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-none">
                     <button
-                      key={cat.id}
-                      onClick={() => setSelectedCategory(cat.id)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-                        selectedCategory === cat.id
-                          ? 'bg-amber-500 text-slate-950'
-                          : 'bg-slate-950 text-slate-400 hover:text-white'
+                      type="button"
+                      onClick={() => setSelectedCategory('ALL')}
+                      className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                        selectedCategory === 'ALL'
+                          ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-950/40 ring-2 ring-amber-400/40 font-black'
+                          : 'bg-slate-950 text-slate-300 border border-slate-800 hover:text-white hover:border-slate-700'
                       }`}
                     >
-                      {cat.name}
+                      <span>🍽️ All Items</span>
+                      <span
+                        className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                          selectedCategory === 'ALL'
+                            ? 'bg-slate-950/20 text-slate-950'
+                            : 'bg-slate-900 text-slate-400'
+                        }`}
+                      >
+                        {state.menuItems.length}
+                      </span>
                     </button>
-                  ))}
+
+                    {state.categories.map((cat) => {
+                      const count = state.menuItems.filter((m) => m.category_id === cat.id).length;
+                      const isCatSelected = selectedCategory === cat.id;
+                      const emoji =
+                        cat.id === 'cat-chinese'
+                          ? '🥢'
+                          : cat.id === 'cat-south-indian'
+                          ? '🥥'
+                          : cat.id === 'cat-north-indian'
+                          ? '🍛'
+                          : cat.id === 'cat-biryani'
+                          ? '🍚'
+                          : '🥤';
+
+                      return (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => setSelectedCategory(cat.id)}
+                          className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                            isCatSelected
+                              ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-950/40 ring-2 ring-amber-400/40 font-black'
+                              : 'bg-slate-950 text-slate-300 border border-slate-800 hover:text-white hover:border-slate-700'
+                          }`}
+                        >
+                          <span>{emoji} {cat.name}</span>
+                          <span
+                            className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                              isCatSelected
+                                ? 'bg-slate-950/20 text-slate-950'
+                                : 'bg-slate-900 text-slate-400'
+                            }`}
+                          >
+                            {count}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 
               {/* Menu Items List */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto pr-1">
+                {filteredMenuItems.length === 0 && (
+                  <div className="col-span-1 sm:col-span-2 text-center py-10 bg-slate-900/40 border border-dashed border-slate-800 rounded-2xl space-y-2">
+                    <p className="text-xs text-slate-400">No dishes found matching this selection.</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedCategory('ALL');
+                        setMenuSearchQuery('');
+                        setVegOnlyFilter(false);
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold text-xs"
+                    >
+                      View All Dishes
+                    </button>
+                  </div>
+                )}
                 {filteredMenuItems.map((item) => {
                   const draftQuantity = draftItems[item.id]?.quantity || 0;
                   const isAvailable = item.is_available;
