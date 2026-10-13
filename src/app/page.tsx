@@ -73,16 +73,6 @@ export default function Home() {
     },
   ];
 
-  const workflowSteps = [
-    { num: '01', title: 'FREE TABLE', desc: 'Table is available in the hall' },
-    { num: '02', title: 'Waiter Assigns', desc: 'Enters customer name & guest count' },
-    { num: '03', title: 'Unique Order Created', desc: 'Generates fresh isolated order ID' },
-    { num: '04', title: 'KOT Submitted', desc: 'Dishes sent with special instructions' },
-    { num: '05', title: 'Kitchen Prepares', desc: 'NEW → PREPARING → READY' },
-    { num: '06', title: 'Bill Requested', desc: 'Waiter triggers bill at dining completion' },
-    { num: '07', title: 'Cashier Payment', desc: 'UPI / Cash / Card settled with GST' },
-    { num: '08', title: 'Table Freed', desc: 'Order closed, table returns to FREE' },
-  ];
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
@@ -159,44 +149,6 @@ export default function Home() {
               </div>
             );
           })}
-        </div>
-
-        {/* Step-by-Step Table and Order Lifecycle Flow Diagram */}
-        <div className="mt-12 bg-slate-900/60 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6">
-          <div className="text-center space-y-1">
-            <span className="text-[11px] font-black uppercase tracking-wider text-amber-400">
-              Strict Dining & Billing Architecture
-            </span>
-            <h3 className="text-xl font-black text-white">
-              End-to-End Table & Order Lifecycle Flow
-            </h3>
-            <p className="text-xs text-slate-400 max-w-xl mx-auto">
-              Guaranteed isolation: Every session receives a brand-new unique order ID. Previous
-              records are preserved in immutable billing history.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
-            {workflowSteps.map((step, idx) => (
-              <div
-                key={step.num}
-                className="bg-slate-950/80 border border-slate-800/80 p-3.5 rounded-2xl flex flex-col justify-between text-center relative group hover:border-amber-500/50 transition-colors"
-              >
-                <div>
-                  <span className="text-[10px] font-mono font-bold text-amber-500/80 block">
-                    {step.num}
-                  </span>
-                  <h4 className="text-xs font-black text-white mt-1 leading-tight">
-                    {step.title}
-                  </h4>
-                  <p className="text-[10px] text-slate-400 mt-1 leading-tight">{step.desc}</p>
-                </div>
-                <div className="mt-2 pt-2 border-t border-slate-900 flex justify-center">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
