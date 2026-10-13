@@ -14,6 +14,8 @@ import {
   OrderItemStatus,
   UserRole,
   StaffUser,
+  ParcelOrder,
+  CateringOrder,
 } from '../types';
 import {
   INITIAL_TABLES,
@@ -22,6 +24,8 @@ import {
   INITIAL_ORDERS,
   INITIAL_PAYMENTS,
   INITIAL_STAFF,
+  INITIAL_PARCELS,
+  INITIAL_CATERINGS,
 } from './initial-data';
 import { getSupabaseClient, isSupabaseConfigured } from '../supabase/client';
 
@@ -43,6 +47,8 @@ export interface RestaurantState {
   menuItems: MenuItem[];
   orders: Order[];
   payments: Payment[];
+  parcels: ParcelOrder[];
+  caterings: CateringOrder[];
   staff: StaffUser[];
   activeRole: UserRole;
   activeStaff: StaffUser;
@@ -65,6 +71,8 @@ class RestaurantStore {
       menuItems: INITIAL_MENU_ITEMS,
       orders: INITIAL_ORDERS,
       payments: INITIAL_PAYMENTS,
+      parcels: INITIAL_PARCELS,
+      caterings: INITIAL_CATERINGS,
       staff: INITIAL_STAFF,
       activeRole: 'cashier',
       activeStaff: INITIAL_STAFF[1], // Default to Cashier
@@ -124,6 +132,11 @@ class RestaurantStore {
         this.state.categories = INITIAL_CATEGORIES;
         this.state.menuItems = INITIAL_MENU_ITEMS;
       }
+      const storedParcels = localStorage.getItem(STORAGE_KEY_PREFIX + 'parcels');
+      const storedCaterings = localStorage.getItem(STORAGE_KEY_PREFIX + 'caterings');
+      if (storedParcels) this.state.parcels = JSON.parse(storedParcels);
+      if (storedCaterings) this.state.caterings = JSON.parse(storedCaterings);
+
       if (storedRole) {
         const role = storedRole as UserRole;
         this.state.activeRole = role;
@@ -143,6 +156,8 @@ class RestaurantStore {
       localStorage.setItem(STORAGE_KEY_PREFIX + 'menu', JSON.stringify(this.state.menuItems));
       localStorage.setItem(STORAGE_KEY_PREFIX + 'categories', JSON.stringify(this.state.categories));
       localStorage.setItem(STORAGE_KEY_PREFIX + 'payments', JSON.stringify(this.state.payments));
+      localStorage.setItem(STORAGE_KEY_PREFIX + 'parcels', JSON.stringify(this.state.parcels));
+      localStorage.setItem(STORAGE_KEY_PREFIX + 'caterings', JSON.stringify(this.state.caterings));
       localStorage.setItem(STORAGE_KEY_PREFIX + 'role', this.state.activeRole);
     } catch (e) {
       console.warn('Failed to save to storage:', e);
@@ -763,6 +778,221 @@ class RestaurantStore {
     return { success: true };
   }
 
+  // ==========================================================================
+  // Parcel & Takeaway Operations (Category B)
+  // ==========================================================================
+  public createParcelOrder(data: {
+    customerName: string;
+    customerPhone?: string;
+    items: Array<{
+      menuItemId: string;
+      quantity: number;
+      specialInstructions?: string;
+    }>;
+    packagingCharge?: number;
+    paymentMethod: PaymentMethod;
+    paymentReference?: string;
+    cashierName?: string;
+  }): { success: boolean; parcel?: ParcelOrder; error?: string } {
+    if (!data.items || data.items.length === 0) {
+      return { success: false, error: 'At least one menu item is required for parcel billing' };
+    }
+
+    const orderItems: OrderItem[] = [];
+    let subtotal = 0;
+
+    for (const item of data.items) {
+      const menuItem = this.state.menuItems.find((m) => m.id === item.menuItemId);
+      if (!menuItem) continue;
+
+      const totalItemPrice = menuItem.price * item.quantity;
+      subtotal += totalItemPrice;
+
+      orderItems.push({
+        id: `poi-${Date.now()}-${Math.floor(Math.random() * 8999 + 1000)}`,
+        order_id: '',
+        menu_item_id: menuItem.id,
+        item_name: menuItem.name,
+        quantity: item.quantity,
+        unit_price: menuItem.price,
+        total_price: totalItemPrice,
+        special_instructions: item.specialInstructions || '',
+        status: 'SERVED',
+        round_number: 1,
+        created_at: new Date().toISOString(),
+      });
+    }
+
+    const packagingCharge = data.packagingCharge !== undefined ? data.packagingCharge : 20;
+    const taxRate = 5;
+    const taxAmount = Number(((subtotal * taxRate) / 100).toFixed(2));
+    const finalTotal = Number((subtotal + packagingCharge + taxAmount).toFixed(2));
+
+    const tokenNum = `P-${this.state.parcels.length + 101}`;
+
+    const newParcel: ParcelOrder = {
+      id: `parcel-${Date.now()}-${Math.floor(Math.random() * 8999 + 1000)}`,
+      token_number: tokenNum,
+      customer_name: data.customerName || 'Walk-in Guest',
+      customer_phone: data.customerPhone || '',
+      items: orderItems,
+      subtotal,
+      packaging_charge: packagingCharge,
+      tax_amount: taxAmount,
+      final_total: finalTotal,
+      payment_method: data.paymentMethod,
+      payment_reference:
+        data.paymentReference ||
+        (data.paymentMethod === 'UPI'
+          ? `UPI-P-${Date.now().toString().slice(-6)}`
+          : data.paymentMethod === 'CARD'
+          ? `CARD-P-${Date.now().toString().slice(-6)}`
+          : `CASH-P-${Date.now().toString().slice(-6)}`),
+      payment_status: 'COMPLETED',
+      cashier_name: data.cashierName || this.state.activeStaff.full_name,
+      created_at: new Date().toISOString(),
+    };
+
+    newParcel.items.forEach((it) => (it.order_id = newParcel.id));
+
+    this.state.parcels = [newParcel, ...this.state.parcels];
+
+    this.addNotification({
+      title: `Parcel Billed: Token #${newParcel.token_number}`,
+      message: `${newParcel.customer_name} • ₹${newParcel.final_total} paid via ${newParcel.payment_method}`,
+      type: 'success',
+      sound: true,
+    });
+
+    this.saveToStorage();
+    this.broadcastChange('STATE_UPDATE', { parcels: this.state.parcels });
+    this.notifyListeners();
+
+    return { success: true, parcel: newParcel };
+  }
+
+  // ==========================================================================
+  // Catering Billing Operations (Category C)
+  // ==========================================================================
+  public createCateringOrder(data: {
+    customerName: string;
+    customerPhone: string;
+    eventName: string;
+    eventDate: string;
+    paxCount: number;
+    pricePerPlate: number;
+    menuSummary: string;
+    advancePaid: number;
+    paymentMethod: PaymentMethod;
+    paymentReference?: string;
+    notes?: string;
+    cashierName?: string;
+  }): { success: boolean; catering?: CateringOrder; error?: string } {
+    if (!data.customerName || !data.customerPhone) {
+      return { success: false, error: 'Customer name and phone number are required' };
+    }
+    if (!data.paxCount || data.paxCount <= 0) {
+      return { success: false, error: 'Valid guest/pax count is required' };
+    }
+    if (!data.pricePerPlate || data.pricePerPlate <= 0) {
+      return { success: false, error: 'Valid price per plate is required' };
+    }
+
+    const subtotal = data.paxCount * data.pricePerPlate;
+    const taxRate = 5;
+    const taxAmount = Number(((subtotal * taxRate) / 100).toFixed(2));
+    const totalAmount = Number((subtotal + taxAmount).toFixed(2));
+    const advancePaid = Math.min(totalAmount, Math.max(0, data.advancePaid || 0));
+    const balanceDue = Number(Math.max(0, totalAmount - advancePaid).toFixed(2));
+    const status = balanceDue <= 0 ? 'FULLY_PAID' : 'ADVANCE_PAID';
+
+    const currentYear = new Date().getFullYear();
+    const invoiceNumber = `CAT-${currentYear}-${String(this.state.caterings.length + 1).padStart(3, '0')}`;
+
+    const newCatering: CateringOrder = {
+      id: `cat-${Date.now()}-${Math.floor(Math.random() * 8999 + 1000)}`,
+      invoice_number: invoiceNumber,
+      customer_name: data.customerName,
+      customer_phone: data.customerPhone,
+      event_name: data.eventName || 'Special Event Feast',
+      event_date: data.eventDate || new Date().toISOString().split('T')[0],
+      pax_count: data.paxCount,
+      price_per_plate: data.pricePerPlate,
+      menu_summary: data.menuSummary || 'Grand Festive Spread',
+      subtotal,
+      tax_amount: taxAmount,
+      total_amount: totalAmount,
+      advance_paid: advancePaid,
+      balance_due: balanceDue,
+      payment_method: data.paymentMethod,
+      payment_reference:
+        data.paymentReference ||
+        `CAT-${data.paymentMethod}-${Date.now().toString().slice(-6)}`,
+      status,
+      notes: data.notes || '',
+      cashier_name: data.cashierName || this.state.activeStaff.full_name,
+      created_at: new Date().toISOString(),
+    };
+
+    this.state.caterings = [newCatering, ...this.state.caterings];
+
+    this.addNotification({
+      title: `Catering Contract: ${newCatering.invoice_number}`,
+      message: `${newCatering.customer_name} (${newCatering.pax_count} Pax) • Advance ₹${newCatering.advance_paid} received`,
+      type: 'success',
+      sound: true,
+    });
+
+    this.saveToStorage();
+    this.broadcastChange('STATE_UPDATE', { caterings: this.state.caterings });
+    this.notifyListeners();
+
+    return { success: true, catering: newCatering };
+  }
+
+  public settleCateringBalance(
+    cateringId: string,
+    paymentMethod: PaymentMethod,
+    paymentReference?: string
+  ): { success: boolean; error?: string } {
+    const index = this.state.caterings.findIndex((c) => c.id === cateringId);
+    if (index === -1) {
+      return { success: false, error: 'Catering order not found' };
+    }
+
+    const order = this.state.caterings[index];
+    if (order.balance_due <= 0) {
+      return { success: false, error: 'This catering invoice is already fully settled' };
+    }
+
+    const updated: CateringOrder = {
+      ...order,
+      advance_paid: order.total_amount,
+      balance_due: 0,
+      status: 'FULLY_PAID',
+      payment_method: paymentMethod,
+      payment_reference:
+        paymentReference || `CAT-BAL-${paymentMethod}-${Date.now().toString().slice(-6)}`,
+    };
+
+    const newCaterings = [...this.state.caterings];
+    newCaterings[index] = updated;
+    this.state.caterings = newCaterings;
+
+    this.addNotification({
+      title: `Catering Settled: ${order.invoice_number}`,
+      message: `Balance ₹${order.balance_due} received via ${paymentMethod}. Invoice fully paid!`,
+      type: 'success',
+      sound: true,
+    });
+
+    this.saveToStorage();
+    this.broadcastChange('STATE_UPDATE', { caterings: this.state.caterings });
+    this.notifyListeners();
+
+    return { success: true };
+  }
+
   // Reset to initial demo state
   public resetToDemo() {
     this.state = {
@@ -771,6 +1001,8 @@ class RestaurantStore {
       menuItems: INITIAL_MENU_ITEMS,
       orders: INITIAL_ORDERS,
       payments: INITIAL_PAYMENTS,
+      parcels: INITIAL_PARCELS,
+      caterings: INITIAL_CATERINGS,
       staff: INITIAL_STAFF,
       activeRole: 'cashier',
       activeStaff: INITIAL_STAFF[1],
@@ -778,7 +1010,7 @@ class RestaurantStore {
         {
           id: `notif-reset-${Date.now()}`,
           title: 'Demo Environment Reset',
-          message: 'Default tables, menu, and sample orders restored successfully.',
+          message: 'Default tables, menu, parcels, caterings, and sample orders restored successfully.',
           type: 'info',
           timestamp: new Date().toISOString(),
         },

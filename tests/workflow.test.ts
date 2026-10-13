@@ -213,9 +213,61 @@ async function runWorkflowTests() {
   assert.strictEqual(freshOrder.final_total, 0, 'New order final total must start at 0');
   assert.strictEqual(freshOrder.status, 'NEW');
 
-  console.log(`  -> Passed: Fresh order ${freshOrder.order_number} initialized with zero items for Mrs. Priya.`);
+  console.log(`  -> Passed: Fresh order ${freshOrder.order_number} initialized with zero items for Mrs. Priya.\n`);
+
+  // Test 10: Cashier creates Category B Parcel Bill
+  console.log('✓ Test 10: Cashier generates Category B Parcel Bill with Token...');
+  const parcelResult = restaurantStore.createParcelOrder({
+    customerName: 'Karthi Rajan',
+    customerPhone: '98840 99887',
+    items: [
+      { menuItemId: initialState.menuItems[0].id, quantity: 2 },
+      { menuItemId: initialState.menuItems[1].id, quantity: 1 },
+    ],
+    packagingCharge: 25,
+    paymentMethod: 'UPI',
+  });
+  assert.strictEqual(parcelResult.success, true, 'Parcel order creation must succeed');
+  assert.ok(parcelResult.parcel, 'Parcel record must be created');
+  assert.ok(parcelResult.parcel.token_number.startsWith('P-'), 'Token number must start with P-');
+  assert.strictEqual(parcelResult.parcel.customer_name, 'Karthi Rajan');
+  assert.strictEqual(parcelResult.parcel.packaging_charge, 25);
+  assert.strictEqual(parcelResult.parcel.payment_status, 'COMPLETED');
+  console.log(`  -> Passed: Parcel Token #${parcelResult.parcel.token_number} generated. Total: ₹${parcelResult.parcel.final_total}.\n`);
+
+  // Test 11: Cashier creates Category C Catering Contract & Settles Balance
+  console.log('✓ Test 11: Cashier creates Category C Catering Bill & settles balance...');
+  const cateringResult = restaurantStore.createCateringOrder({
+    customerName: 'Murugan Textiles',
+    customerPhone: '94440 12345',
+    eventName: 'Diwali Staff Feast',
+    eventDate: '2026-10-30',
+    paxCount: 200,
+    pricePerPlate: 300,
+    menuSummary: 'Chicken Dum Biryani, 65, Parotta, Payasam',
+    advancePaid: 30000,
+    paymentMethod: 'UPI',
+  });
+  assert.strictEqual(cateringResult.success, true, 'Catering order booking must succeed');
+  assert.ok(cateringResult.catering, 'Catering contract must be created');
+  assert.strictEqual(cateringResult.catering.subtotal, 60000); // 200 * 300
+  assert.strictEqual(cateringResult.catering.tax_amount, 3000); // 5%
+  assert.strictEqual(cateringResult.catering.total_amount, 63000);
+  assert.strictEqual(cateringResult.catering.advance_paid, 30000);
+  assert.strictEqual(cateringResult.catering.balance_due, 33000);
+  assert.strictEqual(cateringResult.catering.status, 'ADVANCE_PAID');
+
+  // Settle the catering balance
+  const settleResult = restaurantStore.settleCateringBalance(cateringResult.catering.id, 'CARD', 'CARD-TXN-888');
+  assert.strictEqual(settleResult.success, true, 'Settle catering balance must succeed');
+
+  const settledOrder = restaurantStore.getState().caterings.find((c) => c.id === cateringResult.catering?.id)!;
+  assert.strictEqual(settledOrder.balance_due, 0, 'Balance due must be 0 after settlement');
+  assert.strictEqual(settledOrder.status, 'FULLY_PAID', 'Status must transition to FULLY_PAID');
+  console.log(`  -> Passed: Catering Invoice ${settledOrder.invoice_number} created & fully settled (₹${settledOrder.total_amount}).\n`);
+
   console.log('------------------------------------------------------------');
-  console.log('🎉 ALL 9 END-TO-END WORKFLOW INTEGRATION TESTS PASSED 100%!');
+  console.log('🎉 ALL 11 END-TO-END WORKFLOW INTEGRATION TESTS PASSED 100%!');
   console.log('------------------------------------------------------------\n');
 }
 

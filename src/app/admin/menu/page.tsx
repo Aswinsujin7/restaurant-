@@ -28,8 +28,8 @@ export default function AdminMenuPage() {
     addCategory,
   } = useRestaurant();
 
-  // Filters
-  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
+  // Filters - default to first category (e.g. Chinese), no "All Products"
+  const [selectedCategory, setSelectedCategory] = useState<string>('cat-chinese');
   const [searchQuery, setSearchQuery] = useState('');
   const [availabilityFilter, setAvailabilityFilter] = useState<'ALL' | 'AVAILABLE' | 'UNAVAILABLE'>('ALL');
 
@@ -50,10 +50,15 @@ export default function AdminMenuPage() {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
 
+  const activeCategoryId =
+    selectedCategory && state.categories.some((c) => c.id === selectedCategory)
+      ? selectedCategory
+      : state.categories[0]?.id || 'cat-chinese';
+
   const openAddItemModal = () => {
     setEditingItem(null);
     setName('');
-    setCategoryId(state.categories[0]?.id || '');
+    setCategoryId(activeCategoryId);
     setPrice('');
     setIsVeg(true);
     setSpicyLevel(1);
@@ -101,7 +106,7 @@ export default function AdminMenuPage() {
     } else {
       addMenuItem({
         name: name.trim(),
-        category_id: categoryId || state.categories[0]?.id || '',
+        category_id: categoryId || activeCategoryId,
         price: parsedPrice,
         is_veg: isVeg,
         spicy_level: spicyLevel,
@@ -122,9 +127,9 @@ export default function AdminMenuPage() {
     setShowCategoryModal(false);
   };
 
-  // Filtered Items
+  // Filtered Items (strictly by selected cuisine)
   const filteredItems = state.menuItems.filter((item) => {
-    if (selectedCategory !== 'ALL' && item.category_id !== selectedCategory) return false;
+    if (activeCategoryId && item.category_id !== activeCategoryId) return false;
     if (availabilityFilter === 'AVAILABLE' && !item.is_available) return false;
     if (availabilityFilter === 'UNAVAILABLE' && item.is_available) return false;
     if (searchQuery) {
@@ -173,31 +178,32 @@ export default function AdminMenuPage() {
 
         {/* Filter Controls */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-slate-900/60 border border-slate-800 rounded-2xl">
-          {/* Categories Pills */}
+          {/* Categories Pills - specific cuisines only, no "All Categories" */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-            <button
-              onClick={() => setSelectedCategory('ALL')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                selectedCategory === 'ALL'
-                  ? 'bg-amber-500 text-slate-950'
-                  : 'bg-slate-950 text-slate-400 hover:text-white'
-              }`}
-            >
-              All Categories ({state.menuItems.length})
-            </button>
-            {state.categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-                  selectedCategory === cat.id
-                    ? 'bg-amber-500 text-slate-950'
-                    : 'bg-slate-950 text-slate-400 hover:text-white'
-                }`}
-              >
-                {cat.name}
-              </button>
-            ))}
+            {state.categories.map((cat) => {
+              const isSelected = activeCategoryId === cat.id;
+              const count = state.menuItems.filter((m) => m.category_id === cat.id).length;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                    isSelected
+                      ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-950/40 font-black ring-2 ring-amber-400/40'
+                      : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+                  }`}
+                >
+                  <span>{cat.name}</span>
+                  <span
+                    className={`ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full ${
+                      isSelected ? 'bg-slate-950/20 text-slate-950 font-black' : 'bg-slate-900 text-slate-500'
+                    }`}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
           {/* Search & Stock Filter */}

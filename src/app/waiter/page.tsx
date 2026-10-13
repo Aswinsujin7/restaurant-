@@ -44,8 +44,8 @@ export default function WaiterDashboardPage() {
   const [guestCountInput, setGuestCountInput] = useState('2');
   const [assignError, setAssignError] = useState<string | null>(null);
 
-  // Menu & Order Taking State
-  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
+  // Menu & Order Taking State - default to Chinese or first cuisine, no "All Items"
+  const [selectedCategory, setSelectedCategory] = useState<string>('cat-chinese');
   const [menuSearchQuery, setMenuSearchQuery] = useState('');
   const [vegOnlyFilter, setVegOnlyFilter] = useState(false);
 
@@ -171,9 +171,14 @@ export default function WaiterDashboardPage() {
     updateOrderItemStatus(orderId, itemId, 'SERVED');
   };
 
-  // Filtered menu items
+  const activeCategoryId =
+    selectedCategory && state.categories.some((c) => c.id === selectedCategory)
+      ? selectedCategory
+      : state.categories[0]?.id || 'cat-chinese';
+
+  // Filtered menu items strictly by selected cuisine
   const filteredMenuItems = state.menuItems.filter((item) => {
-    if (selectedCategory !== 'ALL' && item.category_id !== selectedCategory) return false;
+    if (activeCategoryId && item.category_id !== activeCategoryId) return false;
     if (vegOnlyFilter && !item.is_veg) return false;
     if (menuSearchQuery) {
       const q = menuSearchQuery.toLowerCase();
@@ -323,42 +328,19 @@ export default function WaiterDashboardPage() {
                   </button>
                 </div>
 
-                {/* Cuisine Category Selector */}
+                {/* Cuisine Category Selector - specific cuisines only, no "All Items" */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between text-[11px] text-slate-400 font-semibold px-0.5">
-                    <span>Select Cuisine / Category:</span>
+                    <span>Select Cuisine:</span>
                     <span className="text-amber-400 font-bold">
-                      {selectedCategory === 'ALL'
-                        ? `All Dishes (${filteredMenuItems.length})`
-                        : `${state.categories.find((c) => c.id === selectedCategory)?.name || 'Filtered'} (${filteredMenuItems.length})`}
+                      {state.categories.find((c) => c.id === activeCategoryId)?.name || 'Cuisine'} ({filteredMenuItems.length})
                     </span>
                   </div>
 
                   <div className="flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-none">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedCategory('ALL')}
-                      className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-                        selectedCategory === 'ALL'
-                          ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-950/40 ring-2 ring-amber-400/40 font-black'
-                          : 'bg-slate-950 text-slate-300 border border-slate-800 hover:text-white hover:border-slate-700'
-                      }`}
-                    >
-                      <span>🍽️ All Items</span>
-                      <span
-                        className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
-                          selectedCategory === 'ALL'
-                            ? 'bg-slate-950/20 text-slate-950'
-                            : 'bg-slate-900 text-slate-400'
-                        }`}
-                      >
-                        {state.menuItems.length}
-                      </span>
-                    </button>
-
                     {state.categories.map((cat) => {
                       const count = state.menuItems.filter((m) => m.category_id === cat.id).length;
-                      const isCatSelected = selectedCategory === cat.id;
+                      const isCatSelected = activeCategoryId === cat.id;
                       const emoji =
                         cat.id === 'cat-chinese'
                           ? '🥢'
@@ -385,7 +367,7 @@ export default function WaiterDashboardPage() {
                           <span
                             className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
                               isCatSelected
-                                ? 'bg-slate-950/20 text-slate-950'
+                                ? 'bg-slate-950/20 text-slate-950 font-black'
                                 : 'bg-slate-900 text-slate-400'
                             }`}
                           >
@@ -402,17 +384,16 @@ export default function WaiterDashboardPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto pr-1">
                 {filteredMenuItems.length === 0 && (
                   <div className="col-span-1 sm:col-span-2 text-center py-10 bg-slate-900/40 border border-dashed border-slate-800 rounded-2xl space-y-2">
-                    <p className="text-xs text-slate-400">No dishes found matching this selection.</p>
+                    <p className="text-xs text-slate-400">No dishes found in this cuisine.</p>
                     <button
                       type="button"
                       onClick={() => {
-                        setSelectedCategory('ALL');
                         setMenuSearchQuery('');
                         setVegOnlyFilter(false);
                       }}
-                      className="px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold text-xs"
+                      className="px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold text-xs cursor-pointer"
                     >
-                      View All Dishes
+                      Clear Search / Filters
                     </button>
                   </div>
                 )}

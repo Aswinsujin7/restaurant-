@@ -14,6 +14,8 @@ import {
   RestaurantTable,
   Order,
   Payment,
+  ParcelOrder,
+  CateringOrder,
 } from '../lib/types';
 
 interface RestaurantContextType {
@@ -53,6 +55,38 @@ interface RestaurantContextType {
       cashierName?: string;
     }
   ) => { success: boolean; payment?: Payment; error?: string };
+  createParcelOrder: (data: {
+    customerName: string;
+    customerPhone?: string;
+    items: Array<{
+      menuItemId: string;
+      quantity: number;
+      specialInstructions?: string;
+    }>;
+    packagingCharge?: number;
+    paymentMethod: PaymentMethod;
+    paymentReference?: string;
+    cashierName?: string;
+  }) => { success: boolean; parcel?: ParcelOrder; error?: string };
+  createCateringOrder: (data: {
+    customerName: string;
+    customerPhone: string;
+    eventName: string;
+    eventDate: string;
+    paxCount: number;
+    pricePerPlate: number;
+    menuSummary: string;
+    advancePaid: number;
+    paymentMethod: PaymentMethod;
+    paymentReference?: string;
+    notes?: string;
+    cashierName?: string;
+  }) => { success: boolean; catering?: CateringOrder; error?: string };
+  settleCateringBalance: (
+    cateringId: string,
+    paymentMethod: PaymentMethod,
+    paymentReference?: string
+  ) => { success: boolean; error?: string };
   addMenuItem: (item: Omit<MenuItem, 'id'>) => { success: boolean; item?: MenuItem };
   updateMenuItem: (item: MenuItem) => { success: boolean };
   toggleItemAvailability: (itemId: string) => { success: boolean };
@@ -133,6 +167,10 @@ export function RestaurantProvider({ children }: { children: React.ReactNode }) 
     updateTicketStatus: (oId, status) => restaurantStore.updateTicketStatus(oId, status),
     requestBill: (oId) => restaurantStore.requestBill(oId),
     processPayment: (oId, pData) => restaurantStore.processPayment(oId, pData),
+    createParcelOrder: (data) => restaurantStore.createParcelOrder(data),
+    createCateringOrder: (data) => restaurantStore.createCateringOrder(data),
+    settleCateringBalance: (id, method, ref) =>
+      restaurantStore.settleCateringBalance(id, method, ref),
     addMenuItem: (item) => restaurantStore.addMenuItem(item),
     updateMenuItem: (item) => restaurantStore.updateMenuItem(item),
     toggleItemAvailability: (iId) => restaurantStore.toggleItemAvailability(iId),

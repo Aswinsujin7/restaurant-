@@ -130,3 +130,44 @@ export interface BillSummary {
   final_total: number;
   created_at: string;
 }
+
+export interface ParcelOrder {
+  id: string;
+  token_number: string; // e.g. "P-101"
+  customer_name: string;
+  customer_phone?: string;
+  items: OrderItem[];
+  subtotal: number;
+  packaging_charge: number;
+  tax_amount: number;
+  final_total: number;
+  payment_method: PaymentMethod;
+  payment_reference?: string;
+  payment_status: PaymentStatus;
+  cashier_name: string;
+  created_at: string;
+}
+
+export interface CateringOrder {
+  id: string;
+  invoice_number: string; // e.g. "CAT-2026-001"
+  customer_name: string;
+  customer_phone: string;
+  event_name: string;
+  event_date: string;
+  pax_count: number;
+  price_per_plate: number;
+  menu_summary: string;
+  subtotal: number;
+  tax_amount: number;
+  total_amount: number;
+  advance_paid: number;
+  balance_due: number;
+  payment_method: PaymentMethod;
+  payment_reference?: string;
+  status: 'ADVANCE_PAID' | 'FULLY_PAID';
+  notes?: string;
+  cashier_name: string;
+  created_at: string;
+}
+
