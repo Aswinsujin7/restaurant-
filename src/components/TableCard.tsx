@@ -69,14 +69,21 @@ export function TableCard({
             </div>
             <div>
               <h3 className="font-bold text-white text-sm leading-tight">{table.table_label}</h3>
-              <p className="text-[11px] text-slate-400 flex items-center gap-1">
-                <span>{table.section}</span>
-                <span>•</span>
-                <span className="flex items-center gap-0.5">
+              <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                <span className={`text-[10px] font-black px-1.5 py-0.2 rounded border ${
+                  (table.pricing_section ? table.pricing_section === 'AC' : (table.is_ac ?? (!table.section.toLowerCase().includes('non') && table.section.toLowerCase().includes('ac'))))
+                    ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+                    : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                }`}>
+                  {(table.pricing_section ? table.pricing_section === 'AC' : (table.is_ac ?? (!table.section.toLowerCase().includes('non') && table.section.toLowerCase().includes('ac')))) ? '❄️ AC' : '🌿 Non-AC'}
+                </span>
+                <span className="text-[11px] text-slate-400">{table.section}</span>
+                <span className="text-slate-600">•</span>
+                <span className="text-[11px] text-slate-400 flex items-center gap-0.5">
                   <Users className="w-3 h-3" />
                   {table.capacity}
                 </span>
-              </p>
+              </div>
             </div>
           </div>
           <TableStatusBadge status={table.status} />

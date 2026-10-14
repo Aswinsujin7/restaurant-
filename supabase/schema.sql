@@ -25,6 +25,8 @@ CREATE TABLE IF NOT EXISTS restaurant_tables (
     table_label TEXT NOT NULL,
     capacity INTEGER NOT NULL DEFAULT 4,
     section TEXT NOT NULL DEFAULT 'Main Dining',
+    pricing_section TEXT NOT NULL DEFAULT 'NON_AC' CHECK (pricing_section IN ('AC', 'NON_AC')),
+    is_ac BOOLEAN NOT NULL DEFAULT false,
     status TEXT NOT NULL DEFAULT 'FREE' CHECK (status IN ('FREE', 'OCCUPIED', 'BILL_REQUESTED')),
     active_order_id UUID,
     current_customer_name TEXT,
@@ -49,9 +51,12 @@ CREATE TABLE IF NOT EXISTS menu_items (
     name TEXT NOT NULL,
     description TEXT,
     price NUMERIC(10, 2) NOT NULL CHECK (price >= 0),
+    price_non_ac NUMERIC(10, 2) CHECK (price_non_ac >= 0),
+    price_ac NUMERIC(10, 2) CHECK (price_ac >= 0),
     is_veg BOOLEAN NOT NULL DEFAULT true,
     spicy_level INTEGER NOT NULL DEFAULT 1 CHECK (spicy_level BETWEEN 0 AND 3),
     is_available BOOLEAN NOT NULL DEFAULT true,
+    is_active BOOLEAN NOT NULL DEFAULT true,
     image_url TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -78,6 +83,8 @@ CREATE TABLE IF NOT EXISTS orders (
     waiter_id UUID REFERENCES staff_users(id),
     customer_name TEXT NOT NULL,
     table_number INTEGER NOT NULL,
+    section TEXT,
+    pricing_section TEXT NOT NULL DEFAULT 'NON_AC' CHECK (pricing_section IN ('AC', 'NON_AC')),
     status TEXT NOT NULL DEFAULT 'NEW' CHECK (
         status IN ('NEW', 'PREPARING', 'READY', 'SERVED', 'BILL_REQUESTED', 'PAID', 'CANCELLED')
     ),
@@ -113,6 +120,7 @@ CREATE TABLE IF NOT EXISTS order_items (
         status IN ('NEW', 'PREPARING', 'READY', 'SERVED')
     ),
     round_number INTEGER NOT NULL DEFAULT 1,
+    pricing_section TEXT CHECK (pricing_section IN ('AC', 'NON_AC')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -123,6 +131,8 @@ CREATE TABLE IF NOT EXISTS payments (
     order_id UUID NOT NULL REFERENCES orders(id),
     order_number TEXT NOT NULL,
     table_number INTEGER NOT NULL,
+    section TEXT,
+    pricing_section TEXT DEFAULT 'NON_AC',
     customer_name TEXT NOT NULL,
     subtotal NUMERIC(10, 2) NOT NULL,
     tax_amount NUMERIC(10, 2) NOT NULL,
@@ -277,6 +287,8 @@ BEGIN
         order_id,
         order_number,
         table_number,
+        section,
+        pricing_section,
         customer_name,
         subtotal,
         tax_amount,
@@ -291,6 +303,8 @@ BEGIN
         p_order_id,
         v_order.order_number,
         v_order.table_number,
+        v_order.section,
+        COALESCE(v_order.pricing_section, 'NON_AC'),
         v_order.customer_name,
         v_subtotal,
         v_tax,

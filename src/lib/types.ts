@@ -16,12 +16,16 @@ export interface StaffUser {
 
 export type TableStatus = 'FREE' | 'OCCUPIED' | 'BILL_REQUESTED';
 
+export type PricingSection = 'AC' | 'NON_AC';
+
 export interface RestaurantTable {
   id: string;
   table_number: number;
   table_label: string;
   capacity: number;
   section: string;
+  pricing_section?: PricingSection;
+  is_ac?: boolean;
   status: TableStatus;
   active_order_id?: string | null;
   current_customer_name?: string | null;
@@ -39,14 +43,19 @@ export interface MenuCategory {
 
 export interface MenuItem {
   id: string;
+  item_number?: number; // Unique individual dish number / code (e.g. 1, 2, 3...)
   category_id: string;
   name: string;
   description?: string;
-  price: number;
-  ac_price?: number;
+  price: number; // Base / Non-AC price for backwards compatibility
+  price_non_ac?: number; // Explicit Non-AC price
+  price_ac?: number; // Explicit AC price
+  ac_price?: number; // Backwards-compatible alias for price_ac
+  non_ac_price?: number; // Backwards-compatible alias for price_non_ac
   is_veg: boolean;
   spicy_level: number; // 0: None, 1: Mild, 2: Medium, 3: Spicy
   is_available: boolean;
+  is_active?: boolean;
   image_url?: string;
 }
 
@@ -72,6 +81,7 @@ export interface OrderItem {
   special_instructions?: string;
   status: OrderItemStatus;
   round_number: number;
+  pricing_section?: PricingSection;
   created_at: string;
 }
 
@@ -84,6 +94,8 @@ export interface Order {
   customer_name: string;
   guest_count?: number;
   table_number: number;
+  section?: string;
+  pricing_section?: PricingSection;
   status: OrderStatus;
   subtotal: number;
   tax_rate: number;
@@ -106,6 +118,8 @@ export interface Payment {
   order_number: string;
   table_number: number;
   customer_name: string;
+  section?: string;
+  pricing_section?: PricingSection;
   subtotal: number;
   tax_amount: number;
   discount_amount: number;
@@ -122,6 +136,8 @@ export interface BillSummary {
   order_id: string;
   order_number: string;
   table_number: number;
+  section?: string;
+  pricing_section?: PricingSection;
   customer_name: string;
   items: OrderItem[];
   subtotal: number;

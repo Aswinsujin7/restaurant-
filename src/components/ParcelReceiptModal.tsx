@@ -7,14 +7,38 @@ import { Printer, X, CheckCircle, Package } from 'lucide-react';
 interface ParcelReceiptModalProps {
   parcel: ParcelOrder;
   onClose: () => void;
+  autoPrint?: boolean;
 }
 
-export function ParcelReceiptModal({ parcel, onClose }: ParcelReceiptModalProps) {
+export function ParcelReceiptModal({ parcel, onClose, autoPrint }: ParcelReceiptModalProps) {
   const handlePrint = () => {
     if (typeof window !== 'undefined') {
       window.print();
     }
   };
+
+  React.useEffect(() => {
+    if (autoPrint && typeof window !== 'undefined') {
+      const timer = setTimeout(() => {
+        window.print();
+      }, 250);
+      return () => clearTimeout(timer);
+    }
+  }, [autoPrint]);
+
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      } else if (e.code === 'Space' || e.key === ' ' || e.key === 'Enter' || e.key.toLowerCase() === 'p') {
+        e.preventDefault();
+        handlePrint();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   const formattedDate = new Date(parcel.created_at).toLocaleString('en-IN', {
     day: '2-digit',
@@ -42,6 +66,9 @@ export function ParcelReceiptModal({ parcel, onClose }: ParcelReceiptModalProps)
             >
               <Printer className="w-3.5 h-3.5" />
               <span>Print Slip</span>
+              <kbd className="rounded bg-black/20 px-1.5 py-0.5 text-[10px] font-mono font-bold text-slate-950 border border-black/15">
+                Space
+              </kbd>
             </button>
             <button
               onClick={onClose}

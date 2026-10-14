@@ -5,11 +5,16 @@ import { MenuItem } from '../lib/types';
 import { VegBadge } from './StatusBadge';
 import { Search, Plus, Minus, X, Flame, Hash } from 'lucide-react';
 
-// ─── Utility: Extract numeric item number from a menu item ID ───────────────
-// IDs follow the pattern: m0000004-0000-0000-0000-000000000004
-// The leading padded number in the first segment is the item number.
-export function getMenuItemNumber(id: string): number {
-  const match = id.match(/^m(\d+)-/);
+// ─── Utility: Extract numeric item number from a menu item or item ID ────────
+export function getMenuItemNumber(itemOrId: MenuItem | string | null | undefined): number {
+  if (!itemOrId) return 0;
+  if (typeof itemOrId === 'object') {
+    if (itemOrId.item_number && itemOrId.item_number > 0) {
+      return itemOrId.item_number;
+    }
+    return getMenuItemNumber(itemOrId.id);
+  }
+  const match = itemOrId.match(/^m(\d+)-/);
   if (!match) return 0;
   return parseInt(match[1], 10);
 }
@@ -37,7 +42,7 @@ interface MenuItemSearchProps {
 }
 
 // ─── Search Logic ─────────────────────────────────────────────────────────────
-function searchMenuItems(
+export function searchMenuItems(
   items: MenuItem[],
   query: string
 ): { exact: MenuItem[]; partial: MenuItem[] } {
@@ -51,7 +56,7 @@ function searchMenuItems(
   const partial: MenuItem[] = [];
 
   for (const item of items) {
-    const itemNumber = getMenuItemNumber(item.id);
+    const itemNumber = getMenuItemNumber(item);
     const itemNumberStr = String(itemNumber);
     const nameLower = item.name.toLowerCase();
     const descLower = item.description?.toLowerCase() || '';
@@ -63,7 +68,7 @@ function searchMenuItems(
         partial.push(item);
       }
     } else {
-      if (nameLower.startsWith(lowerQ)) {
+      if (nameLower.startsWith(lowerQ) || q === `#${itemNumberStr}`) {
         exact.push(item);
       } else if (nameLower.includes(lowerQ) || descLower.includes(lowerQ)) {
         partial.push(item);
@@ -214,17 +219,50 @@ export function MenuItemSearch({
 }: MenuItemSearchProps) {
   const [query, setQuery] = useState('');
   const [isFocused, setIsFocused] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { exact, partial } = searchMenuItems(menuItems, query);
-  const hasResults = exact.length > 0 || partial.length > 0;
+  const allMatches = [...exact, ...partial];
+  const hasResults = allMatches.length > 0;
   const showDropdown = isFocused && query.trim().length > 0;
+
+  useEffect(() => {
+    setHighlightedIndex(0);
+  }, [query]);
 
   const clearSearch = useCallback(() => {
     setQuery('');
     inputRef.current?.focus();
   }, []);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (allMatches.length > 0) {
+        setHighlightedIndex((prev) => (prev + 1) % allMatches.length);
+      }
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (allMatches.length > 0) {
+        setHighlightedIndex((prev) => (prev - 1 + allMatches.length) % allMatches.length);
+      }
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      setIsFocused(false);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (allMatches.length > 0 && allMatches[highlightedIndex]) {
+        const item = allMatches[highlightedIndex];
+        if (onSelectItem) {
+          onSelectItem(item);
+        } else {
+          onUpdateQuantity(item, 1);
+        }
+      }
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -263,6 +301,7 @@ export function MenuItemSearch({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setIsFocused(true)}
+          onKeyDown={handleKeyDown}
           placeholder={placeholder}
           autoComplete="off"
           className="flex-1 bg-transparent py-2.5 pr-3 text-sm text-white placeholder-slate-500 focus:outline-none"

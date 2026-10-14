@@ -12,6 +12,7 @@ import {
   PaymentMethod,
   OrderStatus,
   OrderItemStatus,
+  PricingSection,
   UserRole,
   StaffUser,
   ParcelOrder,
@@ -144,7 +145,18 @@ class RestaurantStore {
       const storedPayments = localStorage.getItem(STORAGE_KEY_PREFIX + 'payments');
       const storedRole = localStorage.getItem(STORAGE_KEY_PREFIX + 'role');
 
-      if (storedTables) this.state.tables = JSON.parse(storedTables);
+      if (storedTables) {
+        const parsedTables: RestaurantTable[] = JSON.parse(storedTables);
+        this.state.tables = parsedTables.map((t) => {
+          const isAc = t.table_number <= 6;
+          return {
+            ...t,
+            section: isAc ? 'AC Dining' : 'Non-AC Dining',
+            is_ac: isAc,
+            pricing_section: isAc ? 'AC' : 'NON_AC',
+          };
+        });
+      }
       if (storedOrders) this.state.orders = JSON.parse(storedOrders);
       if (storedPayments) this.state.payments = JSON.parse(storedPayments);
 
@@ -152,7 +164,22 @@ class RestaurantStore {
         const parsedCats = JSON.parse(storedCategories);
         if (parsedCats.some((c: { id: string }) => c.id === 'cat-chinese')) {
           this.state.categories = parsedCats;
-          if (storedMenu) this.state.menuItems = JSON.parse(storedMenu);
+          if (storedMenu) {
+            const parsedMenu: MenuItem[] = JSON.parse(storedMenu);
+            this.state.menuItems = parsedMenu.map((m) => {
+              const nonAcPrice = m.price_non_ac ?? m.non_ac_price ?? m.price;
+              const acPrice = m.price_ac ?? m.ac_price ?? nonAcPrice;
+              return {
+                ...m,
+                price: nonAcPrice,
+                price_non_ac: nonAcPrice,
+                price_ac: acPrice,
+                ac_price: acPrice,
+                non_ac_price: nonAcPrice,
+                is_active: m.is_active ?? true,
+              };
+            });
+          }
         } else {
           this.state.categories = INITIAL_CATEGORIES;
           this.state.menuItems = INITIAL_MENU_ITEMS;
@@ -594,11 +621,18 @@ class RestaurantStore {
     const orderSequence = (this.state.orders.length + 1).toString().padStart(4, '0');
     const orderNumber = `NAGA-${todayStr}-${orderSequence}`;
 
+    const isAc = table.pricing_section
+      ? table.pricing_section === 'AC'
+      : (table.is_ac ?? (!table.section?.toLowerCase().includes('non') && (table.section?.toLowerCase().includes('ac') ?? false)));
+    const pricingSection: PricingSection = isAc ? 'AC' : 'NON_AC';
+
     const newOrder: Order = {
       id: uniqueOrderId,
       order_number: orderNumber,
       table_id: table.id,
       table_number: table.table_number,
+      section: table.section,
+      pricing_section: pricingSection,
       customer_name: cleanedCustomerName,
       guest_count: validGuestCount,
       waiter_id: waiterId || this.state.activeStaff.id,
@@ -647,7 +681,8 @@ class RestaurantStore {
   public createWalkInOrder(
     customerName: string,
     guestCount: number,
-    waiterId?: string
+    waiterId?: string,
+    pricingSection: PricingSection = 'NON_AC'
   ): { success: boolean; orderId?: string; error?: string } {
     const now = new Date().toISOString();
     const orderId = `walkin-${Date.now()}-${Math.floor(Math.random() * 8999 + 1000)}`;
@@ -658,6 +693,8 @@ class RestaurantStore {
       order_number: `NAGA-${dateKey}-${sequence}`,
       table_id: '',
       table_number: 0,
+      section: pricingSection === 'AC' ? 'AC Section (Walk-in)' : 'Standard (Walk-in)',
+      pricing_section: pricingSection,
       customer_name: customerName.trim() || 'Walk-in Guest',
       guest_count: Math.max(1, guestCount || 1),
       waiter_id: waiterId || this.state.activeStaff.id,
@@ -688,7 +725,7 @@ class RestaurantStore {
       quantity: number;
       specialInstructions?: string;
     }>,
-    priceMode: 'STANDARD' | 'AC' = 'STANDARD'
+    priceMode?: PricingSection | 'STANDARD' | 'AC'
   ): { success: boolean; error?: string } {
     const orderIndex = this.state.orders.findIndex((o) => o.id === orderId);
     if (orderIndex === -1) {
@@ -704,6 +741,20 @@ class RestaurantStore {
       return { success: false, error: 'No items selected.' };
     }
 
+    // Determine target pricing section strictly from trusted table data, or order, or explicit mode
+    let targetSection: PricingSection = order.pricing_section || 'NON_AC';
+    if (order.table_id) {
+      const table = this.state.tables.find((t) => t.id === order.table_id);
+      if (table) {
+        const isAc = table.pricing_section
+          ? table.pricing_section === 'AC'
+          : (table.is_ac ?? (!table.section?.toLowerCase().includes('non') && (table.section?.toLowerCase().includes('ac') ?? false)));
+        targetSection = isAc ? 'AC' : 'NON_AC';
+      }
+    } else if (priceMode) {
+      targetSection = priceMode === 'AC' ? 'AC' : 'NON_AC';
+    }
+
     // Determine current highest round number
     const currentMaxRound = order.items.reduce((max, it) => Math.max(max, it.round_number || 1), 0);
     const roundNumber = order.items.length === 0 ? 1 : currentMaxRound + 1;
@@ -714,10 +765,10 @@ class RestaurantStore {
         throw new Error(`Menu item not found: ${input.menuItemId}`);
       }
 
-      const unitPrice = priceMode === 'AC'
-        ? (menuItem.ac_price ?? Math.round(menuItem.price * 1.12 * 100) / 100)
-        : menuItem.price;
-      const totalPrice = unitPrice * input.quantity;
+      const nonAcPrice = menuItem.price_non_ac ?? menuItem.price;
+      const acPrice = menuItem.price_ac ?? menuItem.ac_price ?? nonAcPrice;
+      const unitPrice = targetSection === 'AC' ? acPrice : nonAcPrice;
+      const totalPrice = Number((unitPrice * input.quantity).toFixed(2));
 
       return {
         id: `item-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
@@ -727,6 +778,7 @@ class RestaurantStore {
         quantity: input.quantity,
         unit_price: unitPrice,
         total_price: totalPrice,
+        pricing_section: targetSection,
         special_instructions: input.specialInstructions || '',
         status: 'NEW',
         round_number: roundNumber,
@@ -735,7 +787,7 @@ class RestaurantStore {
     });
 
     const allItems = [...order.items, ...newOrderItems];
-    const subtotal = allItems.reduce((sum, it) => sum + it.total_price, 0);
+    const subtotal = Number(allItems.reduce((sum, it) => sum + it.total_price, 0).toFixed(2));
     const taxRate = order.tax_rate || 5.0;
     const taxAmount = Number(((subtotal * taxRate) / 100).toFixed(2));
     const finalTotal = Number(
@@ -744,6 +796,7 @@ class RestaurantStore {
 
     const updatedOrder: Order = {
       ...order,
+      pricing_section: targetSection,
       items: allItems,
       subtotal,
       tax_amount: taxAmount,
@@ -994,6 +1047,8 @@ class RestaurantStore {
       payment_status: 'COMPLETED',
       cashier_id: paymentData.cashierId || this.state.activeStaff.id,
       cashier_name: paymentData.cashierName || this.state.activeStaff.full_name,
+      section: order.section,
+      pricing_section: order.pricing_section,
       created_at: new Date().toISOString(),
     };
 
@@ -1053,10 +1108,41 @@ class RestaurantStore {
   // ==========================================================================
   // Admin Menu Management Operations
   // ==========================================================================
-  public addMenuItem(item: Omit<MenuItem, 'id'>): { success: boolean; item?: MenuItem } {
+  public addMenuItem(item: Omit<MenuItem, 'id'>, userRole?: UserRole): { success: boolean; item?: MenuItem; error?: string } {
+    const role = userRole || this.state.activeRole;
+    if (role !== 'admin') {
+      return { success: false, error: 'Unauthorized: Only administrators can add menu items and set prices.' };
+    }
+
+    const nonAcPrice = item.price_non_ac !== undefined ? Number(item.price_non_ac) : Number(item.price);
+    const acPrice = item.price_ac !== undefined ? Number(item.price_ac) : (item.ac_price !== undefined ? Number(item.ac_price) : nonAcPrice);
+
+    if (isNaN(nonAcPrice) || nonAcPrice < 0) {
+      return { success: false, error: 'Invalid Non-AC price: must be a non-negative number.' };
+    }
+    if (isNaN(acPrice) || acPrice < 0) {
+      return { success: false, error: 'Invalid AC price: must be a non-negative number.' };
+    }
+
+    const maxNumber = this.state.menuItems.reduce(
+      (max, m) => Math.max(max, m.item_number || 0),
+      0
+    );
+    const itemNumber = item.item_number !== undefined && Number(item.item_number) > 0
+      ? Number(item.item_number)
+      : maxNumber + 1;
+
     const newItem: MenuItem = {
       ...item,
-      id: `m-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      id: `m${String(itemNumber).padStart(7, '0')}-0000-0000-0000-${String(itemNumber).padStart(12, '0')}`,
+      item_number: itemNumber,
+      price: nonAcPrice,
+      price_non_ac: nonAcPrice,
+      price_ac: acPrice,
+      ac_price: acPrice,
+      non_ac_price: nonAcPrice,
+      is_available: item.is_available ?? true,
+      is_active: item.is_active ?? true,
     };
 
     this.state.menuItems = [newItem, ...this.state.menuItems];
@@ -1072,6 +1158,7 @@ class RestaurantStore {
       updatedAt: new Date().toISOString(),
     };
     this.state.inventoryItems = [inventoryItem, ...this.state.inventoryItems];
+    this.saveToStorage();
     this.broadcastChange('STATE_UPDATE', {
       menuItems: this.state.menuItems,
       inventoryItems: this.state.inventoryItems,
@@ -1080,23 +1167,104 @@ class RestaurantStore {
     return { success: true, item: newItem };
   }
 
-  public updateMenuItem(updated: MenuItem): { success: boolean } {
+  public updateMenuItem(updated: MenuItem, userRole?: UserRole): { success: boolean; error?: string } {
+    const role = userRole || this.state.activeRole;
+    if (role !== 'admin') {
+      return { success: false, error: 'Unauthorized: Only administrators can update menu items and prices.' };
+    }
+
     const index = this.state.menuItems.findIndex((m) => m.id === updated.id);
-    if (index === -1) return { success: false };
+    if (index === -1) return { success: false, error: 'Menu item not found.' };
+
+    const nonAcPrice = updated.price_non_ac !== undefined ? Number(updated.price_non_ac) : Number(updated.price);
+    const acPrice = updated.price_ac !== undefined ? Number(updated.price_ac) : (updated.ac_price !== undefined ? Number(updated.ac_price) : nonAcPrice);
+
+    if (isNaN(nonAcPrice) || nonAcPrice < 0) {
+      return { success: false, error: 'Invalid Non-AC price: must be a non-negative number.' };
+    }
+    if (isNaN(acPrice) || acPrice < 0) {
+      return { success: false, error: 'Invalid AC price: must be a non-negative number.' };
+    }
+
+    const itemNumber = updated.item_number !== undefined && Number(updated.item_number) > 0
+      ? Number(updated.item_number)
+      : (this.state.menuItems[index].item_number || index + 1);
+
+    const normalized: MenuItem = {
+      ...updated,
+      item_number: itemNumber,
+      price: nonAcPrice,
+      price_non_ac: nonAcPrice,
+      price_ac: acPrice,
+      ac_price: acPrice,
+      non_ac_price: nonAcPrice,
+      is_active: updated.is_active ?? true,
+      is_available: updated.is_available ?? true,
+    };
 
     const newItems = [...this.state.menuItems];
-    newItems[index] = updated;
+    newItems[index] = normalized;
     this.state.menuItems = newItems;
 
     this.state.inventoryItems = this.state.inventoryItems.map((item) =>
       item.menuItemId === updated.id ? { ...item, name: updated.name, updatedAt: new Date().toISOString() } : item
     );
 
+    this.saveToStorage();
     this.broadcastChange('STATE_UPDATE', {
       menuItems: this.state.menuItems,
       inventoryItems: this.state.inventoryItems,
     });
     this.notifyListeners();
+    return { success: true };
+  }
+
+  /**
+   * Admin Table Section & Pricing Configuration
+   * Reassign a table to AC or Non-AC.
+   * GUARD: Do not allow reassigning or releasing an occupied table while it has an active order.
+   */
+  public updateTableSection(
+    tableId: string,
+    section: string,
+    pricingSection: PricingSection,
+    userRole?: UserRole
+  ): { success: boolean; error?: string } {
+    const role = userRole || this.state.activeRole;
+    if (role !== 'admin') {
+      return { success: false, error: 'Unauthorized: Only administrators can manage table sections.' };
+    }
+
+    const tableIndex = this.state.tables.findIndex((t) => t.id === tableId);
+    if (tableIndex === -1) {
+      return { success: false, error: 'Table not found' };
+    }
+
+    const table = this.state.tables[tableIndex];
+    if (table.status !== 'FREE' || table.active_order_id) {
+      return {
+        success: false,
+        error: `Cannot reassign Table ${table.table_number} while it has an active order (${table.current_customer_name || 'Occupied'}). Complete or settle the bill first.`,
+      };
+    }
+
+    const isAc = pricingSection === 'AC';
+    const updatedTable: RestaurantTable = {
+      ...table,
+      section: section.trim() || (isAc ? 'AC Dining' : 'Main Dining'),
+      pricing_section: pricingSection,
+      is_ac: isAc,
+      updated_at: new Date().toISOString(),
+    };
+
+    const newTables = [...this.state.tables];
+    newTables[tableIndex] = updatedTable;
+    this.state.tables = newTables;
+
+    this.saveToStorage();
+    this.broadcastChange('STATE_UPDATE', { tables: this.state.tables });
+    this.notifyListeners();
+
     return { success: true };
   }
 
@@ -1111,13 +1279,20 @@ class RestaurantStore {
     newItems[index] = updated;
     this.state.menuItems = newItems;
 
+    this.saveToStorage();
     this.broadcastChange('STATE_UPDATE', { menuItems: this.state.menuItems });
     this.notifyListeners();
     return { success: true };
   }
 
-  public deleteMenuItem(itemId: string): { success: boolean } {
+  public deleteMenuItem(itemId: string, userRole?: UserRole): { success: boolean; error?: string } {
+    const role = userRole || this.state.activeRole;
+    if (role !== 'admin') {
+      return { success: false, error: 'Unauthorized: Only administrators can delete menu items.' };
+    }
+
     this.state.menuItems = this.state.menuItems.filter((m) => m.id !== itemId);
+    this.saveToStorage();
     this.broadcastChange('STATE_UPDATE', { menuItems: this.state.menuItems });
     this.notifyListeners();
     return { success: true };
@@ -1351,6 +1526,11 @@ class RestaurantStore {
     this.notifyListeners();
 
     return { success: true };
+  }
+
+  public setUserRole(role: UserRole) {
+    this.state.activeRole = role;
+    this.notifyListeners();
   }
 
   // Reset to initial demo state

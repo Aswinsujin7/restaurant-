@@ -10,6 +10,7 @@ import { CateringOrderModal } from '../../components/CateringOrderModal';
 import { CateringInvoiceModal } from '../../components/CateringInvoiceModal';
 import { SettleCateringModal } from '../../components/SettleCateringModal';
 import { ThermalReceipt } from '../../components/ThermalReceipt';
+import { FastBillingModal } from '../../components/FastBillingModal';
 import { Order, RestaurantTable, ParcelOrder, CateringOrder, MenuItem, Payment } from '../../lib/types';
 import Link from 'next/link';
 import {
@@ -31,11 +32,11 @@ import {
   Phone,
   Minus,
   X,
-  Pencil,
+  Keyboard,
 } from 'lucide-react';
 
 export default function CashierDashboardPage() {
-  const { state, stats, getActiveOrderForTable, createWalkInOrder, addItemsToOrder, updateMenuItem } = useRestaurant();
+  const { state, stats, getActiveOrderForTable, createWalkInOrder, addItemsToOrder } = useRestaurant();
   const [mounted, setMounted] = useState(false);
 
   React.useEffect(() => {
@@ -57,8 +58,6 @@ export default function CashierDashboardPage() {
   const [quickPriceMode, setQuickPriceMode] = useState<'STANDARD' | 'AC'>('STANDARD');
   const [quickCart, setQuickCart] = useState<Record<string, number>>({});
   const [quickError, setQuickError] = useState('');
-  const [editingPriceId, setEditingPriceId] = useState<string | null>(null);
-  const [editingStandardPrice, setEditingStandardPrice] = useState('');
 
   // Category B: Parcel Bills State
   const [showNewParcelModal, setShowNewParcelModal] = useState(false);
@@ -68,6 +67,7 @@ export default function CashierDashboardPage() {
   // Category C: Catering Bills State
   const [showNewCateringModal, setShowNewCateringModal] = useState(false);
   const [selectedCateringForInvoice, setSelectedCateringForInvoice] = useState<CateringOrder | null>(null);
+  const [autoPrintCateringInvoice, setAutoPrintCateringInvoice] = useState(false);
   const [cateringToSettle, setCateringToSettle] = useState<CateringOrder | null>(null);
   const [cateringSearchQuery, setCateringSearchQuery] = useState('');
   const [cateringStatusFilter, setCateringStatusFilter] = useState<'ALL' | 'ADVANCE_PAID' | 'FULLY_PAID'>('ALL');
@@ -76,9 +76,136 @@ export default function CashierDashboardPage() {
   const billRequests = state.orders.filter((o) => o.status === 'BILL_REQUESTED');
   const activeWalkInOrders = state.orders.filter((order) => order.table_number === 0 && order.status !== 'PAID' && order.status !== 'CANCELLED');
 
+  // Global Cashier Dashboard Shortcuts: Space to collect pending bill, F2 for quick POS
+  React.useEffect(() => {
+    const handleCashierKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'F2') {
+        e.preventDefault();
+        setShowQuickOrder((prev) => !prev);
+        return;
+      }
+
+      if (e.code === 'Space' || e.key === ' ') {
+        const activeEl = document.activeElement;
+        const isTyping =
+          activeEl &&
+          (activeEl.tagName === 'INPUT' ||
+            activeEl.tagName === 'TEXTAREA' ||
+            activeEl.getAttribute('contenteditable') === 'true');
+
+        if (isTyping) return;
+
+        // If any modal is active, let that modal's keyboard listener handle Space
+        if (
+          selectedOrderForBill ||
+          showQuickOrder ||
+          showNewParcelModal ||
+          selectedParcelForReceipt ||
+          showNewCateringModal ||
+          selectedCateringForInvoice ||
+          cateringToSettle ||
+          receiptToReprint
+        ) {
+          return;
+        }
+
+        // Priority 1: If there are bill requests awaiting settlement, open the first one!
+        if (billRequests.length > 0) {
+          e.preventDefault();
+          setSelectedOrderForBill(billRequests[0]);
+          return;
+        }
+
+        // Priority 2: If there are active walk-in orders awaiting billing, open the first one
+        if (activeWalkInOrders.length > 0) {
+          e.preventDefault();
+          setSelectedOrderForBill(activeWalkInOrders[0]);
+          return;
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleCashierKeyDown);
+    return () => window.removeEventListener('keydown', handleCashierKeyDown);
+  }, [
+    billRequests,
+    activeWalkInOrders,
+    selectedOrderForBill,
+    showQuickOrder,
+    showNewParcelModal,
+    selectedParcelForReceipt,
+    showNewCateringModal,
+    selectedCateringForInvoice,
+    cateringToSettle,
+    receiptToReprint,
+  ]);
+
+  // Detailed AC and Non-AC specific metrics
+  const acTables = state.tables.filter((t) => t.pricing_section === 'AC' || t.is_ac);
+  const nonAcTables = state.tables.filter((t) => !(t.pricing_section === 'AC' || t.is_ac));
+
+  const acStats = {
+    total: acTables.length,
+    free: acTables.filter((t) => t.status === 'FREE').length,
+    occupied: acTables.filter((t) => t.status === 'OCCUPIED').length,
+    billRequested: acTables.filter((t) => t.status === 'BILL_REQUESTED').length,
+  };
+
+  const nonAcStats = {
+    total: nonAcTables.length,
+    free: nonAcTables.filter((t) => t.status === 'FREE').length,
+    occupied: nonAcTables.filter((t) => t.status === 'OCCUPIED').length,
+    billRequested: nonAcTables.filter((t) => t.status === 'BILL_REQUESTED').length,
+  };
+
+  // Section-aware active metrics (updates dynamically when AC or Non-AC is clicked)
+  const activeMetrics =
+    sectionFilter === 'AC'
+      ? {
+          title: '❄️ AC Tables',
+          total: acStats.total,
+          free: acStats.free,
+          occupied: acStats.occupied,
+          billRequested: acStats.billRequested,
+          subLabel: '6 AC Tables Section',
+          freeSub: 'Available in AC Hall',
+          occupiedSub: 'Dining in AC Hall',
+          billSub: 'Awaiting Settlement in AC',
+        }
+      : sectionFilter === 'NON_AC'
+      ? {
+          title: '🌿 Non-AC Tables',
+          total: nonAcStats.total,
+          free: nonAcStats.free,
+          occupied: nonAcStats.occupied,
+          billRequested: nonAcStats.billRequested,
+          subLabel: '6 Non-AC Tables Section',
+          freeSub: 'Available in Non-AC Hall',
+          occupiedSub: 'Dining in Non-AC Hall',
+          billSub: 'Awaiting Settlement in Non-AC',
+        }
+      : {
+          title: 'All Tables',
+          total: state.tables.length,
+          free: stats.freeTables,
+          occupied: stats.occupiedTables,
+          billRequested: stats.billRequestedTables,
+          subLabel: 'All 12 Tables (AC + Non-AC)',
+          freeSub: `${acStats.free} AC · ${nonAcStats.free} Non-AC Free`,
+          occupiedSub: `${acStats.occupied} AC · ${nonAcStats.occupied} Non-AC Dining`,
+          billSub: `${acStats.billRequested} AC · ${nonAcStats.billRequested} Non-AC Bill Req`,
+        };
+
   // Filter tables for Category A
   const filteredTables = state.tables.filter((table) => {
-    if (sectionFilter !== 'ALL' && table.section !== sectionFilter) return false;
+    const isAc = table.pricing_section
+      ? table.pricing_section === 'AC'
+      : (table.is_ac ?? (!table.section?.toLowerCase().includes('non') && (table.section?.toLowerCase().includes('ac') ?? false)));
+    if (sectionFilter === 'AC' && !isAc) return false;
+    if (sectionFilter === 'NON_AC' && isAc) return false;
+    if (sectionFilter !== 'ALL' && sectionFilter !== 'AC' && sectionFilter !== 'NON_AC' && table.section !== sectionFilter) {
+      return false;
+    }
     if (statusFilter !== 'ALL' && table.status !== statusFilter) return false;
     if (tableSearchQuery) {
       const q = tableSearchQuery.toLowerCase();
@@ -126,21 +253,17 @@ export default function CashierDashboardPage() {
   };
 
   const submitQuickOrder = () => {
-    const items = Object.entries(quickCart).filter(([, quantity]) => quantity > 0).map(([menuItemId, quantity]) => ({ menuItemId, quantity }));
-    if (!items.length) return setQuickError('At least one menu item add pannunga.');
-    const walkInOrder = createWalkInOrder(quickCustomerName || 'Walk-in Guest', Number(quickGuests) || 1);
-    if (!walkInOrder.success || !walkInOrder.orderId) return setQuickError(walkInOrder.error || 'Order create panna mudiyala.');
-    const added = addItemsToOrder(walkInOrder.orderId, items, quickPriceMode);
-    if (!added.success) return setQuickError(added.error || 'Items add panna mudiyala.');
+    const items = Object.entries(quickCart)
+      .filter(([, quantity]) => quantity > 0)
+      .map(([menuItemId, quantity]) => ({ menuItemId, quantity }));
+    if (!items.length) return setQuickError('Please add at least one menu item.');
+    const pricingSection: 'AC' | 'NON_AC' = quickPriceMode === 'AC' ? 'AC' : 'NON_AC';
+    const walkInOrder = createWalkInOrder(quickCustomerName || 'Walk-in Guest', Number(quickGuests) || 1, pricingSection);
+    if (!walkInOrder.success || !walkInOrder.orderId) return setQuickError(walkInOrder.error || 'Failed to create order.');
+    const added = addItemsToOrder(walkInOrder.orderId, items, pricingSection);
+    if (!added.success) return setQuickError(added.error || 'Failed to add items.');
     setShowQuickOrder(false);
     setQuickCart({});
-  };
-
-  const saveCashierPrices = (item: MenuItem) => {
-    const standard = Number(editingStandardPrice);
-    if (!Number.isFinite(standard) || standard < 0) return;
-    updateMenuItem({ ...item, price: standard });
-    setEditingPriceId(null);
   };
 
   const openPaidReceipt = (payment: Payment) => {
@@ -181,6 +304,17 @@ export default function CashierDashboardPage() {
           </div>
 
           <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={startQuickOrder}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs transition-all shadow-md shadow-amber-950/40 cursor-pointer"
+              title="Fast Keyboard Billing POS (F2)"
+            >
+              <Keyboard className="w-4 h-4" />
+              <span>⚡ Fast Keyboard Billing</span>
+              <kbd className="hidden sm:inline-block bg-slate-950/30 px-1.5 py-0.5 rounded text-[10px] font-mono text-slate-950 border border-slate-950/20">F2</kbd>
+            </button>
+
             <Link
               href="/admin/billing"
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-300 hover:text-white transition-colors"
@@ -194,28 +328,81 @@ export default function CashierDashboardPage() {
         {/* =================================================================== */}
         {/* PRIMARY CATEGORY SELECTOR TABS: A, B, C */}
         {/* =================================================================== */}
-        <div className="p-1.5 bg-slate-900/90 border border-slate-800 rounded-2xl flex flex-col sm:flex-row gap-1.5">
-          {/* TAB A: Table Bills */}
-          <button
-            type="button"
+        <div className="p-1.5 bg-slate-900/90 border border-slate-800 rounded-2xl flex flex-col lg:flex-row gap-2">
+          {/* TAB A: Table Bills with embedded AC / NON split selectors */}
+          <div
             onClick={() => setActiveCategory('A_TABLE')}
-            className={`flex-1 py-3 px-4 rounded-xl font-bold text-xs transition-all flex items-center justify-between gap-2 cursor-pointer ${
+            className={`flex-1 py-2.5 px-3 rounded-xl font-bold text-xs transition-all flex flex-wrap items-center justify-between gap-2 cursor-pointer ${
               activeCategory === 'A_TABLE'
                 ? 'bg-amber-500 text-slate-950 font-black shadow-lg shadow-amber-950/40 ring-2 ring-amber-400/50'
-                : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                : 'bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800/60'
             }`}
           >
             <div className="flex items-center gap-2">
               <span
-                className={`w-6 h-6 rounded-lg text-xs font-black flex items-center justify-center ${
+                className={`w-6 h-6 rounded-lg text-xs font-black flex items-center justify-center shrink-0 ${
                   activeCategory === 'A_TABLE' ? 'bg-slate-950 text-amber-400' : 'bg-slate-800 text-slate-300'
                 }`}
               >
                 A
               </span>
-              <span className="text-sm">Table Bills (Dine-in)</span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveCategory('A_TABLE');
+                  setSectionFilter('ALL');
+                }}
+                className="text-sm font-black hover:underline cursor-pointer text-left"
+              >
+                Table Bills (Dine-in)
+              </button>
             </div>
-            <div className="flex items-center gap-1.5">
+
+            {/* Split controls: AC (6) | NON (6) as sketched by user with live Free / Busy */}
+            <div className="flex items-center gap-1.5 bg-black/25 p-1 rounded-xl border border-black/15 flex-wrap">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveCategory('A_TABLE');
+                  setSectionFilter(sectionFilter === 'AC' ? 'ALL' : 'AC');
+                }}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all flex items-center gap-1.5 cursor-pointer ${
+                  activeCategory === 'A_TABLE' && sectionFilter === 'AC'
+                    ? 'bg-cyan-500 text-slate-950 ring-2 ring-cyan-300 shadow-md scale-105'
+                    : 'bg-slate-900/90 text-cyan-300 hover:bg-cyan-950 border border-cyan-500/30'
+                }`}
+                title={`AC: ${acStats.free} Free, ${acStats.occupied + acStats.billRequested} Occupied`}
+              >
+                <span>❄️ AC (6)</span>
+                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-black/40 text-cyan-200">
+                  {acStats.free} Free · {acStats.occupied + acStats.billRequested} Busy
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveCategory('A_TABLE');
+                  setSectionFilter(sectionFilter === 'NON_AC' ? 'ALL' : 'NON_AC');
+                }}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all flex items-center gap-1.5 cursor-pointer ${
+                  activeCategory === 'A_TABLE' && sectionFilter === 'NON_AC'
+                    ? 'bg-emerald-500 text-slate-950 ring-2 ring-emerald-300 shadow-md scale-105'
+                    : 'bg-slate-900/90 text-emerald-300 hover:bg-emerald-950 border border-emerald-500/30'
+                }`}
+                title={`Non-AC: ${nonAcStats.free} Free, ${nonAcStats.occupied + nonAcStats.billRequested} Occupied`}
+              >
+                <span>🌿 NON (6)</span>
+                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-black/40 text-emerald-200">
+                  {nonAcStats.free} Free · {nonAcStats.occupied + nonAcStats.billRequested} Busy
+                </span>
+              </button>
+            </div>
+
+            <div className="flex items-center gap-1.5 shrink-0">
               {mounted && billRequests.length > 0 && (
                 <span
                   suppressHydrationWarning
@@ -224,16 +411,26 @@ export default function CashierDashboardPage() {
                   {billRequests.length} Req
                 </span>
               )}
-              <span
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveCategory('A_TABLE');
+                  setSectionFilter('ALL');
+                }}
                 suppressHydrationWarning
-                className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                  activeCategory === 'A_TABLE' ? 'bg-slate-950/20 text-slate-950' : 'bg-slate-800 text-slate-400'
+                className={`text-[10px] px-2 py-0.5 rounded-full font-bold cursor-pointer transition-colors ${
+                  activeCategory === 'A_TABLE' && sectionFilter === 'ALL'
+                    ? 'bg-slate-950 text-amber-400 font-black'
+                    : activeCategory === 'A_TABLE'
+                    ? 'bg-slate-950/20 text-slate-950'
+                    : 'bg-slate-800 text-slate-400 hover:text-white'
                 }`}
               >
                 {state.tables.length} Tables
-              </span>
+              </button>
             </div>
-          </button>
+          </div>
 
           {/* TAB B: Parcel Bills */}
           <button
@@ -311,8 +508,15 @@ export default function CashierDashboardPage() {
         {/* =================================================================== */}
         {activeCategory === 'A_TABLE' && (
           <div className="space-y-6 animate-in fade-in">
-            <button onClick={startQuickOrder} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-amber-500 px-4 py-3 text-sm font-black text-slate-950 shadow-lg shadow-amber-950/30 transition-colors hover:bg-amber-400">
-              <Plus className="h-4 w-4" /> Quick Dine-in Order
+            <button
+              onClick={startQuickOrder}
+              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-amber-500 px-4 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-amber-950/30 transition-all hover:bg-amber-400 cursor-pointer"
+            >
+              <Keyboard className="h-4 w-4 text-slate-950" />
+              <span>⚡ Fast Keyboard Billing (POS) • Direct Counter Bill</span>
+              <span className="rounded bg-black/25 px-2 py-0.5 text-xs font-mono font-bold text-slate-950 border border-black/20">
+                Press F2
+              </span>
             </button>
             {/* Prominent Bill Request Notification Banner */}
             {mounted && billRequests.length > 0 && (
@@ -338,13 +542,18 @@ export default function CashierDashboardPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    {billRequests.map((req) => (
+                    {billRequests.map((req, idx) => (
                       <button
                         key={req.id}
                         onClick={() => setSelectedOrderForBill(req)}
                         className="px-3.5 py-1.5 rounded-xl bg-purple-500 hover:bg-purple-400 text-slate-950 font-bold text-xs transition-colors shadow-md flex items-center gap-1.5 cursor-pointer"
                       >
                         <span>Settle Table {req.table_number}</span>
+                        {idx === 0 && (
+                          <span className="text-[10px] bg-slate-950 text-amber-300 px-1.5 py-0.5 rounded font-mono font-bold border border-amber-400/40">
+                            Space
+                          </span>
+                        )}
                         <span className="text-[10px] bg-purple-900/40 text-purple-950 px-1.5 py-0.5 rounded font-black">
                           ₹{req.final_total.toFixed(0)}
                         </span>
@@ -355,117 +564,266 @@ export default function CashierDashboardPage() {
               </div>
             )}
 
-            {/* Metrics Row */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-              <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-                  Total Tables
-                </span>
-                <div className="mt-2 flex items-baseline justify-between">
-                  <span className="text-2xl font-black text-white">{stats.totalTables}</span>
-                  <span className="text-xs text-slate-500">All Sections</span>
+            {/* Section Summary Banner when AC or Non-AC or ALL is active */}
+            <div
+              className={`p-3.5 sm:p-4 rounded-2xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg ${
+                sectionFilter === 'AC'
+                  ? 'bg-cyan-950/40 border-cyan-500/50 text-cyan-200'
+                  : sectionFilter === 'NON_AC'
+                  ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-200'
+                  : 'bg-slate-900/80 border-slate-800 text-slate-200'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg shrink-0 ${
+                    sectionFilter === 'AC'
+                      ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
+                      : sectionFilter === 'NON_AC'
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                      : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                  }`}
+                >
+                  {sectionFilter === 'AC' ? '❄️' : sectionFilter === 'NON_AC' ? '🌿' : '🍽️'}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-black text-sm sm:text-base text-white">
+                      {sectionFilter === 'AC'
+                        ? '❄️ AC Dining Hall (Tables 1 - 6)'
+                        : sectionFilter === 'NON_AC'
+                        ? '🌿 Non-AC Dining Hall (Tables 7 - 12)'
+                        : '🍽️ All Dining Tables (AC + Non-AC)'}
+                    </span>
+                    <span
+                      className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${
+                        sectionFilter === 'AC'
+                          ? 'bg-cyan-900/60 text-cyan-200 border-cyan-400/40'
+                          : sectionFilter === 'NON_AC'
+                          ? 'bg-emerald-900/60 text-emerald-200 border-emerald-400/40'
+                          : 'bg-slate-800 text-slate-300 border-slate-700'
+                      }`}
+                    >
+                      {activeMetrics.total} Tables
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-1">
+                    {sectionFilter === 'AC' ? (
+                      <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <span className="text-emerald-400 font-bold">{acStats.free} Available (Not Occupied)</span>
+                        <span className="text-slate-600">•</span>
+                        <span className="text-amber-400 font-bold">{acStats.occupied} Dining (Occupied)</span>
+                        <span className="text-slate-600">•</span>
+                        <span className="text-purple-400 font-bold">{acStats.billRequested} Bill Req</span>
+                      </span>
+                    ) : sectionFilter === 'NON_AC' ? (
+                      <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <span className="text-emerald-400 font-bold">{nonAcStats.free} Available (Not Occupied)</span>
+                        <span className="text-slate-600">•</span>
+                        <span className="text-amber-400 font-bold">{nonAcStats.occupied} Dining (Occupied)</span>
+                        <span className="text-slate-600">•</span>
+                        <span className="text-purple-400 font-bold">{nonAcStats.billRequested} Bill Req</span>
+                      </span>
+                    ) : (
+                      <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <span className="text-emerald-400 font-bold">{stats.freeTables} Free</span>
+                        <span className="text-slate-600">•</span>
+                        <span className="text-amber-400 font-bold">{stats.occupiedTables} Occupied</span>
+                        <span className="text-slate-600">•</span>
+                        <span className="text-cyan-400 font-semibold">AC: {acStats.free} Free / {acStats.occupied + acStats.billRequested} Occupied</span>
+                        <span className="text-slate-600">•</span>
+                        <span className="text-emerald-400 font-semibold">Non-AC: {nonAcStats.free} Free / {nonAcStats.occupied + nonAcStats.billRequested} Occupied</span>
+                      </span>
+                    )}
+                  </p>
                 </div>
               </div>
 
-              <div className="bg-slate-900/80 border border-emerald-900/40 rounded-2xl p-4 flex flex-col justify-between">
-                <span className="text-xs font-medium text-emerald-400 uppercase tracking-wider">
-                  Free Tables
+              {/* Quick toggle pill buttons right on the banner */}
+              <div className="flex items-center gap-1.5 self-start sm:self-center shrink-0 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => setSectionFilter('ALL')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    sectionFilter === 'ALL'
+                      ? 'bg-amber-500 text-slate-950 font-black shadow-md'
+                      : 'bg-slate-950/70 text-slate-400 hover:text-white border border-slate-800'
+                  }`}
+                >
+                  All ({state.tables.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSectionFilter('AC')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    sectionFilter === 'AC'
+                      ? 'bg-cyan-500 text-slate-950 font-black shadow-md shadow-cyan-950/50 ring-2 ring-cyan-300'
+                      : 'bg-slate-950/70 text-cyan-300 hover:text-white border border-cyan-900/50'
+                  }`}
+                >
+                  <span>❄️ AC (6)</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-black/50 font-mono font-bold">
+                    {acStats.free} Free · {acStats.occupied + acStats.billRequested} Occupied
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSectionFilter('NON_AC')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    sectionFilter === 'NON_AC'
+                      ? 'bg-emerald-500 text-slate-950 font-black shadow-md shadow-emerald-950/50 ring-2 ring-emerald-300'
+                      : 'bg-slate-950/70 text-emerald-300 hover:text-white border border-emerald-900/50'
+                  }`}
+                >
+                  <span>🌿 Non-AC (6)</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-black/50 font-mono font-bold">
+                    {nonAcStats.free} Free · {nonAcStats.occupied + nonAcStats.billRequested} Occupied
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* Dynamic Metrics Row */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+              <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between">
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wider truncate">
+                  {sectionFilter === 'AC' ? 'Total AC Tables' : sectionFilter === 'NON_AC' ? 'Total Non-AC Tables' : 'Total Tables'}
                 </span>
                 <div className="mt-2 flex items-baseline justify-between">
-                  <span className="text-2xl font-black text-emerald-400">{stats.freeTables}</span>
-                  <span className="text-xs text-emerald-500/80">Available</span>
+                  <span className="text-2xl sm:text-3xl font-black text-white">{activeMetrics.total}</span>
+                  <span className="text-[11px] sm:text-xs text-slate-500 font-medium truncate ml-1">{activeMetrics.subLabel}</span>
                 </div>
               </div>
 
-              <div className="bg-slate-900/80 border border-amber-900/40 rounded-2xl p-4 flex flex-col justify-between">
-                <span className="text-xs font-medium text-amber-400 uppercase tracking-wider">
-                  Occupied Tables
+              <div className="bg-slate-900/80 border border-emerald-900/40 rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between">
+                <span className="text-xs font-medium text-emerald-400 uppercase tracking-wider truncate">
+                  Free Tables (Available)
                 </span>
                 <div className="mt-2 flex items-baseline justify-between">
-                  <span className="text-2xl font-black text-amber-400">{stats.occupiedTables}</span>
-                  <span className="text-xs text-amber-500/80">Dining Active</span>
+                  <span className="text-2xl sm:text-3xl font-black text-emerald-400">{activeMetrics.free}</span>
+                  <span className="text-[11px] sm:text-xs text-emerald-500/80 font-medium truncate ml-1">{activeMetrics.freeSub}</span>
                 </div>
               </div>
 
-              <div className="bg-slate-900/80 border border-purple-900/40 rounded-2xl p-4 flex flex-col justify-between">
-                <span className="text-xs font-medium text-purple-400 uppercase tracking-wider">
+              <div className="bg-slate-900/80 border border-amber-900/40 rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between">
+                <span className="text-xs font-medium text-amber-400 uppercase tracking-wider truncate">
+                  Occupied (Busy)
+                </span>
+                <div className="mt-2 flex items-baseline justify-between">
+                  <span className="text-2xl sm:text-3xl font-black text-amber-400">{activeMetrics.occupied}</span>
+                  <span className="text-[11px] sm:text-xs text-amber-500/80 font-medium truncate ml-1">{activeMetrics.occupiedSub}</span>
+                </div>
+              </div>
+
+              <div className="bg-slate-900/80 border border-purple-900/40 rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between">
+                <span className="text-xs font-medium text-purple-400 uppercase tracking-wider truncate">
                   Bill Requests
                 </span>
                 <div className="mt-2 flex items-baseline justify-between">
-                  <span className="text-2xl font-black text-purple-400">
-                    {stats.billRequestedTables}
+                  <span className="text-2xl sm:text-3xl font-black text-purple-400">
+                    {activeMetrics.billRequested}
                   </span>
-                  <span className="text-xs text-purple-500/80">Awaiting Cashier</span>
+                  <span className="text-[11px] sm:text-xs text-purple-500/80 font-medium truncate ml-1">{activeMetrics.billSub}</span>
                 </div>
               </div>
             </div>
 
-            {/* Filters and Search Bar */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-slate-900/60 border border-slate-800 rounded-2xl">
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+            {/* Filters and Search Bar - Fully Responsive */}
+            <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 p-3 bg-slate-900/60 border border-slate-800 rounded-2xl">
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
                 <button
                   onClick={() => setStatusFilter('ALL')}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                     statusFilter === 'ALL'
                       ? 'bg-amber-500 text-slate-950 font-black'
                       : 'bg-slate-950 text-slate-400 hover:text-white'
                   }`}
                 >
-                  All Tables ({state.tables.length})
+                  All ({activeMetrics.total})
                 </button>
                 <button
                   onClick={() => setStatusFilter('FREE')}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                     statusFilter === 'FREE'
                       ? 'bg-emerald-500 text-slate-950 font-black'
                       : 'bg-slate-950 text-emerald-400 hover:bg-slate-900'
                   }`}
                 >
-                  Free ({stats.freeTables})
+                  Free ({activeMetrics.free})
                 </button>
                 <button
                   onClick={() => setStatusFilter('OCCUPIED')}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                     statusFilter === 'OCCUPIED'
                       ? 'bg-amber-500 text-slate-950 font-black'
                       : 'bg-slate-950 text-amber-400 hover:bg-slate-900'
                   }`}
                 >
-                  Occupied ({stats.occupiedTables})
+                  Occupied ({activeMetrics.occupied})
                 </button>
                 <button
                   onClick={() => setStatusFilter('BILL_REQUESTED')}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                     statusFilter === 'BILL_REQUESTED'
                       ? 'bg-purple-500 text-slate-950 font-black'
                       : 'bg-slate-950 text-purple-400 hover:bg-slate-900'
                   }`}
                 >
-                  Bill Requested ({stats.billRequestedTables})
+                  Bill Requested ({activeMetrics.billRequested})
                 </button>
               </div>
 
-              <div className="flex items-center gap-2">
-                <select
-                  value={sectionFilter}
-                  onChange={(e) => setSectionFilter(e.target.value)}
-                  className="px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-300 focus:outline-none focus:border-amber-500"
-                >
-                  {sections.map((s) => (
-                    <option key={s} value={s}>
-                      {s === 'ALL' ? 'All Sections' : s}
-                    </option>
-                  ))}
-                </select>
+              <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setSectionFilter('ALL')}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      sectionFilter === 'ALL'
+                        ? 'bg-amber-500 text-slate-950 font-black'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    All ({state.tables.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSectionFilter('AC')}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                      sectionFilter === 'AC'
+                        ? 'bg-cyan-500 text-slate-950 font-black shadow-md'
+                        : 'text-cyan-400 hover:bg-slate-900'
+                    }`}
+                  >
+                    <span>❄️ AC</span>
+                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-cyan-950/60 text-cyan-200">
+                      {acStats.free}F / {acStats.occupied + acStats.billRequested}B
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSectionFilter('NON_AC')}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                      sectionFilter === 'NON_AC'
+                        ? 'bg-emerald-500 text-slate-950 font-black shadow-md'
+                        : 'text-emerald-400 hover:bg-slate-900'
+                    }`}
+                  >
+                    <span>🌿 Non-AC</span>
+                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-950/60 text-emerald-200">
+                      {nonAcStats.free}F / {nonAcStats.occupied + nonAcStats.billRequested}B
+                    </span>
+                  </button>
+                </div>
 
-                <div className="relative">
+                <div className="relative flex-1 sm:flex-initial">
                   <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5" />
                   <input
                     type="text"
                     placeholder="Search table or guest..."
                     value={tableSearchQuery}
                     onChange={(e) => setTableSearchQuery(e.target.value)}
-                    className="pl-8 pr-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 w-44 sm:w-56"
+                    className="w-full sm:w-52 pl-8 pr-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
                   />
                 </div>
               </div>
@@ -495,21 +853,61 @@ export default function CashierDashboardPage() {
             )}
 
             <section className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/70">
-              <div className="border-b border-slate-800 px-4 py-3"><h2 className="text-sm font-bold text-white">Active Walk-in Orders</h2><p className="text-[11px] text-slate-500">Table occupy pannaama create panna orders inga varum.</p></div>
-              {activeWalkInOrders.length === 0 ? <p className="p-4 text-xs text-slate-500">Active walk-in orders illa.</p> : <div className="divide-y divide-slate-800">{activeWalkInOrders.map((order) => <div key={order.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"><div><p className="text-xs font-bold text-white">{order.order_number} • {order.customer_name}</p><p className="mt-1 text-[10px] text-slate-500">{order.items.map((item) => `${item.item_name} ×${item.quantity}`).join(', ') || 'Items pending'} · {order.status.replace('_', ' ')}</p></div><button onClick={() => setSelectedOrderForBill(order)} className="rounded-lg bg-amber-500 px-3 py-2 text-xs font-black text-slate-950 hover:bg-amber-400"><Receipt className="mr-1 inline h-3.5 w-3.5" />Open Bill</button></div>)}</div>}
+              <div className="border-b border-slate-800 px-4 py-3">
+                <h2 className="text-sm font-bold text-white">Active Walk-in Orders</h2>
+                <p className="text-[11px] text-slate-500">Orders created without table assignment</p>
+              </div>
+              {activeWalkInOrders.length === 0 ? (
+                <p className="p-4 text-xs text-slate-500">No active walk-in orders.</p>
+              ) : (
+                <div className="divide-y divide-slate-800">
+                  {activeWalkInOrders.map((order) => {
+                    const isAc = order.pricing_section === 'AC' || (order.section && order.section.includes('AC'));
+                    return (
+                      <div key={order.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="text-xs font-bold text-white">{order.order_number} • {order.customer_name}</p>
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${isAc ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40' : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'}`}>
+                              {isAc ? '❄️ AC' : '🌿 Non-AC'}
+                            </span>
+                          </div>
+                          <p className="mt-1 text-[10px] text-slate-400">
+                            {order.items.map((item) => `${item.item_name} ×${item.quantity}`).join(', ') || 'Items pending'} · {order.status.replace('_', ' ')}
+                          </p>
+                        </div>
+                        <button onClick={() => setSelectedOrderForBill(order)} className="rounded-lg bg-amber-500 px-3 py-2 text-xs font-black text-slate-950 hover:bg-amber-400">
+                          <Receipt className="mr-1 inline h-3.5 w-3.5" />Open Bill
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </section>
 
             <section className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/70">
               <div className="flex items-center justify-between border-b border-slate-800 px-4 py-3">
-                <div><h2 className="text-sm font-bold text-white">Recent Paid Bills</h2><p className="text-[11px] text-slate-500">Previous bill-a select panni receipt reprint pannalaam.</p></div>
+                <div><h2 className="text-sm font-bold text-white">Recent Paid Bills</h2><p className="text-[11px] text-slate-500">Select previous bill to reprint thermal receipt.</p></div>
                 <History className="h-4 w-4 text-amber-400" />
               </div>
-              {state.payments.length === 0 ? <p className="p-4 text-xs text-slate-500">Paid bills innum illa.</p> : (
+              {state.payments.length === 0 ? <p className="p-4 text-xs text-slate-500">No settled bills yet.</p> : (
                 <div className="divide-y divide-slate-800">
                   {[...state.payments].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 6).map((payment) => (
                     <div key={payment.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-                      <div><p className="text-xs font-bold text-white">{payment.order_number} • {payment.customer_name}</p><p className="mt-1 text-[10px] text-slate-500">{payment.table_number > 0 ? `Table ${payment.table_number}` : 'Walk-in'} · {payment.payment_method} · {new Date(payment.created_at).toLocaleString('en-IN')}</p></div>
-                      <div className="flex items-center gap-3"><span className="text-sm font-black text-amber-400">₹{payment.final_total.toFixed(2)}</span><button onClick={() => openPaidReceipt(payment)} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-200 hover:border-amber-500"><Printer className="h-3.5 w-3.5 text-amber-400" />Reprint</button></div>
+                      <div>
+                        <p className="text-xs font-bold text-white">{payment.order_number} • {payment.customer_name}</p>
+                        <p className="mt-1 text-[10px] text-slate-500">
+                          {payment.table_number > 0 ? `Table ${payment.table_number}` : 'Walk-in'}
+                          {payment.pricing_section ? ` (${payment.pricing_section})` : payment.section ? ` (${payment.section})` : ''} · {payment.payment_method} · {new Date(payment.created_at).toLocaleString('en-IN')}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm font-black text-amber-400">₹{payment.final_total.toFixed(2)}</span>
+                        <button onClick={() => openPaidReceipt(payment)} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-200 hover:border-amber-500">
+                          <Printer className="h-3.5 w-3.5 text-amber-400" />Reprint
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -898,44 +1296,12 @@ export default function CashierDashboardPage() {
       {/* MODALS */}
       {/* =================================================================== */}
 
-      {showQuickOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-3 backdrop-blur-sm">
-          <div className="flex max-h-[94vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-slate-700 bg-slate-950 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 p-4">
-              <div><h2 className="text-lg font-black text-white">Quick Dine-in Order</h2><p className="text-xs text-slate-400">Cashier inga direct order place pannina kitchen screen-ku instant-aa pogum.</p></div>
-              <button onClick={() => setShowQuickOrder(false)} className="rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-white" aria-label="Close"><X className="h-5 w-5" /></button>
-            </div>
-            <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto p-4 lg:grid-cols-[1fr_320px]">
-              <div className="space-y-4">
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <div className="flex items-center rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs font-bold text-amber-300">Walk-in • No table assignment</div>
-                  <label className="text-xs text-slate-400">Customer<input value={quickCustomerName} onChange={(e) => setQuickCustomerName(e.target.value)} placeholder="Walk-in Guest" className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 p-2 text-white" /></label>
-                  <label className="text-xs text-slate-400">Dining price<select value={quickPriceMode} onChange={(e) => setQuickPriceMode(e.target.value as 'STANDARD' | 'AC')} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 p-2 text-white"><option value="STANDARD">Normal Dining</option><option value="AC">Dining AC</option></select></label>
-                </div>
-                <label className="block max-w-40 text-xs text-slate-400">Guests<input type="number" min="1" value={quickGuests} onChange={(e) => setQuickGuests(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 p-2 text-white" /></label>
-                <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                  {state.menuItems.filter((item) => item.is_available).map((item) => {
-                    const price = quickPriceMode === 'AC' ? (item.ac_price ?? Math.round(item.price * 1.12 * 100) / 100) : item.price;
-                    const isEditing = editingPriceId === item.id;
-                    return <div key={item.id} className="rounded-xl border border-slate-800 bg-slate-900 p-3">
-                      <div className="flex items-start justify-between gap-2"><div><p className="text-sm font-bold text-white">{item.name}</p><p className="mt-1 text-xs text-amber-400">₹{price.toFixed(2)}{quickPriceMode === 'AC' ? ` · AC (Admin price ${item.ac_price ? '' : 'suggested'})` : ''}</p></div><button onClick={() => { setEditingPriceId(isEditing ? null : item.id); setEditingStandardPrice(String(item.price)); }} className="flex items-center gap-1 rounded-lg border border-slate-700 px-2 py-1 text-[10px] text-slate-300 hover:border-amber-500"><Pencil className="h-3 w-3" />Edit</button></div>
-                      {isEditing ? <div className="mt-3 space-y-2"><label className="text-[10px] text-slate-400">Normal dining price (₹)<input aria-label="Normal dining price" type="number" min="0" value={editingStandardPrice} onChange={(e) => setEditingStandardPrice(e.target.value)} placeholder="Normal price" className="mt-1 w-full rounded border border-slate-700 bg-slate-950 px-2 py-1.5 text-xs text-white" /></label><p className="text-[10px] text-slate-500">AC price Admin Menu-la mattum edit pannalaam.</p><button onClick={() => saveCashierPrices(item)} className="w-full rounded bg-amber-500 py-1.5 text-xs font-bold text-slate-950">Save normal price</button></div> : <div className="mt-3 flex items-center justify-between"><span className="text-xs text-slate-400">Qty: {quickCart[item.id] || 0}</span><div className="flex gap-1"><button onClick={() => setQuickCart((c) => ({ ...c, [item.id]: Math.max(0, (c[item.id] || 0) - 1) }))} className="rounded-lg border border-slate-700 p-1.5 text-white"><Minus className="h-3.5 w-3.5" /></button><button onClick={() => setQuickCart((c) => ({ ...c, [item.id]: (c[item.id] || 0) + 1 }))} className="rounded-lg bg-amber-500 p-1.5 text-slate-950"><Plus className="h-3.5 w-3.5" /></button></div></div>}
-                    </div>;
-                  })}
-                </div>
-              </div>
-              <aside className="rounded-xl border border-slate-800 bg-slate-900 p-4">
-                <h3 className="font-bold text-white">Order Summary</h3>
-                <div className="mt-3 max-h-56 space-y-2 overflow-auto">{Object.entries(quickCart).filter(([, qty]) => qty > 0).map(([id, qty]) => { const item = state.menuItems.find((menuItem) => menuItem.id === id); if (!item) return null; const price = quickPriceMode === 'AC' ? (item.ac_price ?? Math.round(item.price * 1.12 * 100) / 100) : item.price; return <div key={id} className="flex justify-between gap-2 text-xs text-slate-300"><span>{qty} × {item.name}</span><span>₹{(price * qty).toFixed(2)}</span></div>; })}</div>
-                <div className="mt-4 border-t border-slate-700 pt-3 text-sm font-black text-white">Total <span className="float-right">₹{Object.entries(quickCart).reduce((sum, [id, qty]) => { const item = state.menuItems.find((m) => m.id === id); return sum + (item ? (quickPriceMode === 'AC' ? (item.ac_price ?? Math.round(item.price * 1.12 * 100) / 100) : item.price) * qty : 0); }, 0).toFixed(2)}</span></div>
-                {quickError && <p className="mt-3 text-xs text-rose-400">{quickError}</p>}
-                <button onClick={submitQuickOrder} className="mt-4 w-full rounded-xl bg-amber-500 py-3 text-sm font-black text-slate-950 hover:bg-amber-400">Place Order • Send to Kitchen</button>
-                <p className="mt-2 text-center text-[10px] text-slate-500">Bill order complete aanadhum cashier counter-la available.</p>
-              </aside>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Category A: Fast Keyboard Billing (POS) Modal */}
+      <FastBillingModal
+        isOpen={showQuickOrder}
+        onClose={() => setShowQuickOrder(false)}
+        initialPricingSection={sectionFilter === 'AC' ? 'AC' : 'NON_AC'}
+      />
 
       {/* Category A: Table Bill Modal */}
       {selectedOrderForBill && (
@@ -964,6 +1330,7 @@ export default function CashierDashboardPage() {
       {selectedParcelForReceipt && (
         <ParcelReceiptModal
           parcel={selectedParcelForReceipt}
+          autoPrint={true}
           onClose={() => setSelectedParcelForReceipt(null)}
         />
       )}
@@ -975,6 +1342,7 @@ export default function CashierDashboardPage() {
           onSuccess={(cat) => {
             setShowNewCateringModal(false);
             setSelectedCateringForInvoice(cat);
+            setAutoPrintCateringInvoice(true);
           }}
         />
       )}
@@ -983,9 +1351,14 @@ export default function CashierDashboardPage() {
       {selectedCateringForInvoice && (
         <CateringInvoiceModal
           catering={selectedCateringForInvoice}
-          onClose={() => setSelectedCateringForInvoice(null)}
+          autoPrint={autoPrintCateringInvoice}
+          onClose={() => {
+            setSelectedCateringForInvoice(null);
+            setAutoPrintCateringInvoice(false);
+          }}
           onSettleBalance={(cat) => {
             setSelectedCateringForInvoice(null);
+            setAutoPrintCateringInvoice(false);
             setCateringToSettle(cat);
           }}
         />
@@ -999,7 +1372,10 @@ export default function CashierDashboardPage() {
           onSuccess={() => {
             const updated = state.caterings.find((c) => c.id === cateringToSettle.id);
             setCateringToSettle(null);
-            if (updated) setSelectedCateringForInvoice(updated);
+            if (updated) {
+              setSelectedCateringForInvoice(updated);
+              setAutoPrintCateringInvoice(true);
+            }
           }}
         />
       )}

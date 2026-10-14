@@ -15,6 +15,7 @@ import {
   Sparkles,
   Receipt,
   Percent,
+  Keyboard,
 } from 'lucide-react';
 
 interface BillModalProps {
@@ -52,6 +53,7 @@ export function BillModal({ order, onClose }: BillModalProps) {
   const changeDue = Math.max(0, tendered - finalTotal);
 
   const handleConfirmPayment = () => {
+    if (isProcessing) return;
     setIsProcessing(true);
     setErrorMessage(null);
 
@@ -95,6 +97,38 @@ export function BillModal({ order, onClose }: BillModalProps) {
     setIsProcessing(false);
   };
 
+  // Spacebar and Enter shortcut listener for fast cashier collection
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+
+      if (e.code === 'Space' || e.key === ' ') {
+        const activeEl = document.activeElement;
+        // Only block space if user is actively typing inside a text field where spaces are valid
+        const isTypingText =
+          activeEl &&
+          (activeEl.tagName === 'TEXTAREA' ||
+            (activeEl.tagName === 'INPUT' && (activeEl as HTMLInputElement).type === 'text'));
+
+        // If not actively typing text, Space confirms payment & prints
+        if (!isTypingText) {
+          e.preventDefault();
+          handleConfirmPayment();
+        }
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        handleConfirmPayment();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [finalTotal, paymentMethod, tendered, computedDiscount, paymentReference, isProcessing]);
+
   if (completedPayment) {
     return (
       <ThermalReceipt
@@ -106,6 +140,7 @@ export function BillModal({ order, onClose }: BillModalProps) {
         }}
         payment={completedPayment}
         onClose={onClose}
+        autoPrint={true}
       />
     );
   }
@@ -120,17 +155,29 @@ export function BillModal({ order, onClose }: BillModalProps) {
               <Receipt className="w-5 h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="text-base font-bold text-white">
                   {order.table_number > 0 ? `Checkout Table ${order.table_number}` : 'Checkout Walk-in Order'}
                 </h3>
                 <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
                   {order.order_number}
                 </span>
+                <span
+                  className={`px-2 py-0.5 rounded text-[11px] font-bold border flex items-center gap-1 ${
+                    (order.pricing_section === 'AC' || (order.section && order.section.toUpperCase().includes('AC')))
+                      ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+                      : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                  }`}
+                >
+                  {(order.pricing_section === 'AC' || (order.section && order.section.toUpperCase().includes('AC')))
+                    ? '❄️ AC Pricing'
+                    : '🌿 Non-AC Pricing'}
+                </span>
               </div>
               <p className="text-xs text-slate-400">
                 Customer: <strong className="text-slate-200">{order.customer_name}</strong> •{' '}
                 {order.guest_count || 1} Guests
+                {order.section ? ` • ${order.section}` : ''}
               </p>
             </div>
           </div>
@@ -140,6 +187,17 @@ export function BillModal({ order, onClose }: BillModalProps) {
           >
             <X className="w-5 h-5" />
           </button>
+        </div>
+
+        {/* Quick Action Hint Bar */}
+        <div className="flex items-center justify-between text-[11px] text-slate-300 bg-slate-950/80 px-3.5 py-2 mt-3 rounded-xl border border-slate-800">
+          <span className="flex items-center gap-1.5 text-amber-400 font-bold">
+            <Keyboard className="w-3.5 h-3.5" />
+            Fast Cashier Action:
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span>Press <kbd className="bg-amber-500 text-slate-950 font-black px-1.5 py-0.5 rounded font-mono text-[10px]">Space</kbd> or <kbd className="bg-slate-800 text-slate-200 font-bold px-1.5 py-0.5 rounded font-mono text-[10px]">Enter</kbd> to collect money & print receipt</span>
+          </span>
         </div>
 
         {/* Modal Scrollable Body */}
@@ -177,7 +235,7 @@ export function BillModal({ order, onClose }: BillModalProps) {
                       ₹{item.total_price.toFixed(2)}
                     </span>
                     <span className="block text-[10px] text-slate-500">
-                      ₹{item.unit_price} each
+                      ₹{item.unit_price} each{item.pricing_section ? ` (${item.pricing_section})` : ''}
                     </span>
                   </div>
                 </div>
@@ -402,8 +460,11 @@ export function BillModal({ order, onClose }: BillModalProps) {
             disabled={isProcessing}
             className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-sm transition-all shadow-lg shadow-amber-950/50 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
           >
-            <CheckCircle2 className="w-4 h-4 text-slate-950" />
-            <span>Confirm Payment of ₹{finalTotal.toFixed(2)} & Free Table</span>
+            <Printer className="w-4 h-4 text-slate-950" />
+            <span>Collect ₹{finalTotal.toFixed(2)} & Print Receipt</span>
+            <kbd className="rounded bg-black/25 px-2 py-0.5 text-xs font-mono font-bold text-slate-950 border border-black/20">
+              Press Space
+            </kbd>
           </button>
         </div>
       </div>

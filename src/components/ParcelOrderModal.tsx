@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRestaurant } from '../context/RestaurantContext';
 import { MenuItem, PaymentMethod, ParcelOrder } from '../lib/types';
+import { getMenuItemNumber } from './MenuItemSearch';
 import {
   X,
   Plus,
@@ -36,15 +37,24 @@ export function ParcelOrderModal({ onClose, onSuccess }: ParcelOrderModalProps) 
   const [paymentRef, setPaymentRef] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Filter menu items by selected cuisine and search
+  // Filter menu items by selected cuisine and search (supports dish # and name)
   const filteredItems = state.menuItems.filter((item) => {
-    if (selectedCuisine && item.category_id !== selectedCuisine) return false;
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      const matchName = item.name.toLowerCase().includes(q);
-      const matchDesc = item.description?.toLowerCase().includes(q);
-      if (!matchName && !matchDesc) return false;
+    const rawQ = searchQuery.trim();
+    if (rawQ) {
+      const q = rawQ.toLowerCase();
+      const cleanNum = q.startsWith('#') ? q.slice(1).trim() : q;
+      const isNumeric = /^\d+$/.test(cleanNum);
+      const itemNum = String(getMenuItemNumber(item));
+
+      const numMatch = isNumeric && (itemNum === cleanNum || itemNum.startsWith(cleanNum));
+      const hashMatch = q.startsWith('#') && itemNum === cleanNum;
+      const nameMatch = item.name.toLowerCase().includes(q);
+      const descMatch = item.description?.toLowerCase().includes(q);
+
+      return numMatch || hashMatch || nameMatch || descMatch;
     }
+
+    if (selectedCuisine && item.category_id !== selectedCuisine) return false;
     return true;
   });
 
@@ -148,7 +158,7 @@ export function ParcelOrderModal({ onClose, onSuccess }: ParcelOrderModalProps) 
               <Search className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
               <input
                 type="text"
-                placeholder="Search food item..."
+                placeholder="Search by dish # or name... (e.g. 1, Biryani)"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
@@ -191,6 +201,7 @@ export function ParcelOrderModal({ onClose, onSuccess }: ParcelOrderModalProps) 
             <div className="flex-1 overflow-y-auto space-y-2 pr-1 max-h-[320px]">
               {filteredItems.map((item) => {
                 const qty = cart[item.id] || 0;
+                const itemNum = getMenuItemNumber(item);
                 return (
                   <div
                     key={item.id}
@@ -198,6 +209,9 @@ export function ParcelOrderModal({ onClose, onSuccess }: ParcelOrderModalProps) 
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-slate-900 border border-slate-700/80 font-mono text-[10px] font-black text-amber-400">
+                          #{itemNum}
+                        </span>
                         <span
                           className={`w-2 h-2 rounded-full shrink-0 ${
                             item.is_veg ? 'bg-emerald-400' : 'bg-rose-400'

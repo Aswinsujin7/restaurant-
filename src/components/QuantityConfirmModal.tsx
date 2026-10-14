@@ -100,7 +100,7 @@ export function QuantityConfirmModal({
     onConfirm(finalQty, currentCartQty > 0 ? updateMode : 'ADD');
   };
 
-  const itemNumber = getMenuItemNumber(item.id);
+  const itemNumber = getMenuItemNumber(item);
   const effectiveQty =
     currentCartQty > 0 && updateMode === 'ADD'
       ? currentCartQty + quantity

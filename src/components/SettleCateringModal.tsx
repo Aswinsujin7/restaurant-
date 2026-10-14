@@ -27,6 +27,29 @@ export function SettleCateringModal({ catering, onClose, onSuccess }: SettleCate
     }
   };
 
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+      if (e.code === 'Space' || e.key === ' ' || e.key === 'Enter') {
+        const activeEl = document.activeElement;
+        const isTypingText =
+          activeEl &&
+          (activeEl.tagName === 'TEXTAREA' ||
+            (activeEl.tagName === 'INPUT' && (activeEl as HTMLInputElement).type === 'text' && (activeEl as HTMLInputElement).value !== ''));
+        if (!isTypingText) {
+          e.preventDefault();
+          handleSettle();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [catering.id, paymentMethod, paymentRef]);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
       <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-md w-full p-6 shadow-2xl">
@@ -115,6 +138,9 @@ export function SettleCateringModal({ catering, onClose, onSuccess }: SettleCate
           >
             <CheckCircle2 className="w-4 h-4" />
             <span>Confirm Settlement (₹{catering.balance_due.toLocaleString('en-IN')})</span>
+            <kbd className="rounded bg-black/25 px-1.5 py-0.5 text-[10px] font-mono font-bold text-slate-950 border border-black/20">
+              Space
+            </kbd>
           </button>
         </div>
       </div>

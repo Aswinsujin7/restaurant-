@@ -92,7 +92,7 @@ export const INITIAL_CATEGORIES: MenuCategory[] = [
   },
 ];
 
-export const INITIAL_MENU_ITEMS: MenuItem[] = [
+const RAW_MENU_ITEMS: MenuItem[] = [
   // ==========================================
   // CHINESE CUISINE
   // ==========================================
@@ -235,7 +235,9 @@ export const INITIAL_MENU_ITEMS: MenuItem[] = [
     category_id: 'cat-south-indian',
     name: 'Malabar Flaky Parotta (2 pcs)',
     description: 'Multi-layered crispy and soft Kerala style tawa parotta',
-    price: 65,
+    price: 20,
+    price_non_ac: 20,
+    price_ac: 25,
     is_veg: true,
     spicy_level: 0,
     is_available: true,
@@ -373,7 +375,9 @@ export const INITIAL_MENU_ITEMS: MenuItem[] = [
     category_id: 'cat-biryani',
     name: 'Chettinad Chicken Biryani',
     description: 'Fragrant basmati rice cooked with authentic Chettinad spices and tender chicken cuts',
-    price: 290,
+    price: 200,
+    price_non_ac: 200,
+    price_ac: 220,
     is_veg: false,
     spicy_level: 2,
     is_available: true,
@@ -454,6 +458,25 @@ export const INITIAL_MENU_ITEMS: MenuItem[] = [
   },
 ];
 
+export const INITIAL_MENU_ITEMS: MenuItem[] = RAW_MENU_ITEMS.map((item, idx) => {
+  const nonAcPrice = item.price_non_ac ?? item.non_ac_price ?? item.price;
+  const acPrice = item.price_ac ?? item.ac_price ?? (item.price_ac !== undefined ? item.price_ac : nonAcPrice);
+  const match = item.id.match(/^m(\d+)-/);
+  const parsedNum = match ? parseInt(match[1], 10) : idx + 1;
+  const itemNumber = item.item_number && item.item_number > 0 ? item.item_number : (parsedNum > 0 ? parsedNum : idx + 1);
+
+  return {
+    ...item,
+    item_number: itemNumber,
+    price: nonAcPrice,
+    price_non_ac: nonAcPrice,
+    price_ac: acPrice,
+    ac_price: acPrice,
+    non_ac_price: nonAcPrice,
+    is_active: item.is_active ?? true,
+  };
+});
+
 // Seed order for Table 3 (Active order in kitchen)
 const inventorySeedTime = new Date().toISOString();
 
@@ -503,6 +526,8 @@ export const INITIAL_ORDERS: Order[] = [
     order_number: 'NAGA-20261013-0001',
     table_id: 'a0000003-0000-0000-0000-000000000003',
     table_number: 3,
+    section: 'AC Dining',
+    pricing_section: 'AC',
     customer_name: 'Dr. Vignesh',
     guest_count: 3,
     status: 'PREPARING',
@@ -561,6 +586,8 @@ export const INITIAL_ORDERS: Order[] = [
     order_number: 'NAGA-20261013-0002',
     table_id: 'a0000007-0000-0000-0000-000000000007',
     table_number: 7,
+    section: 'Non-AC Dining',
+    pricing_section: 'NON_AC',
     customer_name: 'Meenakshi Sundaram',
     guest_count: 4,
     status: 'BILL_REQUESTED',
@@ -616,12 +643,15 @@ export const INITIAL_ORDERS: Order[] = [
 ];
 
 export const INITIAL_TABLES: RestaurantTable[] = [
+  // ❄️ AC Section: 6 Tables (Tables 1 - 6)
   {
     id: 'a0000001-0000-0000-0000-000000000001',
     table_number: 1,
     table_label: 'Table 1',
     capacity: 2,
-    section: 'Main Dining',
+    section: 'AC Dining',
+    pricing_section: 'AC',
+    is_ac: true,
     status: 'FREE',
     active_order_id: null,
     current_customer_name: null,
@@ -632,7 +662,9 @@ export const INITIAL_TABLES: RestaurantTable[] = [
     table_number: 2,
     table_label: 'Table 2',
     capacity: 4,
-    section: 'Main Dining',
+    section: 'AC Dining',
+    pricing_section: 'AC',
+    is_ac: true,
     status: 'FREE',
     active_order_id: null,
     current_customer_name: null,
@@ -643,7 +675,9 @@ export const INITIAL_TABLES: RestaurantTable[] = [
     table_number: 3,
     table_label: 'Table 3',
     capacity: 4,
-    section: 'Main Dining',
+    section: 'AC Dining',
+    pricing_section: 'AC',
+    is_ac: true,
     status: 'OCCUPIED',
     active_order_id: 'ord-initial-table-3',
     current_customer_name: 'Dr. Vignesh',
@@ -654,7 +688,9 @@ export const INITIAL_TABLES: RestaurantTable[] = [
     table_number: 4,
     table_label: 'Table 4',
     capacity: 6,
-    section: 'Main Dining',
+    section: 'AC Dining',
+    pricing_section: 'AC',
+    is_ac: true,
     status: 'FREE',
     active_order_id: null,
     current_customer_name: null,
@@ -665,7 +701,9 @@ export const INITIAL_TABLES: RestaurantTable[] = [
     table_number: 5,
     table_label: 'Table 5',
     capacity: 2,
-    section: 'AC Family Hall',
+    section: 'AC Dining',
+    pricing_section: 'AC',
+    is_ac: true,
     status: 'FREE',
     active_order_id: null,
     current_customer_name: null,
@@ -676,18 +714,24 @@ export const INITIAL_TABLES: RestaurantTable[] = [
     table_number: 6,
     table_label: 'Table 6',
     capacity: 4,
-    section: 'AC Family Hall',
+    section: 'AC Dining',
+    pricing_section: 'AC',
+    is_ac: true,
     status: 'FREE',
     active_order_id: null,
     current_customer_name: null,
     guest_count: 0,
   },
+
+  // 🌿 Non-AC Section: 6 Tables (Tables 7 - 12)
   {
     id: 'a0000007-0000-0000-0000-000000000007',
     table_number: 7,
     table_label: 'Table 7',
     capacity: 6,
-    section: 'AC Family Hall',
+    section: 'Non-AC Dining',
+    pricing_section: 'NON_AC',
+    is_ac: false,
     status: 'BILL_REQUESTED',
     active_order_id: 'ord-initial-table-7',
     current_customer_name: 'Meenakshi Sundaram',
@@ -698,7 +742,9 @@ export const INITIAL_TABLES: RestaurantTable[] = [
     table_number: 8,
     table_label: 'Table 8',
     capacity: 8,
-    section: 'AC Family Hall',
+    section: 'Non-AC Dining',
+    pricing_section: 'NON_AC',
+    is_ac: false,
     status: 'FREE',
     active_order_id: null,
     current_customer_name: null,
@@ -709,7 +755,9 @@ export const INITIAL_TABLES: RestaurantTable[] = [
     table_number: 9,
     table_label: 'Table 9',
     capacity: 4,
-    section: 'Garden Terrace',
+    section: 'Non-AC Dining',
+    pricing_section: 'NON_AC',
+    is_ac: false,
     status: 'FREE',
     active_order_id: null,
     current_customer_name: null,
@@ -720,7 +768,9 @@ export const INITIAL_TABLES: RestaurantTable[] = [
     table_number: 10,
     table_label: 'Table 10',
     capacity: 4,
-    section: 'Garden Terrace',
+    section: 'Non-AC Dining',
+    pricing_section: 'NON_AC',
+    is_ac: false,
     status: 'FREE',
     active_order_id: null,
     current_customer_name: null,
@@ -731,7 +781,9 @@ export const INITIAL_TABLES: RestaurantTable[] = [
     table_number: 11,
     table_label: 'Table 11',
     capacity: 6,
-    section: 'Garden Terrace',
+    section: 'Non-AC Dining',
+    pricing_section: 'NON_AC',
+    is_ac: false,
     status: 'FREE',
     active_order_id: null,
     current_customer_name: null,
@@ -742,7 +794,9 @@ export const INITIAL_TABLES: RestaurantTable[] = [
     table_number: 12,
     table_label: 'Table 12',
     capacity: 2,
-    section: 'Garden Terrace',
+    section: 'Non-AC Dining',
+    pricing_section: 'NON_AC',
+    is_ac: false,
     status: 'FREE',
     active_order_id: null,
     current_customer_name: null,

@@ -16,6 +16,7 @@ import {
   Payment,
   ParcelOrder,
   CateringOrder,
+  PricingSection,
   InventoryCategory,
   InventoryMovementType,
 } from '../lib/types';
@@ -29,7 +30,12 @@ interface RestaurantContextType {
     guestCount: number,
     waiterId?: string
   ) => { success: boolean; orderId?: string; error?: string };
-  createWalkInOrder: (customerName: string, guestCount: number, waiterId?: string) => { success: boolean; orderId?: string; error?: string };
+  createWalkInOrder: (
+    customerName: string,
+    guestCount: number,
+    waiterId?: string,
+    pricingSection?: PricingSection
+  ) => { success: boolean; orderId?: string; error?: string };
   addItemsToOrder: (
     orderId: string,
     itemsToAdd: Array<{
@@ -37,7 +43,7 @@ interface RestaurantContextType {
       quantity: number;
       specialInstructions?: string;
     }>,
-    priceMode?: 'STANDARD' | 'AC'
+    priceMode?: PricingSection | 'STANDARD' | 'AC'
   ) => { success: boolean; error?: string };
   updateOrderItemStatus: (
     orderId: string,
@@ -91,10 +97,16 @@ interface RestaurantContextType {
     paymentMethod: PaymentMethod,
     paymentReference?: string
   ) => { success: boolean; error?: string };
-  addMenuItem: (item: Omit<MenuItem, 'id'>) => { success: boolean; item?: MenuItem };
-  updateMenuItem: (item: MenuItem) => { success: boolean };
+  addMenuItem: (item: Omit<MenuItem, 'id'>, userRole?: UserRole) => { success: boolean; item?: MenuItem; error?: string };
+  updateMenuItem: (item: MenuItem, userRole?: UserRole) => { success: boolean; error?: string };
+  updateTableSection: (
+    tableId: string,
+    section: string,
+    pricingSection: PricingSection,
+    userRole?: UserRole
+  ) => { success: boolean; error?: string };
   toggleItemAvailability: (itemId: string) => { success: boolean };
-  deleteMenuItem: (itemId: string) => { success: boolean };
+  deleteMenuItem: (itemId: string, userRole?: UserRole) => { success: boolean; error?: string };
   addCategory: (name: string, icon?: string) => { success: boolean };
   addInventoryItem: (data: {
     name: string;
@@ -190,7 +202,7 @@ export function RestaurantProvider({ children }: { children: React.ReactNode }) 
     state,
     setRole: (role) => restaurantStore.setRole(role),
     assignTable: (tId, name, count, wId) => restaurantStore.assignTable(tId, name, count, wId),
-    createWalkInOrder: (name, count, waiterId) => restaurantStore.createWalkInOrder(name, count, waiterId),
+    createWalkInOrder: (name, count, waiterId, pSection) => restaurantStore.createWalkInOrder(name, count, waiterId, pSection),
     addItemsToOrder: (oId, items, priceMode) => restaurantStore.addItemsToOrder(oId, items, priceMode),
     updateOrderItemStatus: (oId, iId, status) =>
       restaurantStore.updateOrderItemStatus(oId, iId, status),
@@ -201,10 +213,11 @@ export function RestaurantProvider({ children }: { children: React.ReactNode }) 
     createCateringOrder: (data) => restaurantStore.createCateringOrder(data),
     settleCateringBalance: (id, method, ref) =>
       restaurantStore.settleCateringBalance(id, method, ref),
-    addMenuItem: (item) => restaurantStore.addMenuItem(item),
-    updateMenuItem: (item) => restaurantStore.updateMenuItem(item),
+    addMenuItem: (item, role) => restaurantStore.addMenuItem(item, role),
+    updateMenuItem: (item, role) => restaurantStore.updateMenuItem(item, role),
+    updateTableSection: (tId, section, pSection, role) => restaurantStore.updateTableSection(tId, section, pSection, role),
     toggleItemAvailability: (iId) => restaurantStore.toggleItemAvailability(iId),
-    deleteMenuItem: (iId) => restaurantStore.deleteMenuItem(iId),
+    deleteMenuItem: (iId, role) => restaurantStore.deleteMenuItem(iId, role),
     addCategory: (name, icon) => restaurantStore.addCategory(name, icon),
     addInventoryItem: (data) => restaurantStore.addInventoryItem(data),
     updateInventoryThreshold: (itemId, threshold) => restaurantStore.updateInventoryThreshold(itemId, threshold),

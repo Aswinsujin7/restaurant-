@@ -41,3 +41,31 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 });
   }
 }
+
+export async function PATCH(request: Request) {
+  try {
+    const body = await request.json();
+    const { tableId, section, pricingSection } = body;
+
+    if (!tableId || !pricingSection) {
+      return NextResponse.json(
+        { error: 'tableId and pricingSection (AC or NON_AC) are required' },
+        { status: 400 }
+      );
+    }
+
+    const result = restaurantStore.updateTableSection(tableId, section || '', pricingSection, 'admin');
+
+    if (!result.success) {
+      return NextResponse.json({ error: result.error }, { status: 400 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Table section and pricing mode updated successfully.',
+    });
+  } catch (error: unknown) {
+    const err = error as Error;
+    return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 });
+  }
+}

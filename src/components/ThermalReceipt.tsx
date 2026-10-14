@@ -8,14 +8,38 @@ interface ThermalReceiptProps {
   order: Order;
   payment?: Payment;
   onClose?: () => void;
+  autoPrint?: boolean;
 }
 
-export function ThermalReceipt({ order, payment, onClose }: ThermalReceiptProps) {
+export function ThermalReceipt({ order, payment, onClose, autoPrint }: ThermalReceiptProps) {
   const handlePrint = () => {
     if (typeof window !== 'undefined') {
       window.print();
     }
   };
+
+  React.useEffect(() => {
+    if (autoPrint && typeof window !== 'undefined') {
+      const timer = setTimeout(() => {
+        window.print();
+      }, 250);
+      return () => clearTimeout(timer);
+    }
+  }, [autoPrint]);
+
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && onClose) {
+        e.preventDefault();
+        onClose();
+      } else if (e.code === 'Space' || e.key === ' ' || e.key === 'Enter' || e.key.toLowerCase() === 'p') {
+        e.preventDefault();
+        handlePrint();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   const formattedDate = new Date(payment?.created_at || order.created_at).toLocaleString('en-IN', {
     day: '2-digit',
@@ -72,7 +96,13 @@ export function ThermalReceipt({ order, payment, onClose }: ThermalReceiptProps)
           <div className="py-2.5 border-b border-dashed border-gray-400 space-y-1 text-[11px]">
             <div className="flex justify-between">
               <span>Invoice: <strong>{order.order_number}</strong></span>
-              <span>{order.table_number > 0 ? <>Table: <strong>T{order.table_number}</strong></> : <>Order Type: <strong>Walk-in</strong></>}</span>
+              <span>
+                {order.table_number > 0 ? (
+                  <>Table: <strong>T{order.table_number}</strong> ({order.pricing_section || (order.section?.includes('AC') ? 'AC' : 'Non-AC')})</>
+                ) : (
+                  <>Order: <strong>Walk-in ({order.pricing_section || 'Non-AC'})</strong></>
+                )}
+              </span>
             </div>
             <div className="flex justify-between">
               <span>Date: {formattedDate}</span>
