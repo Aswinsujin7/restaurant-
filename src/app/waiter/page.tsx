@@ -28,6 +28,7 @@ export default function WaiterDashboardPage() {
     state,
     stats,
     assignTable,
+    createWalkInOrder,
     addItemsToOrder,
     requestBill,
     updateOrderItemStatus,
@@ -37,6 +38,7 @@ export default function WaiterDashboardPage() {
   // Navigation mode: 'TABLES' or 'ORDER_TAKING'
   const [activeView, setActiveView] = useState<'TABLES' | 'ORDER_TAKING'>('TABLES');
   const [selectedTable, setSelectedTable] = useState<RestaurantTable | null>(null);
+  const [walkInOrderId, setWalkInOrderId] = useState<string | null>(null);
 
   // Table Assignment Modal State
   const [showAssignModal, setShowAssignModal] = useState(false);
@@ -57,12 +59,25 @@ export default function WaiterDashboardPage() {
   const [orderActionMessage, setOrderActionMessage] = useState<string | null>(null);
 
   // Helper to get active order for the currently selected table
-  const currentActiveOrder: Order | undefined = selectedTable
+  const currentActiveOrder: Order | undefined = walkInOrderId
+    ? state.orders.find((order) => order.id === walkInOrderId)
+    : selectedTable
     ? getActiveOrderForTable(selectedTable.id)
     : undefined;
 
+  const startWalkInOrder = () => {
+    const result = createWalkInOrder('Walk-in Guest', 1, state.activeStaff.id);
+    if (!result.success || !result.orderId) return;
+    setWalkInOrderId(result.orderId);
+    setSelectedTable(null);
+    setDraftItems({});
+    setOrderActionMessage(null);
+    setActiveView('ORDER_TAKING');
+  };
+
   // Handle clicking a table card
   const handleSelectTable = (table: RestaurantTable) => {
+    setWalkInOrderId(null);
     setSelectedTable(table);
     if (table.status === 'FREE') {
       setCustomerNameInput('');
@@ -215,7 +230,7 @@ export default function WaiterDashboardPage() {
                 <span className="font-black text-white text-base">
                   {activeView === 'TABLES'
                     ? 'Waiter Mobile POS'
-                    : `Table ${selectedTable?.table_number} • Order View`}
+                  : selectedTable ? `Table ${selectedTable.table_number} • Order View` : 'Walk-in • Order View'}
                 </span>
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
                   {state.activeStaff.full_name}
@@ -224,7 +239,7 @@ export default function WaiterDashboardPage() {
               <p className="text-[11px] text-slate-400">
                 {activeView === 'TABLES'
                   ? `${stats.freeTables} Free Tables • ${stats.occupiedTables} Active Orders`
-                  : `Customer: ${selectedTable?.current_customer_name || 'Guest'} (${selectedTable?.guest_count || 1} Guests)`}
+                  : `Customer: ${selectedTable?.current_customer_name || currentActiveOrder?.customer_name || 'Walk-in Guest'} (${selectedTable?.guest_count || currentActiveOrder?.guest_count || 1} Guests)`}
               </p>
             </div>
           </div>
@@ -241,7 +256,7 @@ export default function WaiterDashboardPage() {
             >
               Tables
             </button>
-            {selectedTable && (
+            {(selectedTable || walkInOrderId) && (
               <button
                 onClick={() => setActiveView('ORDER_TAKING')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
@@ -250,7 +265,7 @@ export default function WaiterDashboardPage() {
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                T{selectedTable.table_number} Order
+                {selectedTable ? `T${selectedTable.table_number} Order` : 'Walk-in Order'}
               </button>
             )}
           </div>
@@ -271,9 +286,9 @@ export default function WaiterDashboardPage() {
         ========================================================================= */}
         {activeView === 'TABLES' && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between text-xs text-slate-400">
+            <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
               <span className="font-semibold uppercase tracking-wider">Tap a table to take order</span>
-              <span className="text-emerald-400 font-bold">{stats.freeTables} Tables Ready</span>
+              <div className="flex items-center gap-3"><span className="text-emerald-400 font-bold">{stats.freeTables} Tables Ready</span><button onClick={startWalkInOrder} className="rounded-xl bg-amber-500 px-3 py-2 font-black text-slate-950 hover:bg-amber-400"><Plus className="mr-1 inline h-3.5 w-3.5" />Walk-in Order</button></div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -297,7 +312,7 @@ export default function WaiterDashboardPage() {
         {/* =========================================================================
             VIEW 2: ACTIVE ORDER & MENU TAKING VIEW
         ========================================================================= */}
-        {activeView === 'ORDER_TAKING' && selectedTable && (
+        {activeView === 'ORDER_TAKING' && (selectedTable || walkInOrderId) && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Left 7 Columns: Menu Items Selection */}
             <div className="lg:col-span-7 space-y-4">
@@ -536,7 +551,7 @@ export default function WaiterDashboardPage() {
                       Active Order: {currentActiveOrder?.order_number || 'Pending'}
                     </span>
                     <span className="text-[11px] text-slate-400">
-                      Customer: <strong>{selectedTable.current_customer_name || 'Guest'}</strong>
+                      Customer: <strong>{selectedTable?.current_customer_name || currentActiveOrder?.customer_name || 'Walk-in Guest'}</strong>
                     </span>
                   </div>
                   {currentActiveOrder && <OrderStatusBadge status={currentActiveOrder.status} />}

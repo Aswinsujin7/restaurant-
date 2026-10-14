@@ -16,6 +16,10 @@ import {
   StaffUser,
   ParcelOrder,
   CateringOrder,
+  InventoryItem,
+  InventoryMovement,
+  InventoryCategory,
+  InventoryMovementType,
 } from '../types';
 import {
   INITIAL_TABLES,
@@ -26,6 +30,8 @@ import {
   INITIAL_STAFF,
   INITIAL_PARCELS,
   INITIAL_CATERINGS,
+  INITIAL_INVENTORY_ITEMS,
+  INITIAL_INVENTORY_MOVEMENTS,
 } from './initial-data';
 import { getSupabaseClient, isSupabaseConfigured } from '../supabase/client';
 
@@ -49,6 +55,8 @@ export interface RestaurantState {
   payments: Payment[];
   parcels: ParcelOrder[];
   caterings: CateringOrder[];
+  inventoryItems: InventoryItem[];
+  inventoryMovements: InventoryMovement[];
   staff: StaffUser[];
   activeRole: UserRole;
   activeStaff: StaffUser;
@@ -73,9 +81,30 @@ class RestaurantStore {
       payments: INITIAL_PAYMENTS,
       parcels: INITIAL_PARCELS,
       caterings: INITIAL_CATERINGS,
+      inventoryItems: INITIAL_INVENTORY_ITEMS,
+      inventoryMovements: INITIAL_INVENTORY_MOVEMENTS,
       staff: INITIAL_STAFF,
       activeRole: 'cashier',
       activeStaff: INITIAL_STAFF[1], // Default to Cashier
+      notifications: [],
+      isRealtimeConnected: false,
+    };
+  }
+
+  public getInitialState(): RestaurantState {
+    return {
+      tables: INITIAL_TABLES,
+      categories: INITIAL_CATEGORIES,
+      menuItems: INITIAL_MENU_ITEMS,
+      orders: INITIAL_ORDERS,
+      payments: INITIAL_PAYMENTS,
+      parcels: INITIAL_PARCELS,
+      caterings: INITIAL_CATERINGS,
+      inventoryItems: INITIAL_INVENTORY_ITEMS,
+      inventoryMovements: INITIAL_INVENTORY_MOVEMENTS,
+      staff: INITIAL_STAFF,
+      activeRole: 'cashier',
+      activeStaff: INITIAL_STAFF[1],
       notifications: [],
       isRealtimeConnected: false,
     };
@@ -134,8 +163,13 @@ class RestaurantStore {
       }
       const storedParcels = localStorage.getItem(STORAGE_KEY_PREFIX + 'parcels');
       const storedCaterings = localStorage.getItem(STORAGE_KEY_PREFIX + 'caterings');
+      const storedInventoryItems = localStorage.getItem(STORAGE_KEY_PREFIX + 'inventory_items');
+      const storedInventoryMovements = localStorage.getItem(STORAGE_KEY_PREFIX + 'inventory_movements');
       if (storedParcels) this.state.parcels = JSON.parse(storedParcels);
       if (storedCaterings) this.state.caterings = JSON.parse(storedCaterings);
+      if (storedInventoryItems) this.state.inventoryItems = JSON.parse(storedInventoryItems);
+      if (storedInventoryMovements) this.state.inventoryMovements = JSON.parse(storedInventoryMovements);
+      this.linkFoodInventoryToMenu();
 
       if (storedRole) {
         const role = storedRole as UserRole;
@@ -158,10 +192,42 @@ class RestaurantStore {
       localStorage.setItem(STORAGE_KEY_PREFIX + 'payments', JSON.stringify(this.state.payments));
       localStorage.setItem(STORAGE_KEY_PREFIX + 'parcels', JSON.stringify(this.state.parcels));
       localStorage.setItem(STORAGE_KEY_PREFIX + 'caterings', JSON.stringify(this.state.caterings));
+      localStorage.setItem(STORAGE_KEY_PREFIX + 'inventory_items', JSON.stringify(this.state.inventoryItems));
+      localStorage.setItem(STORAGE_KEY_PREFIX + 'inventory_movements', JSON.stringify(this.state.inventoryMovements));
       localStorage.setItem(STORAGE_KEY_PREFIX + 'role', this.state.activeRole);
     } catch (e) {
       console.warn('Failed to save to storage:', e);
     }
+  }
+
+  private linkFoodInventoryToMenu() {
+    const foodItems = this.state.inventoryItems.filter((item) => item.category === 'FOOD');
+    const linkedIds = new Set(foodItems.map((item) => item.menuItemId).filter(Boolean));
+    const normalized = this.state.inventoryItems.map((item) => {
+      if (item.category !== 'FOOD' || item.menuItemId) return item;
+      const inventoryName = item.name.trim().toLowerCase();
+      const menuItem = this.state.menuItems.find((candidate) => {
+        const menuName = candidate.name.trim().toLowerCase();
+        return menuName === inventoryName || menuName.includes(inventoryName);
+      });
+      if (!menuItem || linkedIds.has(menuItem.id)) return item;
+      linkedIds.add(menuItem.id);
+      return { ...item, menuItemId: menuItem.id };
+    });
+    const missingItems: InventoryItem[] = this.state.menuItems
+      .filter((menuItem) => !linkedIds.has(menuItem.id))
+      .map((menuItem) => ({
+        id: `food-${menuItem.id}`,
+        menuItemId: menuItem.id,
+        isActive: true,
+        name: menuItem.name,
+        category: 'FOOD' as const,
+        unit: 'portions',
+        quantity: 0,
+        lowStockThreshold: 5,
+        updatedAt: new Date().toISOString(),
+      }));
+    this.state.inventoryItems = [...normalized, ...missingItems];
   }
 
   private connectSupabaseRealtime() {
@@ -271,6 +337,226 @@ class RestaurantStore {
     this.notifyListeners();
   }
 
+  public addInventoryItem(data: {
+    name: string;
+    category: InventoryCategory;
+    menuItemId?: string;
+    unit: string;
+    openingQuantity: number;
+    lowStockThreshold: number;
+  }): { success: boolean; error?: string } {
+    const name = data.name.trim();
+    const unit = data.unit.trim();
+    if (!name || !unit) return { success: false, error: 'Enter an item name and unit.' };
+    if (!Number.isFinite(data.openingQuantity) || data.openingQuantity < 0) {
+      return { success: false, error: 'Opening quantity must be zero or more.' };
+    }
+    if (!Number.isFinite(data.lowStockThreshold) || data.lowStockThreshold < 0) {
+      return { success: false, error: 'Low-stock level must be zero or more.' };
+    }
+    if (data.category === 'FOOD' && data.menuItemId && this.state.inventoryItems.some((item) => item.isActive !== false && item.menuItemId === data.menuItemId)) {
+      return { success: false, error: 'This menu dish is already connected to kitchen stock.' };
+    }
+
+    const now = new Date().toISOString();
+    const item: InventoryItem = {
+      id: `inventory-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      menuItemId: data.category === 'FOOD' ? data.menuItemId : undefined,
+      isActive: true,
+      name,
+      category: data.category,
+      unit,
+      quantity: data.openingQuantity,
+      lowStockThreshold: data.lowStockThreshold,
+      updatedAt: now,
+    };
+    this.state.inventoryItems = [item, ...this.state.inventoryItems];
+    if (item.quantity > 0) {
+      this.state.inventoryMovements = [{
+        id: `movement-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        itemId: item.id,
+        itemName: item.name,
+        category: item.category,
+        type: 'IN',
+        quantity: item.quantity,
+        unit: item.unit,
+        note: 'Opening stock',
+        createdAt: now,
+      }, ...this.state.inventoryMovements];
+    }
+    this.broadcastChange('STATE_UPDATE', {
+      inventoryItems: this.state.inventoryItems,
+      inventoryMovements: this.state.inventoryMovements,
+    });
+    this.notifyListeners();
+    return { success: true };
+  }
+
+  public updateInventoryThreshold(itemId: string, lowStockThreshold: number): { success: boolean } {
+    const index = this.state.inventoryItems.findIndex((item) => item.id === itemId);
+    if (index < 0 || !Number.isFinite(lowStockThreshold) || lowStockThreshold < 0) return { success: false };
+    const items = [...this.state.inventoryItems];
+    const current = items[index];
+    items[index] = { ...items[index], lowStockThreshold, updatedAt: new Date().toISOString() };
+    this.state.inventoryItems = items;
+    if (current.quantity > current.lowStockThreshold && current.quantity <= lowStockThreshold) {
+      this.addNotification({
+        title: `Low stock: ${current.name}`,
+        message: `${current.quantity} ${current.unit} on hand is now at or below its alert level.`,
+        type: 'warning',
+        sound: true,
+      });
+    }
+    this.broadcastChange('STATE_UPDATE', { inventoryItems: this.state.inventoryItems });
+    this.notifyListeners();
+    return { success: true };
+  }
+
+  public updateInventoryItem(
+    itemId: string,
+    data: { name: string; unit: string; lowStockThreshold: number }
+  ): { success: boolean; error?: string } {
+    const index = this.state.inventoryItems.findIndex((item) => item.id === itemId);
+    const name = data.name.trim();
+    const unit = data.unit.trim();
+    if (index < 0) return { success: false, error: 'Inventory item not found.' };
+    if (!name || !unit) return { success: false, error: 'Enter an item name and unit.' };
+    if (!Number.isFinite(data.lowStockThreshold) || data.lowStockThreshold < 0) {
+      return { success: false, error: 'Low-stock level must be zero or more.' };
+    }
+
+    const current = this.state.inventoryItems[index];
+    const items = [...this.state.inventoryItems];
+    items[index] = {
+      ...current,
+      name,
+      unit,
+      lowStockThreshold: data.lowStockThreshold,
+      updatedAt: new Date().toISOString(),
+    };
+    this.state.inventoryItems = items;
+    if (current.quantity > current.lowStockThreshold && current.quantity <= data.lowStockThreshold) {
+      this.addNotification({
+        title: `Low stock: ${name}`,
+        message: `${current.quantity} ${unit} on hand is now at or below its alert level.`,
+        type: 'warning',
+        sound: true,
+      });
+    }
+    this.broadcastChange('STATE_UPDATE', { inventoryItems: this.state.inventoryItems });
+    this.notifyListeners();
+    return { success: true };
+  }
+
+  public deleteInventoryItem(itemId: string): { success: boolean } {
+    const exists = this.state.inventoryItems.some((item) => item.id === itemId && item.isActive !== false);
+    if (!exists) return { success: false };
+    this.state.inventoryItems = this.state.inventoryItems.map((item) =>
+      item.id === itemId ? { ...item, isActive: false, updatedAt: new Date().toISOString() } : item
+    );
+    // Keep movement records as an audit trail after the active item is removed.
+    this.broadcastChange('STATE_UPDATE', { inventoryItems: this.state.inventoryItems });
+    this.notifyListeners();
+    return { success: true };
+  }
+
+  public recordInventoryMovement(
+    itemId: string,
+    type: InventoryMovementType,
+    quantity: number,
+    note = ''
+  ): { success: boolean; error?: string } {
+    const index = this.state.inventoryItems.findIndex((item) => item.id === itemId);
+    if (index < 0) return { success: false, error: 'Inventory item not found.' };
+    if (!Number.isFinite(quantity) || quantity <= 0) return { success: false, error: 'Quantity must be greater than zero.' };
+
+    const current = this.state.inventoryItems[index];
+    if (type === 'OUT' && quantity > current.quantity) {
+      return { success: false, error: `Only ${current.quantity} ${current.unit} available.` };
+    }
+    const nextQuantity = type === 'IN' ? current.quantity + quantity : current.quantity - quantity;
+    const now = new Date().toISOString();
+    const updated = { ...current, quantity: nextQuantity, updatedAt: now };
+    const items = [...this.state.inventoryItems];
+    items[index] = updated;
+    this.state.inventoryItems = items;
+    const movement: InventoryMovement = {
+      id: `movement-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      itemId: current.id,
+      itemName: current.name,
+      category: current.category,
+      type,
+      quantity,
+      unit: current.unit,
+      note: note.trim() || undefined,
+      createdAt: now,
+    };
+    this.state.inventoryMovements = [movement, ...this.state.inventoryMovements];
+
+    if (type === 'OUT' && current.quantity > current.lowStockThreshold && nextQuantity <= current.lowStockThreshold) {
+      this.addNotification({
+        title: `Low stock: ${current.name}`,
+        message: `Only ${nextQuantity} ${current.unit} left. Reorder or prepare more soon.`,
+        type: 'warning',
+        sound: true,
+      });
+    }
+    this.broadcastChange('STATE_UPDATE', {
+      inventoryItems: this.state.inventoryItems,
+      inventoryMovements: this.state.inventoryMovements,
+    });
+    this.notifyListeners();
+    return { success: true };
+  }
+
+  private recordKitchenStockOut(order: Order, servedItems: OrderItem[]) {
+    const linkedItems = servedItems.filter((orderItem) => orderItem.menu_item_id);
+    if (linkedItems.length === 0) return;
+
+    const items = [...this.state.inventoryItems];
+    const movements = [...this.state.inventoryMovements];
+    const warnings: Array<{ name: string; quantity: number; unit: string }> = [];
+    const now = new Date().toISOString();
+
+    for (const orderItem of linkedItems) {
+      const index = items.findIndex((item) => item.isActive !== false && item.category === 'FOOD' && item.menuItemId === orderItem.menu_item_id);
+      if (index < 0) continue;
+      const current = items[index];
+      const quantity = Math.max(0, orderItem.quantity);
+      const nextQuantity = current.quantity - quantity;
+      items[index] = { ...current, quantity: nextQuantity, updatedAt: now };
+      movements.unshift({
+        id: `movement-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        itemId: current.id,
+        itemName: current.name,
+        category: 'FOOD',
+        type: 'OUT',
+        quantity,
+        unit: current.unit,
+        note: `Kitchen served · ${order.order_number} · Table ${order.table_number}`,
+        createdAt: now,
+      });
+      if (current.quantity > current.lowStockThreshold && nextQuantity <= current.lowStockThreshold) {
+        warnings.push({ name: current.name, quantity: nextQuantity, unit: current.unit });
+      }
+    }
+
+    this.state.inventoryItems = items;
+    this.state.inventoryMovements = movements;
+    for (const warning of warnings) {
+      this.addNotification({
+        title: `Kitchen stock low: ${warning.name}`,
+        message: `${warning.quantity} ${warning.unit} left after serving ${order.order_number}.`,
+        type: 'warning',
+        sound: true,
+      });
+    }
+    this.broadcastChange('STATE_UPDATE', {
+      inventoryItems: this.state.inventoryItems,
+      inventoryMovements: this.state.inventoryMovements,
+    });
+  }
+
   // ==========================================================================
   // Table & Order Lifecycle Operations
   // ==========================================================================
@@ -358,6 +644,39 @@ class RestaurantStore {
     return { success: true, orderId: uniqueOrderId };
   }
 
+  public createWalkInOrder(
+    customerName: string,
+    guestCount: number,
+    waiterId?: string
+  ): { success: boolean; orderId?: string; error?: string } {
+    const now = new Date().toISOString();
+    const orderId = `walkin-${Date.now()}-${Math.floor(Math.random() * 8999 + 1000)}`;
+    const dateKey = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const sequence = (this.state.orders.length + 1).toString().padStart(4, '0');
+    const order: Order = {
+      id: orderId,
+      order_number: `NAGA-${dateKey}-${sequence}`,
+      table_id: '',
+      table_number: 0,
+      customer_name: customerName.trim() || 'Walk-in Guest',
+      guest_count: Math.max(1, guestCount || 1),
+      waiter_id: waiterId || this.state.activeStaff.id,
+      status: 'NEW',
+      subtotal: 0,
+      tax_rate: 5,
+      tax_amount: 0,
+      discount_amount: 0,
+      final_total: 0,
+      created_at: now,
+      updated_at: now,
+      items: [],
+    };
+    this.state.orders = [order, ...this.state.orders];
+    this.broadcastChange('STATE_UPDATE', { orders: this.state.orders });
+    this.notifyListeners();
+    return { success: true, orderId };
+  }
+
   /**
    * 2. Submit items or Add extra items to active order.
    * Calculates round number (Round 1, Round 2, etc.) and auto-updates totals.
@@ -368,7 +687,8 @@ class RestaurantStore {
       menuItemId: string;
       quantity: number;
       specialInstructions?: string;
-    }>
+    }>,
+    priceMode: 'STANDARD' | 'AC' = 'STANDARD'
   ): { success: boolean; error?: string } {
     const orderIndex = this.state.orders.findIndex((o) => o.id === orderId);
     if (orderIndex === -1) {
@@ -394,7 +714,9 @@ class RestaurantStore {
         throw new Error(`Menu item not found: ${input.menuItemId}`);
       }
 
-      const unitPrice = menuItem.price;
+      const unitPrice = priceMode === 'AC'
+        ? (menuItem.ac_price ?? Math.round(menuItem.price * 1.12 * 100) / 100)
+        : menuItem.price;
       const totalPrice = unitPrice * input.quantity;
 
       return {
@@ -469,6 +791,7 @@ class RestaurantStore {
     }
 
     const updatedItems = [...order.items];
+    const wasAlreadyServed = updatedItems[itemIndex].status === 'SERVED';
     const targetItem = { ...updatedItems[itemIndex], status: newStatus };
     updatedItems[itemIndex] = targetItem;
 
@@ -496,6 +819,10 @@ class RestaurantStore {
     const newOrders = [...this.state.orders];
     newOrders[orderIndex] = updatedOrder;
     this.state.orders = newOrders;
+
+    if (newStatus === 'SERVED' && !wasAlreadyServed) {
+      this.recordKitchenStockOut(order, [targetItem]);
+    }
 
     // Notify waiter when food is marked READY
     if (newStatus === 'READY') {
@@ -526,6 +853,9 @@ class RestaurantStore {
     if (orderIndex === -1) return { success: false, error: 'Order not found' };
 
     const order = this.state.orders[orderIndex];
+    const newlyServedItems = newStatus === 'SERVED'
+      ? order.items.filter((item) => item.status !== 'SERVED')
+      : [];
     const updatedItems = order.items.map((it) => ({
       ...it,
       status: newStatus as OrderItemStatus,
@@ -541,6 +871,10 @@ class RestaurantStore {
     const newOrders = [...this.state.orders];
     newOrders[orderIndex] = updatedOrder;
     this.state.orders = newOrders;
+
+    if (newlyServedItems.length > 0) {
+      this.recordKitchenStockOut(order, newlyServedItems);
+    }
 
     if (newStatus === 'READY') {
       this.addNotification({
@@ -596,8 +930,9 @@ class RestaurantStore {
       this.state.tables = newTables;
     }
 
+    const orderLocation = order.table_number > 0 ? `Table ${order.table_number}` : 'Walk-in order';
     this.addNotification({
-      title: `Bill Requested: Table ${order.table_number}`,
+      title: `Bill Requested: ${orderLocation}`,
       message: `${order.customer_name} requested bill. Total: ₹${order.final_total.toFixed(2)}`,
       type: 'info',
       sound: true,
@@ -695,9 +1030,12 @@ class RestaurantStore {
       this.state.tables = newTables;
     }
 
+    const paymentLocation = order.table_number > 0 ? `Table ${order.table_number}` : 'Walk-in order';
     this.addNotification({
-      title: `Payment Received: Table ${order.table_number}`,
-      message: `₹${paymentRecord.final_total} paid via ${paymentData.paymentMethod}. Table ${order.table_number} is now FREE!`,
+      title: `Payment Received: ${paymentLocation}`,
+      message: order.table_number > 0
+        ? `₹${paymentRecord.final_total} paid via ${paymentData.paymentMethod}. Table ${order.table_number} is now FREE!`
+        : `₹${paymentRecord.final_total} paid via ${paymentData.paymentMethod}.`,
       type: 'success',
       sound: true,
     });
@@ -722,7 +1060,22 @@ class RestaurantStore {
     };
 
     this.state.menuItems = [newItem, ...this.state.menuItems];
-    this.broadcastChange('STATE_UPDATE', { menuItems: this.state.menuItems });
+    const inventoryItem: InventoryItem = {
+      id: `food-${newItem.id}`,
+      menuItemId: newItem.id,
+      isActive: true,
+      name: newItem.name,
+      category: 'FOOD',
+      unit: 'portions',
+      quantity: 0,
+      lowStockThreshold: 5,
+      updatedAt: new Date().toISOString(),
+    };
+    this.state.inventoryItems = [inventoryItem, ...this.state.inventoryItems];
+    this.broadcastChange('STATE_UPDATE', {
+      menuItems: this.state.menuItems,
+      inventoryItems: this.state.inventoryItems,
+    });
     this.notifyListeners();
     return { success: true, item: newItem };
   }
@@ -735,7 +1088,14 @@ class RestaurantStore {
     newItems[index] = updated;
     this.state.menuItems = newItems;
 
-    this.broadcastChange('STATE_UPDATE', { menuItems: this.state.menuItems });
+    this.state.inventoryItems = this.state.inventoryItems.map((item) =>
+      item.menuItemId === updated.id ? { ...item, name: updated.name, updatedAt: new Date().toISOString() } : item
+    );
+
+    this.broadcastChange('STATE_UPDATE', {
+      menuItems: this.state.menuItems,
+      inventoryItems: this.state.inventoryItems,
+    });
     this.notifyListeners();
     return { success: true };
   }
@@ -1003,6 +1363,8 @@ class RestaurantStore {
       payments: INITIAL_PAYMENTS,
       parcels: INITIAL_PARCELS,
       caterings: INITIAL_CATERINGS,
+      inventoryItems: INITIAL_INVENTORY_ITEMS,
+      inventoryMovements: INITIAL_INVENTORY_MOVEMENTS,
       staff: INITIAL_STAFF,
       activeRole: 'cashier',
       activeStaff: INITIAL_STAFF[1],

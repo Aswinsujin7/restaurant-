@@ -72,7 +72,7 @@ export function ThermalReceipt({ order, payment, onClose }: ThermalReceiptProps)
           <div className="py-2.5 border-b border-dashed border-gray-400 space-y-1 text-[11px]">
             <div className="flex justify-between">
               <span>Invoice: <strong>{order.order_number}</strong></span>
-              <span>Table: <strong>T{order.table_number}</strong></span>
+              <span>{order.table_number > 0 ? <>Table: <strong>T{order.table_number}</strong></> : <>Order Type: <strong>Walk-in</strong></>}</span>
             </div>
             <div className="flex justify-between">
               <span>Date: {formattedDate}</span>

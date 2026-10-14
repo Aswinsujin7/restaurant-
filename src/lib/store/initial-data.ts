@@ -7,6 +7,8 @@ import {
   Payment,
   ParcelOrder,
   CateringOrder,
+  InventoryItem,
+  InventoryMovement,
 } from '../types';
 
 export const INITIAL_STAFF: StaffUser[] = [
@@ -453,6 +455,48 @@ export const INITIAL_MENU_ITEMS: MenuItem[] = [
 ];
 
 // Seed order for Table 3 (Active order in kitchen)
+const inventorySeedTime = new Date().toISOString();
+
+const foodStockByMenuItemId: Record<string, { quantity: number; threshold: number; unit?: string }> = {
+  'm0000007-0000-0000-0000-000000000007': { quantity: 12, threshold: 4 },
+  'm0000001-0000-0000-0000-000000000001': { quantity: 8, threshold: 3 },
+  'm0000022-0000-0000-0000-000000000022': { quantity: 20, threshold: 5, unit: 'cups' },
+};
+
+export const INITIAL_INVENTORY_ITEMS: InventoryItem[] = [
+  ...INITIAL_MENU_ITEMS.map((menuItem) => {
+    const stock = foodStockByMenuItemId[menuItem.id] || { quantity: 15, threshold: 4 };
+    return {
+      id: `food-${menuItem.id}`,
+      menuItemId: menuItem.id,
+      name: menuItem.name,
+      category: 'FOOD' as const,
+      unit: stock.unit || 'portions',
+      quantity: stock.quantity,
+      lowStockThreshold: stock.threshold,
+      updatedAt: inventorySeedTime,
+    };
+  }),
+  { id: 'grocery-seeraga-samba', name: 'Seeraga Samba Rice', category: 'GROCERY', unit: 'kg', quantity: 18, lowStockThreshold: 5, updatedAt: inventorySeedTime },
+  { id: 'grocery-chicken', name: 'Chicken', category: 'GROCERY', unit: 'kg', quantity: 8, lowStockThreshold: 3, updatedAt: inventorySeedTime },
+  { id: 'grocery-onion', name: 'Onion', category: 'GROCERY', unit: 'kg', quantity: 6, lowStockThreshold: 2, updatedAt: inventorySeedTime },
+  { id: 'grocery-oil', name: 'Cooking Oil', category: 'GROCERY', unit: 'L', quantity: 12, lowStockThreshold: 3, updatedAt: inventorySeedTime },
+  { id: 'grocery-tomato', name: 'Tomato', category: 'GROCERY', unit: 'kg', quantity: 3, lowStockThreshold: 2, updatedAt: inventorySeedTime },
+  { id: 'grocery-spices', name: 'Chettinad Spice Mix', category: 'GROCERY', unit: 'kg', quantity: 2.5, lowStockThreshold: 0.5, updatedAt: inventorySeedTime },
+];
+
+export const INITIAL_INVENTORY_MOVEMENTS: InventoryMovement[] = INITIAL_INVENTORY_ITEMS.map((item) => ({
+  id: `opening-${item.id}`,
+  itemId: item.id,
+  itemName: item.name,
+  category: item.category,
+  type: 'IN',
+  quantity: item.quantity,
+  unit: item.unit,
+  note: 'Opening stock',
+  createdAt: inventorySeedTime,
+}));
+
 export const INITIAL_ORDERS: Order[] = [
   {
     id: 'ord-initial-table-3',

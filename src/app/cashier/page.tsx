@@ -9,7 +9,8 @@ import { ParcelReceiptModal } from '../../components/ParcelReceiptModal';
 import { CateringOrderModal } from '../../components/CateringOrderModal';
 import { CateringInvoiceModal } from '../../components/CateringInvoiceModal';
 import { SettleCateringModal } from '../../components/SettleCateringModal';
-import { Order, RestaurantTable, ParcelOrder, CateringOrder } from '../../lib/types';
+import { ThermalReceipt } from '../../components/ThermalReceipt';
+import { Order, RestaurantTable, ParcelOrder, CateringOrder, MenuItem, Payment } from '../../lib/types';
 import Link from 'next/link';
 import {
   Receipt,
@@ -28,19 +29,36 @@ import {
   Clock,
   Sparkles,
   Phone,
+  Minus,
+  X,
+  Pencil,
 } from 'lucide-react';
 
 export default function CashierDashboardPage() {
-  const { state, stats, getActiveOrderForTable } = useRestaurant();
+  const { state, stats, getActiveOrderForTable, createWalkInOrder, addItemsToOrder, updateMenuItem } = useRestaurant();
+  const [mounted, setMounted] = useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Top Category Tabs: A = Table Bills, B = Parcel Bills, C = Catering Bills
   const [activeCategory, setActiveCategory] = useState<'A_TABLE' | 'B_PARCEL' | 'C_CATERING'>('A_TABLE');
 
   // Category A: Table Bills State
   const [selectedOrderForBill, setSelectedOrderForBill] = useState<Order | null>(null);
+  const [receiptToReprint, setReceiptToReprint] = useState<{ order: Order; payment: Payment } | null>(null);
   const [sectionFilter, setSectionFilter] = useState<string>('ALL');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'FREE' | 'OCCUPIED' | 'BILL_REQUESTED'>('ALL');
   const [tableSearchQuery, setTableSearchQuery] = useState('');
+  const [showQuickOrder, setShowQuickOrder] = useState(false);
+  const [quickCustomerName, setQuickCustomerName] = useState('');
+  const [quickGuests, setQuickGuests] = useState('1');
+  const [quickPriceMode, setQuickPriceMode] = useState<'STANDARD' | 'AC'>('STANDARD');
+  const [quickCart, setQuickCart] = useState<Record<string, number>>({});
+  const [quickError, setQuickError] = useState('');
+  const [editingPriceId, setEditingPriceId] = useState<string | null>(null);
+  const [editingStandardPrice, setEditingStandardPrice] = useState('');
 
   // Category B: Parcel Bills State
   const [showNewParcelModal, setShowNewParcelModal] = useState(false);
@@ -56,6 +74,7 @@ export default function CashierDashboardPage() {
 
   // Collect active bill requests for Category A
   const billRequests = state.orders.filter((o) => o.status === 'BILL_REQUESTED');
+  const activeWalkInOrders = state.orders.filter((order) => order.table_number === 0 && order.status !== 'PAID' && order.status !== 'CANCELLED');
 
   // Filter tables for Category A
   const filteredTables = state.tables.filter((table) => {
@@ -100,6 +119,49 @@ export default function CashierDashboardPage() {
   const totalCateringBalance = state.caterings.reduce((sum, c) => sum + c.balance_due, 0);
 
   const sections = ['ALL', 'Main Dining', 'AC Family Hall', 'Garden Terrace'];
+  const startQuickOrder = () => {
+    setQuickCart({});
+    setQuickError('');
+    setShowQuickOrder(true);
+  };
+
+  const submitQuickOrder = () => {
+    const items = Object.entries(quickCart).filter(([, quantity]) => quantity > 0).map(([menuItemId, quantity]) => ({ menuItemId, quantity }));
+    if (!items.length) return setQuickError('At least one menu item add pannunga.');
+    const walkInOrder = createWalkInOrder(quickCustomerName || 'Walk-in Guest', Number(quickGuests) || 1);
+    if (!walkInOrder.success || !walkInOrder.orderId) return setQuickError(walkInOrder.error || 'Order create panna mudiyala.');
+    const added = addItemsToOrder(walkInOrder.orderId, items, quickPriceMode);
+    if (!added.success) return setQuickError(added.error || 'Items add panna mudiyala.');
+    setShowQuickOrder(false);
+    setQuickCart({});
+  };
+
+  const saveCashierPrices = (item: MenuItem) => {
+    const standard = Number(editingStandardPrice);
+    if (!Number.isFinite(standard) || standard < 0) return;
+    updateMenuItem({ ...item, price: standard });
+    setEditingPriceId(null);
+  };
+
+  const openPaidReceipt = (payment: Payment) => {
+    const existingOrder = state.orders.find((order) => order.id === payment.order_id);
+    const order: Order = existingOrder || {
+      id: payment.order_id,
+      order_number: payment.order_number,
+      table_id: '',
+      table_number: payment.table_number,
+      customer_name: payment.customer_name,
+      status: 'PAID',
+      subtotal: payment.subtotal,
+      tax_rate: 5,
+      tax_amount: payment.tax_amount,
+      discount_amount: payment.discount_amount,
+      final_total: payment.final_total,
+      created_at: payment.created_at,
+      items: [{ id: `reprint-${payment.id}`, order_id: payment.order_id, item_name: 'Settled Order Items', quantity: 1, unit_price: payment.subtotal, total_price: payment.subtotal, status: 'SERVED', round_number: 1, created_at: payment.created_at }],
+    };
+    setReceiptToReprint({ order, payment });
+  };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 lg:p-8">
@@ -154,12 +216,16 @@ export default function CashierDashboardPage() {
               <span className="text-sm">Table Bills (Dine-in)</span>
             </div>
             <div className="flex items-center gap-1.5">
-              {billRequests.length > 0 && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-purple-600 text-white animate-pulse">
+              {mounted && billRequests.length > 0 && (
+                <span
+                  suppressHydrationWarning
+                  className="px-2 py-0.5 rounded-full text-[10px] font-black bg-purple-600 text-white animate-pulse"
+                >
                   {billRequests.length} Req
                 </span>
               )}
               <span
+                suppressHydrationWarning
                 className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
                   activeCategory === 'A_TABLE' ? 'bg-slate-950/20 text-slate-950' : 'bg-slate-800 text-slate-400'
                 }`}
@@ -190,6 +256,7 @@ export default function CashierDashboardPage() {
               <span className="text-sm">Parcel Bills (Takeaway)</span>
             </div>
             <span
+              suppressHydrationWarning
               className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
                 activeCategory === 'B_PARCEL' ? 'bg-slate-950/20 text-slate-950' : 'bg-slate-800 text-slate-400'
               }`}
@@ -219,12 +286,16 @@ export default function CashierDashboardPage() {
               <span className="text-sm">Catering Bills (Bulk Booking)</span>
             </div>
             <div className="flex items-center gap-1.5">
-              {totalCateringBalance > 0 && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500 text-white">
+              {mounted && totalCateringBalance > 0 && (
+                <span
+                  suppressHydrationWarning
+                  className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500 text-white"
+                >
                   Bal Due
                 </span>
               )}
               <span
+                suppressHydrationWarning
                 className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
                   activeCategory === 'C_CATERING' ? 'bg-slate-950/20 text-slate-950' : 'bg-slate-800 text-slate-400'
                 }`}
@@ -240,8 +311,11 @@ export default function CashierDashboardPage() {
         {/* =================================================================== */}
         {activeCategory === 'A_TABLE' && (
           <div className="space-y-6 animate-in fade-in">
+            <button onClick={startQuickOrder} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-amber-500 px-4 py-3 text-sm font-black text-slate-950 shadow-lg shadow-amber-950/30 transition-colors hover:bg-amber-400">
+              <Plus className="h-4 w-4" /> Quick Dine-in Order
+            </button>
             {/* Prominent Bill Request Notification Banner */}
-            {billRequests.length > 0 && (
+            {mounted && billRequests.length > 0 && (
               <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-950/80 via-indigo-950/70 to-slate-900 border border-purple-500/50 shadow-xl shadow-purple-950/40">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
@@ -419,6 +493,28 @@ export default function CashierDashboardPage() {
                 <p className="text-sm text-slate-400 font-medium">No tables match the selected filter</p>
               </div>
             )}
+
+            <section className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/70">
+              <div className="border-b border-slate-800 px-4 py-3"><h2 className="text-sm font-bold text-white">Active Walk-in Orders</h2><p className="text-[11px] text-slate-500">Table occupy pannaama create panna orders inga varum.</p></div>
+              {activeWalkInOrders.length === 0 ? <p className="p-4 text-xs text-slate-500">Active walk-in orders illa.</p> : <div className="divide-y divide-slate-800">{activeWalkInOrders.map((order) => <div key={order.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"><div><p className="text-xs font-bold text-white">{order.order_number} • {order.customer_name}</p><p className="mt-1 text-[10px] text-slate-500">{order.items.map((item) => `${item.item_name} ×${item.quantity}`).join(', ') || 'Items pending'} · {order.status.replace('_', ' ')}</p></div><button onClick={() => setSelectedOrderForBill(order)} className="rounded-lg bg-amber-500 px-3 py-2 text-xs font-black text-slate-950 hover:bg-amber-400"><Receipt className="mr-1 inline h-3.5 w-3.5" />Open Bill</button></div>)}</div>}
+            </section>
+
+            <section className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/70">
+              <div className="flex items-center justify-between border-b border-slate-800 px-4 py-3">
+                <div><h2 className="text-sm font-bold text-white">Recent Paid Bills</h2><p className="text-[11px] text-slate-500">Previous bill-a select panni receipt reprint pannalaam.</p></div>
+                <History className="h-4 w-4 text-amber-400" />
+              </div>
+              {state.payments.length === 0 ? <p className="p-4 text-xs text-slate-500">Paid bills innum illa.</p> : (
+                <div className="divide-y divide-slate-800">
+                  {[...state.payments].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 6).map((payment) => (
+                    <div key={payment.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+                      <div><p className="text-xs font-bold text-white">{payment.order_number} • {payment.customer_name}</p><p className="mt-1 text-[10px] text-slate-500">{payment.table_number > 0 ? `Table ${payment.table_number}` : 'Walk-in'} · {payment.payment_method} · {new Date(payment.created_at).toLocaleString('en-IN')}</p></div>
+                      <div className="flex items-center gap-3"><span className="text-sm font-black text-amber-400">₹{payment.final_total.toFixed(2)}</span><button onClick={() => openPaidReceipt(payment)} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-200 hover:border-amber-500"><Printer className="h-3.5 w-3.5 text-amber-400" />Reprint</button></div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
           </div>
         )}
 
@@ -506,7 +602,7 @@ export default function CashierDashboardPage() {
                           <div className="truncate text-slate-300">
                             {parcel.items.map((i) => `${i.item_name} (×${i.quantity})`).join(', ')}
                           </div>
-                          <span className="text-[10px] text-slate-500">
+                          <span suppressHydrationWarning className="text-[10px] text-slate-500">
                             {new Date(parcel.created_at).toLocaleTimeString('en-IN', {
                               hour: '2-digit',
                               minute: '2-digit',
@@ -802,12 +898,55 @@ export default function CashierDashboardPage() {
       {/* MODALS */}
       {/* =================================================================== */}
 
+      {showQuickOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-3 backdrop-blur-sm">
+          <div className="flex max-h-[94vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-slate-700 bg-slate-950 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-800 p-4">
+              <div><h2 className="text-lg font-black text-white">Quick Dine-in Order</h2><p className="text-xs text-slate-400">Cashier inga direct order place pannina kitchen screen-ku instant-aa pogum.</p></div>
+              <button onClick={() => setShowQuickOrder(false)} className="rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-white" aria-label="Close"><X className="h-5 w-5" /></button>
+            </div>
+            <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto p-4 lg:grid-cols-[1fr_320px]">
+              <div className="space-y-4">
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="flex items-center rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs font-bold text-amber-300">Walk-in • No table assignment</div>
+                  <label className="text-xs text-slate-400">Customer<input value={quickCustomerName} onChange={(e) => setQuickCustomerName(e.target.value)} placeholder="Walk-in Guest" className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 p-2 text-white" /></label>
+                  <label className="text-xs text-slate-400">Dining price<select value={quickPriceMode} onChange={(e) => setQuickPriceMode(e.target.value as 'STANDARD' | 'AC')} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 p-2 text-white"><option value="STANDARD">Normal Dining</option><option value="AC">Dining AC</option></select></label>
+                </div>
+                <label className="block max-w-40 text-xs text-slate-400">Guests<input type="number" min="1" value={quickGuests} onChange={(e) => setQuickGuests(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 p-2 text-white" /></label>
+                <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                  {state.menuItems.filter((item) => item.is_available).map((item) => {
+                    const price = quickPriceMode === 'AC' ? (item.ac_price ?? Math.round(item.price * 1.12 * 100) / 100) : item.price;
+                    const isEditing = editingPriceId === item.id;
+                    return <div key={item.id} className="rounded-xl border border-slate-800 bg-slate-900 p-3">
+                      <div className="flex items-start justify-between gap-2"><div><p className="text-sm font-bold text-white">{item.name}</p><p className="mt-1 text-xs text-amber-400">₹{price.toFixed(2)}{quickPriceMode === 'AC' ? ` · AC (Admin price ${item.ac_price ? '' : 'suggested'})` : ''}</p></div><button onClick={() => { setEditingPriceId(isEditing ? null : item.id); setEditingStandardPrice(String(item.price)); }} className="flex items-center gap-1 rounded-lg border border-slate-700 px-2 py-1 text-[10px] text-slate-300 hover:border-amber-500"><Pencil className="h-3 w-3" />Edit</button></div>
+                      {isEditing ? <div className="mt-3 space-y-2"><label className="text-[10px] text-slate-400">Normal dining price (₹)<input aria-label="Normal dining price" type="number" min="0" value={editingStandardPrice} onChange={(e) => setEditingStandardPrice(e.target.value)} placeholder="Normal price" className="mt-1 w-full rounded border border-slate-700 bg-slate-950 px-2 py-1.5 text-xs text-white" /></label><p className="text-[10px] text-slate-500">AC price Admin Menu-la mattum edit pannalaam.</p><button onClick={() => saveCashierPrices(item)} className="w-full rounded bg-amber-500 py-1.5 text-xs font-bold text-slate-950">Save normal price</button></div> : <div className="mt-3 flex items-center justify-between"><span className="text-xs text-slate-400">Qty: {quickCart[item.id] || 0}</span><div className="flex gap-1"><button onClick={() => setQuickCart((c) => ({ ...c, [item.id]: Math.max(0, (c[item.id] || 0) - 1) }))} className="rounded-lg border border-slate-700 p-1.5 text-white"><Minus className="h-3.5 w-3.5" /></button><button onClick={() => setQuickCart((c) => ({ ...c, [item.id]: (c[item.id] || 0) + 1 }))} className="rounded-lg bg-amber-500 p-1.5 text-slate-950"><Plus className="h-3.5 w-3.5" /></button></div></div>}
+                    </div>;
+                  })}
+                </div>
+              </div>
+              <aside className="rounded-xl border border-slate-800 bg-slate-900 p-4">
+                <h3 className="font-bold text-white">Order Summary</h3>
+                <div className="mt-3 max-h-56 space-y-2 overflow-auto">{Object.entries(quickCart).filter(([, qty]) => qty > 0).map(([id, qty]) => { const item = state.menuItems.find((menuItem) => menuItem.id === id); if (!item) return null; const price = quickPriceMode === 'AC' ? (item.ac_price ?? Math.round(item.price * 1.12 * 100) / 100) : item.price; return <div key={id} className="flex justify-between gap-2 text-xs text-slate-300"><span>{qty} × {item.name}</span><span>₹{(price * qty).toFixed(2)}</span></div>; })}</div>
+                <div className="mt-4 border-t border-slate-700 pt-3 text-sm font-black text-white">Total <span className="float-right">₹{Object.entries(quickCart).reduce((sum, [id, qty]) => { const item = state.menuItems.find((m) => m.id === id); return sum + (item ? (quickPriceMode === 'AC' ? (item.ac_price ?? Math.round(item.price * 1.12 * 100) / 100) : item.price) * qty : 0); }, 0).toFixed(2)}</span></div>
+                {quickError && <p className="mt-3 text-xs text-rose-400">{quickError}</p>}
+                <button onClick={submitQuickOrder} className="mt-4 w-full rounded-xl bg-amber-500 py-3 text-sm font-black text-slate-950 hover:bg-amber-400">Place Order • Send to Kitchen</button>
+                <p className="mt-2 text-center text-[10px] text-slate-500">Bill order complete aanadhum cashier counter-la available.</p>
+              </aside>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Category A: Table Bill Modal */}
       {selectedOrderForBill && (
         <BillModal
           order={selectedOrderForBill}
           onClose={() => setSelectedOrderForBill(null)}
         />
+      )}
+
+      {receiptToReprint && (
+        <ThermalReceipt order={receiptToReprint.order} payment={receiptToReprint.payment} onClose={() => setReceiptToReprint(null)} />
       )}
 
       {/* Category B: New Parcel Order Modal */}

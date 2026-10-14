@@ -16,6 +16,8 @@ import {
   Payment,
   ParcelOrder,
   CateringOrder,
+  InventoryCategory,
+  InventoryMovementType,
 } from '../lib/types';
 
 interface RestaurantContextType {
@@ -27,13 +29,15 @@ interface RestaurantContextType {
     guestCount: number,
     waiterId?: string
   ) => { success: boolean; orderId?: string; error?: string };
+  createWalkInOrder: (customerName: string, guestCount: number, waiterId?: string) => { success: boolean; orderId?: string; error?: string };
   addItemsToOrder: (
     orderId: string,
     itemsToAdd: Array<{
       menuItemId: string;
       quantity: number;
       specialInstructions?: string;
-    }>
+    }>,
+    priceMode?: 'STANDARD' | 'AC'
   ) => { success: boolean; error?: string };
   updateOrderItemStatus: (
     orderId: string,
@@ -92,8 +96,29 @@ interface RestaurantContextType {
   toggleItemAvailability: (itemId: string) => { success: boolean };
   deleteMenuItem: (itemId: string) => { success: boolean };
   addCategory: (name: string, icon?: string) => { success: boolean };
+  addInventoryItem: (data: {
+    name: string;
+    category: InventoryCategory;
+    menuItemId?: string;
+    unit: string;
+    openingQuantity: number;
+    lowStockThreshold: number;
+  }) => { success: boolean; error?: string };
+  updateInventoryThreshold: (itemId: string, lowStockThreshold: number) => { success: boolean };
+  updateInventoryItem: (
+    itemId: string,
+    data: { name: string; unit: string; lowStockThreshold: number }
+  ) => { success: boolean; error?: string };
+  deleteInventoryItem: (itemId: string) => { success: boolean };
+  recordInventoryMovement: (
+    itemId: string,
+    type: InventoryMovementType,
+    quantity: number,
+    note?: string
+  ) => { success: boolean; error?: string };
   clearNotification: (id: string) => void;
   resetToDemo: () => void;
+  isHydrated: boolean;
   // Helpers
   getActiveOrderForTable: (tableId: string) => Order | undefined;
   getTableById: (tableId: string) => RestaurantTable | undefined;
@@ -111,10 +136,14 @@ interface RestaurantContextType {
 const RestaurantContext = createContext<RestaurantContextType | null>(null);
 
 export function RestaurantProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<RestaurantState>(() => restaurantStore.getState());
+  // Always initialize with pristine initial state so server and client initial render match 100%
+  const [state, setState] = useState<RestaurantState>(() => restaurantStore.getInitialState());
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
     restaurantStore.init();
+    setState({ ...restaurantStore.getState() });
+    setIsHydrated(true);
     const unsubscribe = restaurantStore.subscribe((newState) => {
       setState({ ...newState });
     });
@@ -161,7 +190,8 @@ export function RestaurantProvider({ children }: { children: React.ReactNode }) 
     state,
     setRole: (role) => restaurantStore.setRole(role),
     assignTable: (tId, name, count, wId) => restaurantStore.assignTable(tId, name, count, wId),
-    addItemsToOrder: (oId, items) => restaurantStore.addItemsToOrder(oId, items),
+    createWalkInOrder: (name, count, waiterId) => restaurantStore.createWalkInOrder(name, count, waiterId),
+    addItemsToOrder: (oId, items, priceMode) => restaurantStore.addItemsToOrder(oId, items, priceMode),
     updateOrderItemStatus: (oId, iId, status) =>
       restaurantStore.updateOrderItemStatus(oId, iId, status),
     updateTicketStatus: (oId, status) => restaurantStore.updateTicketStatus(oId, status),
@@ -176,12 +206,19 @@ export function RestaurantProvider({ children }: { children: React.ReactNode }) 
     toggleItemAvailability: (iId) => restaurantStore.toggleItemAvailability(iId),
     deleteMenuItem: (iId) => restaurantStore.deleteMenuItem(iId),
     addCategory: (name, icon) => restaurantStore.addCategory(name, icon),
+    addInventoryItem: (data) => restaurantStore.addInventoryItem(data),
+    updateInventoryThreshold: (itemId, threshold) => restaurantStore.updateInventoryThreshold(itemId, threshold),
+    updateInventoryItem: (itemId, data) => restaurantStore.updateInventoryItem(itemId, data),
+    deleteInventoryItem: (itemId) => restaurantStore.deleteInventoryItem(itemId),
+    recordInventoryMovement: (itemId, type, quantity, note) =>
+      restaurantStore.recordInventoryMovement(itemId, type, quantity, note),
     clearNotification: (id) => restaurantStore.clearNotification(id),
     resetToDemo: () => restaurantStore.resetToDemo(),
     getActiveOrderForTable,
     getTableById,
     getOrderById,
     stats,
+    isHydrated,
   };
 
   return <RestaurantContext.Provider value={value}>{children}</RestaurantContext.Provider>;

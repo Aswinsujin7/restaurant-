@@ -43,6 +43,7 @@ export interface MenuItem {
   name: string;
   description?: string;
   price: number;
+  ac_price?: number;
   is_veg: boolean;
   spicy_level: number; // 0: None, 1: Mild, 2: Medium, 3: Spicy
   is_available: boolean;
@@ -169,5 +170,32 @@ export interface CateringOrder {
   notes?: string;
   cashier_name: string;
   created_at: string;
+}
+
+export type InventoryCategory = 'FOOD' | 'GROCERY';
+export type InventoryMovementType = 'IN' | 'OUT';
+
+export interface InventoryItem {
+  id: string;
+  menuItemId?: string;
+  isActive?: boolean;
+  name: string;
+  category: InventoryCategory;
+  unit: string;
+  quantity: number;
+  lowStockThreshold: number;
+  updatedAt: string;
+}
+
+export interface InventoryMovement {
+  id: string;
+  itemId: string;
+  itemName: string;
+  category: InventoryCategory;
+  type: InventoryMovementType;
+  quantity: number;
+  unit: string;
+  note?: string;
+  createdAt: string;
 }
 

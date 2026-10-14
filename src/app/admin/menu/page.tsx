@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useRestaurant } from '../../../context/RestaurantContext';
 import { VegBadge } from '../../../components/StatusBadge';
 import { MenuItem, MenuCategory } from '../../../lib/types';
@@ -16,6 +17,7 @@ import {
   MenuSquare,
   X,
   Sparkles,
+  Boxes,
 } from 'lucide-react';
 
 export default function AdminMenuPage() {
@@ -41,6 +43,7 @@ export default function AdminMenuPage() {
   const [name, setName] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [price, setPrice] = useState('');
+  const [acPrice, setAcPrice] = useState('');
   const [isVeg, setIsVeg] = useState(true);
   const [spicyLevel, setSpicyLevel] = useState(1);
   const [description, setDescription] = useState('');
@@ -60,6 +63,7 @@ export default function AdminMenuPage() {
     setName('');
     setCategoryId(activeCategoryId);
     setPrice('');
+    setAcPrice('');
     setIsVeg(true);
     setSpicyLevel(1);
     setDescription('');
@@ -72,6 +76,7 @@ export default function AdminMenuPage() {
     setName(item.name);
     setCategoryId(item.category_id);
     setPrice(item.price.toString());
+    setAcPrice(item.ac_price?.toString() || '');
     setIsVeg(item.is_veg);
     setSpicyLevel(item.spicy_level);
     setDescription(item.description || '');
@@ -92,6 +97,11 @@ export default function AdminMenuPage() {
       setFormError('Valid price is required');
       return;
     }
+    const parsedAcPrice = acPrice.trim() ? parseFloat(acPrice) : Math.round(parsedPrice * 1.12 * 100) / 100;
+    if (!Number.isFinite(parsedAcPrice) || parsedAcPrice < 0) {
+      setFormError('Valid AC dining price is required');
+      return;
+    }
 
     if (editingItem) {
       updateMenuItem({
@@ -99,6 +109,7 @@ export default function AdminMenuPage() {
         name: name.trim(),
         category_id: categoryId,
         price: parsedPrice,
+        ac_price: parsedAcPrice,
         is_veg: isVeg,
         spicy_level: spicyLevel,
         description: description.trim(),
@@ -108,6 +119,7 @@ export default function AdminMenuPage() {
         name: name.trim(),
         category_id: categoryId || activeCategoryId,
         price: parsedPrice,
+        ac_price: parsedAcPrice,
         is_veg: isVeg,
         spicy_level: spicyLevel,
         description: description.trim(),
@@ -159,6 +171,13 @@ export default function AdminMenuPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            <Link
+              href="/admin/inventory"
+              className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-300 transition-colors hover:border-amber-500/40 hover:bg-slate-800 hover:text-white"
+            >
+              <Boxes className="h-4 w-4 text-amber-400" />
+              <span>Inventory</span>
+            </Link>
             <button
               onClick={() => setShowCategoryModal(true)}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-300 hover:text-white transition-colors"
@@ -273,6 +292,7 @@ export default function AdminMenuPage() {
                       </td>
                       <td className="p-3.5 text-right font-black text-amber-400 text-sm">
                         ₹{item.price.toFixed(2)}
+                        <span className="mt-1 block text-[10px] font-semibold text-slate-400">AC ₹{(item.ac_price ?? Math.round(item.price * 1.12 * 100) / 100).toFixed(2)}</span>
                       </td>
                       <td className="p-3.5 text-center">
                         <div className="flex items-center justify-center gap-0.5 text-rose-400">
@@ -400,6 +420,20 @@ export default function AdminMenuPage() {
                     className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white font-bold focus:outline-none focus:border-amber-500"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-300 mb-1">AC Dining Price (₹):</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="Blank uses normal price + 12%"
+                  value={acPrice}
+                  onChange={(e) => setAcPrice(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white font-bold focus:outline-none focus:border-amber-500"
+                />
+                <p className="mt-1 text-[10px] text-slate-500">Admin exact price decide pannalaam. Blank vittaa normal price-oda 12% adhigama default aagum.</p>
               </div>
 
               <div className="grid grid-cols-2 gap-3">

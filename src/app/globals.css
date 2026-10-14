@@ -1,64 +1,58 @@
 @import "tailwindcss";
 
+@theme {
+  --color-slate-950: #15191c;
+  --color-slate-900: #1d2327;
+  --color-slate-800: #273035;
+  --color-slate-700: #39454a;
+  --color-slate-600: #526166;
+  --color-slate-500: #748186;
+  --color-slate-400: #a0abad;
+  --color-slate-300: #c5cecc;
+  --color-slate-200: #dce3df;
+  --color-slate-100: #f1f4ef;
+  --color-amber-300: #e9ca91;
+  --color-amber-400: #dfbb79;
+  --color-amber-500: #c99c58;
+  --color-amber-600: #a87c43;
+  --color-amber-700: #765a35;
+}
+
 :root {
-  --background: #020617;
-  --foreground: #f8fafc;
+  color-scheme: dark;
+  --background: #15191c;
+  --foreground: #f1f4ef;
 }
 
 body {
-  background: #020617;
-  color: #f8fafc;
+  background:
+    radial-gradient(ellipse at 50% -20%, rgba(201, 156, 88, .11), transparent 55%),
+    #15191c;
+  color: #f1f4ef;
   min-height: 100vh;
 }
 
+::selection { background: #c99c58; color: #15191c; }
+
 @keyframes pulse-slow {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.88;
-    transform: scale(1.008);
-  }
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .88; transform: scale(1.008); }
 }
+.animate-pulse-slow { animation: pulse-slow 3s ease-in-out infinite; }
 
-.animate-pulse-slow {
-  animation: pulse-slow 3s ease-in-out infinite;
-}
-
-/* Print specific styles for POS thermal receipts */
+/* Keep printed POS receipts clean and legible. */
 @media print {
-  body * {
-    visibility: hidden;
-  }
-  .print\:m-0,
-  .print\:m-0 * {
-    visibility: visible;
-  }
-  .print\:m-0 {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 80mm;
-    margin: 0;
-    padding: 8px;
-    background: white !important;
-    color: black !important;
+  body * { visibility: hidden; }
+  .print\\:m-0, .print\\:m-0 * { visibility: visible; }
+  .print\\:m-0 {
+    position: absolute; left: 0; top: 0; width: 80mm; margin: 0; padding: 8px;
+    background: white !important; color: black !important;
   }
 }
 
-/* Custom sleek scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(51, 65, 85, 0.8);
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 1);
-}
+::-webkit-scrollbar { width: 7px; height: 7px; }
+::-webkit-scrollbar-track { background: #1d2327; }
+::-webkit-scrollbar-thumb { background: #526166; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #c99c58; }
+
+input, select, textarea { color-scheme: dark; }

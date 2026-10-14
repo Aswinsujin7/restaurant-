@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { RestaurantProvider } from '../context/RestaurantContext';
 import { Navbar } from '../components/Navbar';
-import { NotificationToast } from '../components/NotificationToast';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -35,7 +34,6 @@ export default function RootLayout({
         <RestaurantProvider>
           <Navbar />
           <main className="flex-1 flex flex-col">{children}</main>
-          <NotificationToast />
         </RestaurantProvider>
       </body>
     </html>

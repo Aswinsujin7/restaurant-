@@ -14,6 +14,8 @@ import {
   CheckCheck,
   Flame,
   Volume2,
+  Boxes,
+  AlertTriangle,
 } from 'lucide-react';
 import { playAlertChime } from '../../components/SoundAlert';
 
@@ -132,7 +134,7 @@ export default function KitchenDashboardPage() {
                 >
                   <div className="flex items-center gap-2.5">
                     <div className="w-11 h-11 rounded-xl bg-amber-500 text-slate-950 font-black text-lg flex items-center justify-center shadow-md">
-                      T{order.table_number}
+                      {order.table_number > 0 ? `T${order.table_number}` : 'Walk-in'}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
@@ -287,6 +289,42 @@ export default function KitchenDashboardPage() {
             </p>
           </div>
         )}
+
+        {/* Kitchen stock is shared with Admin Inventory and updates as dishes are served. */}
+        <section className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/70" aria-live="polite">
+          <div className="flex flex-col gap-2 border-b border-slate-800 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2">
+              <Boxes className="h-4 w-4 text-amber-400" />
+              <h2 className="text-sm font-bold text-white">Kitchen Stock</h2>
+              <span className="rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-bold text-slate-400">Live</span>
+            </div>
+            <p className="text-[11px] text-slate-500">Food stock updates when an order is marked served.</p>
+          </div>
+          {state.inventoryItems.filter((item) => item.isActive !== false && item.category === 'FOOD').length === 0 ? (
+            <p className="p-5 text-center text-xs text-slate-500">Food inventory has not been set up yet.</p>
+          ) : (
+            <div className="grid max-h-56 grid-cols-1 gap-2 overflow-y-auto p-3 sm:grid-cols-2 xl:grid-cols-3">
+              {state.inventoryItems
+                .filter((item) => item.isActive !== false && item.category === 'FOOD')
+                .sort((a, b) => Number(b.quantity <= b.lowStockThreshold) - Number(a.quantity <= a.lowStockThreshold) || a.name.localeCompare(b.name))
+                .map((item) => {
+                  const isLow = item.quantity <= item.lowStockThreshold;
+                  return (
+                    <div key={item.id} className="flex items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2.5">
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-semibold text-slate-200">{item.name}</p>
+                        <p className="mt-0.5 text-[10px] text-slate-500">Alert below {item.lowStockThreshold} {item.unit}</p>
+                      </div>
+                      <span className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-[10px] font-black ${isLow ? 'bg-amber-400/10 text-amber-200' : 'bg-emerald-400/[0.08] text-emerald-300'}`}>
+                        {isLow && <AlertTriangle className="h-3 w-3" />}
+                        {Number.isInteger(item.quantity) ? item.quantity : item.quantity.toFixed(2)} {item.unit}
+                      </span>
+                    </div>
+                  );
+                })}
+            </div>
+          )}
+        </section>
       </div>
     </div>
   );

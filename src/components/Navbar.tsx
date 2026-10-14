@@ -77,22 +77,26 @@ export function Navbar() {
               )}
             </div>
 
-            {/* Admin Quick Links */}
-            <Link
-              href="/admin/billing"
-              title="Billing History & Reports"
-              className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors border border-transparent hover:border-slate-700"
-            >
-              <History className="w-4 h-4" />
-            </Link>
+            {/* Admin shortcuts stay inside the Admin Hub role. */}
+            {state.activeRole === 'admin' && (
+              <>
+                <Link
+                  href="/admin/billing"
+                  title="Billing History & Reports"
+                  className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors border border-transparent hover:border-slate-700"
+                >
+                  <History className="w-4 h-4" />
+                </Link>
 
-            <Link
-              href="/admin/menu"
-              title="Menu Management"
-              className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors border border-transparent hover:border-slate-700"
-            >
-              <MenuSquare className="w-4 h-4" />
-            </Link>
+                <Link
+                  href="/admin/menu"
+                  title="Menu Management"
+                  className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors border border-transparent hover:border-slate-700"
+                >
+                  <MenuSquare className="w-4 h-4" />
+                </Link>
+              </>
+            )}
 
             {/* Reset Demo button */}
             <div className="relative">

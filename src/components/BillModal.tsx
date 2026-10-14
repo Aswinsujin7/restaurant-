@@ -122,7 +122,7 @@ export function BillModal({ order, onClose }: BillModalProps) {
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-bold text-white">
-                  Checkout Table {order.table_number}
+                  {order.table_number > 0 ? `Checkout Table ${order.table_number}` : 'Checkout Walk-in Order'}
                 </h3>
                 <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
                   {order.order_number}

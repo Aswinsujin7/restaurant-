@@ -8,172 +8,153 @@ import {
   UtensilsCrossed,
   ChefHat,
   ShieldCheck,
-  CheckCircle2,
   ArrowRight,
   TrendingUp,
-  RotateCcw,
-  Sparkles,
-  Zap,
   Users,
-  Database,
-  Radio,
+  Sparkles,
+  Clock3,
 } from 'lucide-react';
 
 export default function Home() {
-  const { state, stats, resetToDemo, setRole } = useRestaurant();
+  const { state, stats, setRole } = useRestaurant();
 
   const roleModules = [
     {
-      title: '1. Cashier Dashboard',
+      title: 'Cashier Dashboard',
       role: 'cashier',
       path: '/cashier',
       icon: Receipt,
-      badge: `${stats.billRequestedTables} Bill Requests Pending`,
-      badgeColor: stats.billRequestedTables > 0 ? 'bg-purple-500/20 text-purple-300 border-purple-500/40' : 'bg-slate-800 text-slate-400 border-slate-700',
-      description:
-        'Live table occupancy board, automated itemized billing, multi-mode settlements (UPI QR, Cash tendered & change calculator, Card terminal), and instant table releasing.',
-      primaryAction: 'Launch Cashier Counter',
-      accentColor: 'from-amber-500 to-amber-700',
+      number: '01',
+      badge: `${stats.billRequestedTables} bill requests`,
+      badgeColor: stats.billRequestedTables > 0 ? 'bg-purple-500/15 text-purple-300 border-purple-400/25' : 'bg-slate-800 text-slate-300 border-slate-700',
+      description: 'Manage table bills, parcel and catering orders, payments, and receipts from one counter.',
+      primaryAction: 'Go to cashier',
+      accentColor: 'from-amber-300 to-amber-600',
     },
     {
-      title: '2. Waiter Mobile POS',
+      title: 'Waiter POS',
       role: 'waiter',
       path: '/waiter',
       icon: UtensilsCrossed,
-      badge: `${stats.freeTables} Tables Available`,
-      badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
-      description:
-        'Mobile-friendly table seat allocator, unique order session creator, digital menu browsing with veg/non-veg tags, KOT kitchen submissions, and one-tap bill requests.',
-      primaryAction: 'Open Waiter POS',
-      accentColor: 'from-emerald-500 to-teal-700',
+      number: '02',
+      badge: `${stats.freeTables} tables free`,
+      badgeColor: 'bg-emerald-500/15 text-emerald-300 border-emerald-400/25',
+      description: 'Seat guests, browse the menu, add items to an order, and send tickets to the kitchen.',
+      primaryAction: 'Open waiter POS',
+      accentColor: 'from-emerald-300 to-emerald-600',
     },
     {
-      title: '3. Kitchen Display System (KDS)',
+      title: 'Kitchen Display',
       role: 'kitchen',
       path: '/kitchen',
       icon: ChefHat,
-      badge: `${stats.pendingKitchenTickets} Active Tickets`,
-      badgeColor: stats.pendingKitchenTickets > 0 ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' : 'bg-slate-800 text-slate-400 border-slate-700',
-      description:
-        'Touchscreen kitchen tickets with elapsed timers, round badges for add-on items, item-level prep checklists, status progression (NEW → PREPARING → READY → SERVED), and chime alerts.',
-      primaryAction: 'Open Kitchen KDS',
-      accentColor: 'from-orange-500 to-rose-700',
+      number: '03',
+      badge: `${stats.pendingKitchenTickets} active tickets`,
+      badgeColor: stats.pendingKitchenTickets > 0 ? 'bg-orange-500/15 text-orange-300 border-orange-400/25' : 'bg-slate-800 text-slate-300 border-slate-700',
+      description: 'Track incoming kitchen orders, update preparation progress, and mark dishes ready to serve.',
+      primaryAction: 'Open kitchen',
+      accentColor: 'from-orange-300 to-orange-600',
     },
     {
-      title: '4. Admin Menu & Billing Hub',
+      title: 'Admin Menu & Billing',
       role: 'admin',
       path: '/admin/menu',
       icon: ShieldCheck,
-      badge: `${state.menuItems.length} Dishes Configured`,
-      badgeColor: 'bg-sky-500/20 text-sky-300 border-sky-500/40',
-      description:
-        'Complete culinary catalog CRUD, real-time stock availability toggling, category organization, revenue summaries, and historical printable thermal tax receipts.',
-      primaryAction: 'Open Admin Hub',
-      accentColor: 'from-blue-500 to-indigo-700',
+      number: '04',
+      badge: `${state.menuItems.length} menu items`,
+      badgeColor: 'bg-sky-500/15 text-sky-300 border-sky-400/25',
+      description: 'Maintain dishes and availability, review billing activity, and print past receipts.',
+      primaryAction: 'Open admin hub',
+      accentColor: 'from-sky-300 to-sky-600',
     },
   ];
 
-
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden py-10 sm:py-16 border-b border-slate-800 bg-gradient-to-b from-slate-900/60 to-slate-950 text-center">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-3">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold tracking-wide">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Complete Restaurant Management System</span>
+    <div className="min-h-screen flex flex-col text-slate-100">
+      <section className="relative isolate overflow-hidden border-b border-amber-500/15 bg-gradient-to-br from-[#252722] via-slate-950 to-[#171c1e]">
+        <div className="absolute -right-20 -top-32 -z-10 h-96 w-96 rounded-full bg-amber-500/10 blur-3xl" />
+        <div className="absolute -bottom-40 left-1/4 -z-10 h-80 w-80 rounded-full bg-orange-700/10 blur-3xl" />
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[1.2fr_.8fr] lg:items-end lg:px-8 lg:py-20">
+          <div className="space-y-6">
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/25 bg-amber-400/10 px-3.5 py-1.5 text-xs font-bold tracking-wide text-amber-300">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>Restaurant operations, made simple</span>
+            </div>
+            <div className="space-y-3">
+              <p className="text-xs font-bold uppercase tracking-[0.28em] text-amber-200/70">Chettinad & South Indian Dining</p>
+              <h1 className="text-4xl font-black leading-[1.05] tracking-tight text-white sm:text-6xl">
+                Welcome to <span className="text-amber-400">Naga Hotel</span>
+              </h1>
+              <p className="max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
+                Your daily service at a glance. Choose a workspace to keep the dining room, kitchen, and counter moving together.
+              </p>
+            </div>
           </div>
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tight leading-tight uppercase">
-            NAGA HOTEL <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600">
-              RESTAURANT
-            </span>
-          </h1>
-          <p className="text-xs sm:text-sm font-semibold text-slate-400 tracking-widest uppercase">
-            Chettinad & South Indian Traditional Dining
-          </p>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            <div className="rounded-2xl border border-white/[0.07] bg-white/[0.035] p-4 shadow-lg shadow-black/10 backdrop-blur-sm sm:p-5">
+              <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-400/10 text-emerald-300"><Users className="h-4 w-4" /></div>
+              <p className="text-2xl font-black text-white">{stats.freeTables}<span className="ml-1 text-sm font-semibold text-slate-400">/ {stats.freeTables + stats.occupiedTables}</span></p>
+              <p className="mt-1 text-xs font-medium text-slate-400">Tables available</p>
+            </div>
+            <div className="rounded-2xl border border-white/[0.07] bg-white/[0.035] p-4 shadow-lg shadow-black/10 backdrop-blur-sm sm:p-5">
+              <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-amber-400/10 text-amber-300"><TrendingUp className="h-4 w-4" /></div>
+              <p className="text-2xl font-black text-white">{stats.occupiedTables}</p>
+              <p className="mt-1 text-xs font-medium text-slate-400">Tables in service</p>
+            </div>
+            <div className="rounded-2xl border border-white/[0.07] bg-white/[0.035] p-4 shadow-lg shadow-black/10 backdrop-blur-sm sm:p-5">
+              <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-orange-400/10 text-orange-300"><ChefHat className="h-4 w-4" /></div>
+              <p className="text-2xl font-black text-white">{stats.pendingKitchenTickets}</p>
+              <p className="mt-1 text-xs font-medium text-slate-400">Kitchen tickets</p>
+            </div>
+            <div className="rounded-2xl border border-white/[0.07] bg-white/[0.035] p-4 shadow-lg shadow-black/10 backdrop-blur-sm sm:p-5">
+              <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-purple-400/10 text-purple-300"><Clock3 className="h-4 w-4" /></div>
+              <p className="text-2xl font-black text-white">{stats.billRequestedTables}</p>
+              <p className="mt-1 text-xs font-medium text-slate-400">Bills to settle</p>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Main Feature Cards Grid */}
-      <section className="py-12 sm:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 flex-1 w-full">
-        <div className="text-center max-w-xl mx-auto space-y-2">
-          <h2 className="text-2xl font-black text-white">Select a Dashboard to Begin</h2>
-          <p className="text-xs text-slate-400">
-            Switch between cashier, waiter, and kitchen roles with real-time state synchronization
-          </p>
+      <section className="mx-auto w-full max-w-7xl flex-1 space-y-7 px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-amber-400">Your workspaces</p>
+            <h2 className="text-2xl font-black text-white sm:text-3xl">Where would you like to start?</h2>
+          </div>
+          <p className="max-w-md text-sm leading-6 text-slate-400">Choose the area you are working in. Live restaurant data stays in sync across each role.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:gap-5">
           {roleModules.map((item) => {
             const Icon = item.icon;
             return (
-              <div
-                key={item.title}
-                className="bg-slate-900/80 border border-slate-800 hover:border-slate-700 rounded-3xl p-6 shadow-xl flex flex-col justify-between transition-all hover:translate-y-[-2px] group"
-              >
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div
-                      className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${item.accentColor} flex items-center justify-center text-slate-950 shadow-md group-hover:scale-105 transition-transform`}
-                    >
-                      <Icon className="w-6 h-6 text-slate-950" />
+              <article key={item.title} className="group flex min-h-64 flex-col justify-between rounded-3xl border border-white/[0.08] bg-gradient-to-br from-slate-900/95 to-[#202729] p-5 shadow-xl shadow-black/15 transition duration-200 hover:-translate-y-1 hover:border-amber-400/30 hover:shadow-2xl hover:shadow-black/25 sm:p-6">
+                <div>
+                  <div className="mb-6 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${item.accentColor} text-slate-950 shadow-lg shadow-black/20 transition-transform group-hover:scale-105`}>
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      <span className="text-xs font-black tracking-[0.18em] text-amber-200/45">{item.number}</span>
                     </div>
-                    <span
-                      className={`px-2.5 py-1 rounded-full text-xs font-bold border ${item.badgeColor}`}
-                    >
-                      {item.badge}
-                    </span>
+                    <span className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${item.badgeColor}`}>{item.badge}</span>
                   </div>
-
-                  <div>
-                    <h3 className="text-lg font-bold text-white group-hover:text-amber-400 transition-colors">
-                      {item.title}
-                    </h3>
-                    <p className="text-xs text-slate-300 mt-2 leading-relaxed">
-                      {item.description}
-                    </p>
-                  </div>
+                  <h3 className="text-lg font-extrabold text-white transition-colors group-hover:text-amber-300">{item.title}</h3>
+                  <p className="mt-2 max-w-lg text-sm leading-6 text-slate-300">{item.description}</p>
                 </div>
-
-                <div className="pt-6 mt-6 border-t border-slate-800/80">
-                  <Link
-                    href={item.path}
-                    onClick={() => setRole(item.role as any)}
-                    className="w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-amber-500 hover:text-slate-950 text-white font-bold text-xs transition-all flex items-center justify-center gap-2 group-hover:bg-amber-500 group-hover:text-slate-950"
-                  >
-                    <span>{item.primaryAction}</span>
-                    <ArrowRight className="w-4 h-4" />
+                <div className="mt-6 border-t border-slate-700/70 pt-4">
+                  <Link href={item.path} onClick={() => setRole(item.role as any)} className="inline-flex items-center gap-2 text-sm font-bold text-amber-300 transition-colors hover:text-amber-200">
+                    {item.primaryAction}<ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </Link>
                 </div>
-              </div>
+              </article>
             );
           })}
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-800 py-6 bg-slate-950 text-xs text-slate-500 text-center">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p>© 2026 Naga Hotel • Restaurant Management System. All rights reserved.</p>
-          <div className="flex items-center gap-4 text-[11px]">
-            <Link href="/cashier" className="hover:text-slate-300">
-              Cashier
-            </Link>
-            <Link href="/waiter" className="hover:text-slate-300">
-              Waiter
-            </Link>
-            <Link href="/kitchen" className="hover:text-slate-300">
-              Kitchen KDS
-            </Link>
-            <Link href="/admin/menu" className="hover:text-slate-300">
-              Admin Menu
-            </Link>
-            <Link href="/admin/billing" className="hover:text-slate-300">
-              Billing History
-            </Link>
-          </div>
-        </div>
+      <footer className="border-t border-white/[0.06] bg-slate-950/70 py-5 text-center text-xs text-slate-500">
+        © 2026 Naga Hotel <span className="mx-1 text-amber-700">•</span> Restaurant Management System
       </footer>
     </div>
   );
