@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useRestaurant } from '../../context/RestaurantContext';
 import { TableCard } from '../../components/TableCard';
 import { BillModal } from '../../components/BillModal';
@@ -39,8 +39,15 @@ export default function CashierDashboardPage() {
   const { state, stats, getActiveOrderForTable, createWalkInOrder, addItemsToOrder } = useRestaurant();
   const [mounted, setMounted] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setMounted(true);
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (tabParam === 'B' || tabParam === 'parcel' || tabParam === 'b') {
+        setActiveCategory('B_PARCEL');
+      }
+    }
   }, []);
 
   // Top Category Tabs: A = Table Bills, B = Parcel Bills, C = Catering Bills
@@ -81,6 +88,7 @@ export default function CashierDashboardPage() {
     const handleCashierKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'F2') {
         e.preventDefault();
+        setActiveCategory('B_PARCEL');
         setShowQuickOrder((prev) => !prev);
         return;
       }
@@ -246,11 +254,21 @@ export default function CashierDashboardPage() {
   const totalCateringBalance = state.caterings.reduce((sum, c) => sum + c.balance_due, 0);
 
   const sections = ['ALL', 'Main Dining', 'AC Family Hall', 'Garden Terrace'];
-  const startQuickOrder = () => {
+  const startQuickOrder = useCallback(() => {
+    setActiveCategory('B_PARCEL');
     setQuickCart({});
     setQuickError('');
     setShowQuickOrder(true);
-  };
+  }, []);
+
+  // Auto-pop Fast Billing modal immediately whenever switching to Parcel Screen (Category B)
+  const prevCategoryRef = useRef(activeCategory);
+  useEffect(() => {
+    if (prevCategoryRef.current !== 'B_PARCEL' && activeCategory === 'B_PARCEL') {
+      startQuickOrder();
+    }
+    prevCategoryRef.current = activeCategory;
+  }, [activeCategory, startQuickOrder]);
 
   const submitQuickOrder = () => {
     const items = Object.entries(quickCart)
@@ -435,7 +453,10 @@ export default function CashierDashboardPage() {
           {/* TAB B: Parcel Bills */}
           <button
             type="button"
-            onClick={() => setActiveCategory('B_PARCEL')}
+            onClick={() => {
+              setActiveCategory('B_PARCEL');
+              startQuickOrder();
+            }}
             className={`flex-1 py-3 px-4 rounded-xl font-bold text-xs transition-all flex items-center justify-between gap-2 cursor-pointer ${
               activeCategory === 'B_PARCEL'
                 ? 'bg-amber-500 text-slate-950 font-black shadow-lg shadow-amber-950/40 ring-2 ring-amber-400/50'
@@ -508,16 +529,6 @@ export default function CashierDashboardPage() {
         {/* =================================================================== */}
         {activeCategory === 'A_TABLE' && (
           <div className="space-y-6 animate-in fade-in">
-            <button
-              onClick={startQuickOrder}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-amber-500 px-4 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-amber-950/30 transition-all hover:bg-amber-400 cursor-pointer"
-            >
-              <Keyboard className="h-4 w-4 text-slate-950" />
-              <span>⚡ Fast Keyboard Billing (POS) • Direct Counter Bill</span>
-              <span className="rounded bg-black/25 px-2 py-0.5 text-xs font-mono font-bold text-slate-950 border border-black/20">
-                Press F2
-              </span>
-            </button>
             {/* Prominent Bill Request Notification Banner */}
             {mounted && billRequests.length > 0 && (
               <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-950/80 via-indigo-950/70 to-slate-900 border border-purple-500/50 shadow-xl shadow-purple-950/40">
@@ -921,6 +932,18 @@ export default function CashierDashboardPage() {
         {/* =================================================================== */}
         {activeCategory === 'B_PARCEL' && (
           <div className="space-y-6 animate-in fade-in">
+            {/* Fast Keyboard Billing Option in Category B */}
+            <button
+              onClick={startQuickOrder}
+              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-amber-500 px-4 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-amber-950/30 transition-all hover:bg-amber-400 cursor-pointer"
+            >
+              <Keyboard className="h-4 w-4 text-slate-950" />
+              <span>⚡ Fast Keyboard Billing (POS) • Direct Counter Bill</span>
+              <span className="rounded bg-black/25 px-2 py-0.5 text-xs font-mono font-bold text-slate-950 border border-black/20">
+                Press F2
+              </span>
+            </button>
+
             {/* Parcel Quick Stats & Action */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-4 bg-slate-900/80 border border-slate-800 rounded-2xl">
               <div className="flex items-center gap-4">
@@ -941,7 +964,7 @@ export default function CashierDashboardPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <div className="relative">
                   <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5" />
                   <input
@@ -954,11 +977,19 @@ export default function CashierDashboardPage() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setShowNewParcelModal(true)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition-colors shadow-md shadow-amber-950/40 cursor-pointer"
+                  onClick={startQuickOrder}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs transition-colors shadow-md shadow-amber-950/40 cursor-pointer"
                 >
-                  <Plus className="w-4 h-4" />
-                  <span>+ New Parcel Bill</span>
+                  <Keyboard className="w-4 h-4" />
+                  <span>⚡ Fast Billing (F2)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowNewParcelModal(true)}
+                  className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition-colors border border-slate-700 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4 text-amber-400" />
+                  <span>+ Standard Parcel Form</span>
                 </button>
               </div>
             </div>
@@ -1296,7 +1327,7 @@ export default function CashierDashboardPage() {
       {/* MODALS */}
       {/* =================================================================== */}
 
-      {/* Category A: Fast Keyboard Billing (POS) Modal */}
+      {/* Category B: Fast Keyboard Billing (POS) Modal */}
       <FastBillingModal
         isOpen={showQuickOrder}
         onClose={() => setShowQuickOrder(false)}

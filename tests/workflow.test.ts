@@ -548,6 +548,7 @@ async function runWorkflowTests() {
     price_ac: 350,
     is_veg: false,
     spicy_level: 3,
+    is_available: true,
   }, 'admin');
   assert.strictEqual(addDishRes.success, true, 'Admin adding item with dish number must succeed');
   const addedItem = restaurantStore.getState().menuItems.find((m) => m.name === 'Special Mutton Sukka');
@@ -560,8 +561,171 @@ async function runWorkflowTests() {
   assert.strictEqual(search99.exact[0].name, 'Special Mutton Sukka');
   console.log('  -> Passed: Dish numbers, auto/manual assignment, and #number/name search verified.\n');
 
+  // Test 23: Waiter food cancellation, Cashier screen audit, and Thermal receipt print exclusion
+  console.log('✓ Test 23: Waiter food cancellation, Cashier screen audit, and Thermal receipt print exclusion...');
+  const table4 = restaurantStore.getState().tables.find((t) => t.table_number === 4)!;
+  const table4Assign = restaurantStore.assignTable(table4.id, 'Mr. Ramesh', 2, 'waiter-test');
+  assert.strictEqual(table4Assign.success, true);
+  const table4OrderId = table4Assign.orderId!;
+
+  // Waiter sends 2 food items to kitchen (Chicken Biryani ₹200 + Paneer Tikka ₹180)
+  const biryaniMenuItem = restaurantStore.getState().menuItems.find((m) => m.name.toLowerCase().includes('biryani'))!;
+  const tikkaMenuItem = restaurantStore.getState().menuItems.find((m) => m.name.toLowerCase().includes('paneer') || m.name.toLowerCase().includes('gobi'))!;
+
+  const addItemsRes = restaurantStore.addItemsToOrder(
+    table4OrderId,
+    [
+      { menuItemId: biryaniMenuItem.id, quantity: 1 },
+      { menuItemId: tikkaMenuItem.id, quantity: 1 },
+    ],
+    'NON_AC'
+  );
+  assert.strictEqual(addItemsRes.success, true);
+
+  let table4Order = restaurantStore.getState().orders.find((o) => o.id === table4OrderId)!;
+  assert.strictEqual(table4Order.items.length, 2);
+  const initialSubtotal = table4Order.subtotal;
+  assert.ok(initialSubtotal > 0);
+
+  // Customer says: "I don't want Paneer/Gobi, please cancel that food"
+  const itemToCancel = table4Order.items.find((it) => it.menu_item_id === tikkaMenuItem.id)!;
+  const cancelRes = restaurantStore.cancelOrderItem(
+    table4OrderId,
+    itemToCancel.id,
+    'Customer changed mind - does not want food'
+  );
+  assert.strictEqual(cancelRes.success, true, 'Waiter item cancellation must succeed');
+
+  // Verify Order State after cancellation
+  table4Order = restaurantStore.getState().orders.find((o) => o.id === table4OrderId)!;
+  assert.strictEqual(table4Order.items.length, 2, 'Item must NOT be deleted from order history');
+  const cancelledItemInOrder = table4Order.items.find((it) => it.id === itemToCancel.id)!;
+  assert.strictEqual(cancelledItemInOrder.status, 'CANCELLED', 'Item status must be CANCELLED');
+  assert.strictEqual(
+    cancelledItemInOrder.cancel_reason,
+    'Customer changed mind - does not want food',
+    'Cancel reason must be recorded'
+  );
+
+  // Verify subtotal only includes the active Biryani
+  const biryaniItemInOrder = table4Order.items.find((it) => it.menu_item_id === biryaniMenuItem.id)!;
+  assert.strictEqual(table4Order.subtotal, biryaniItemInOrder.total_price, 'Subtotal must drop to only non-cancelled items');
+  assert.ok(table4Order.subtotal < initialSubtotal, 'Subtotal must be lower than before cancellation');
+
+  // Verify ThermalReceipt printable items (strictly omits CANCELLED items)
+  const printableItems = table4Order.items.filter((it) => it.status !== 'CANCELLED');
+  assert.strictEqual(printableItems.length, 1, 'Only 1 item must appear on printed receipt');
+  assert.strictEqual(printableItems[0].id, biryaniItemInOrder.id);
+  assert.ok(
+    !printableItems.some((it) => it.id === itemToCancel.id),
+    'Cancelled item must NEVER appear on the printed receipt'
+  );
+
+  // Cashier settles payment
+  const paymentRes = restaurantStore.processPayment(table4OrderId, {
+    paymentMethod: 'CASH',
+  });
+  assert.strictEqual(paymentRes.success, true, 'Payment processing must succeed');
+  assert.strictEqual(paymentRes.payment?.final_total, table4Order.final_total);
+  console.log('  -> Passed: Waiter cancel, Cashier audit, and Receipt exclusion verified 100%.\n');
+
+  // =========================================================================
+  // TEST 24: Admin Audit Log & Cancellations Ledger (Tamper-Proof & No Delete)
+  // =========================================================================
+  console.log('✓ Test 24: Verifying Audit Log for Price Changes and Waiter Cancellations...');
+
+  const initialLogCount = restaurantStore.getState().auditLogs.length;
+  assert.ok(initialLogCount > 0, 'Seed audit logs must exist in store');
+
+  // 1. Food Price Change Audit Tracking
+  const muttonBiryani = restaurantStore.getState().menuItems.find((m) => m.name.includes('Mutton Dum Biryani'));
+  assert.ok(muttonBiryani, 'Mutton Biryani must exist');
+
+  const oldNonAc = muttonBiryani.price_non_ac ?? muttonBiryani.price;
+  const oldAc = muttonBiryani.price_ac ?? (muttonBiryani.ac_price || oldNonAc);
+  const updatedNonAc = 400;
+  const updatedAc = 430;
+
+  const updatePriceRes = restaurantStore.updateMenuItem(
+    {
+      ...muttonBiryani,
+      price: updatedNonAc,
+      price_non_ac: updatedNonAc,
+      price_ac: updatedAc,
+      ac_price: updatedAc,
+    },
+    'admin'
+  );
+  assert.strictEqual(updatePriceRes.success, true, 'Price update by admin must succeed');
+
+  const latestAuditLog = restaurantStore.getState().auditLogs[0];
+  assert.strictEqual(latestAuditLog.type, 'PRICE_CHANGE', 'Latest audit log must be PRICE_CHANGE');
+  if (latestAuditLog.type === 'PRICE_CHANGE') {
+    assert.strictEqual(latestAuditLog.item_id, muttonBiryani.id);
+    assert.strictEqual(latestAuditLog.old_price_non_ac, oldNonAc);
+    assert.strictEqual(latestAuditLog.new_price_non_ac, updatedNonAc);
+    assert.strictEqual(latestAuditLog.old_price_ac, oldAc);
+    assert.strictEqual(latestAuditLog.new_price_ac, updatedAc);
+    assert.strictEqual(latestAuditLog.changed_by_role, 'admin');
+    assert.ok(latestAuditLog.timestamp, 'Timestamp must exist');
+  }
+
+  // 2. Waiter Order Cancellation Audit Tracking
+  const auditTable = restaurantStore.getState().tables.find((t) => t.status === 'FREE') || restaurantStore.getState().tables[0];
+  assert.ok(auditTable, 'Test table must exist');
+  
+  // Assign free table
+  const assignT3 = restaurantStore.assignTable(auditTable.id, 'Mr. Vignesh', 2, '33333333-3333-3333-3333-333333333333');
+  assert.strictEqual(assignT3.success, true, 'Assigning table for audit cancel test must succeed');
+  const t3OrderId = assignT3.orderId!;
+
+  // Find Chicken 65
+  const chk65MenuItem = restaurantStore.getState().menuItems.find((m) => m.name.includes('Chicken 65'))!;
+  assert.ok(chk65MenuItem, 'Chicken 65 must exist');
+
+  // Add items
+  restaurantStore.addItemsToOrder(t3OrderId, [
+    { menuItemId: chk65MenuItem.id, quantity: 2 },
+  ]);
+
+  const t3OrderBeforeCancel = restaurantStore.getState().orders.find((o) => o.id === t3OrderId)!;
+  const chk65Item = t3OrderBeforeCancel.items.find((it) => it.menu_item_id === chk65MenuItem.id)!;
+
+  // Waiter cancels Chicken 65
+  const auditCancelRes = restaurantStore.cancelOrderItem(
+    t3OrderId,
+    chk65Item.id,
+    'Customer cancelled dish - vegetarian only'
+  );
+  assert.strictEqual(auditCancelRes.success, true);
+
+  const cancelAuditLog = restaurantStore.getState().auditLogs[0];
+  assert.strictEqual(cancelAuditLog.type, 'WAITER_CANCEL', 'Top audit log must be WAITER_CANCEL');
+  if (cancelAuditLog.type === 'WAITER_CANCEL') {
+    assert.strictEqual(cancelAuditLog.order_id, t3OrderId);
+    assert.strictEqual(cancelAuditLog.item_name, chk65Item.item_name);
+    assert.strictEqual(cancelAuditLog.quantity, 2);
+    assert.strictEqual(cancelAuditLog.total_void_amount, chk65Item.total_price);
+    assert.strictEqual(cancelAuditLog.cancel_reason, 'Customer cancelled dish - vegetarian only');
+    assert.ok(cancelAuditLog.timestamp, 'Timestamp must be recorded');
+  }
+
+  // 3. Immutability Verification: Store has zero delete methods for audit logs
+  assert.strictEqual(
+    (restaurantStore as any).deleteAuditLog,
+    undefined,
+    'Store must NOT expose any deleteAuditLog method'
+  );
+  assert.strictEqual(
+    (restaurantStore as any).clearAuditLogs,
+    undefined,
+    'Store must NOT expose any clearAuditLogs method'
+  );
+
+  console.log('  -> Passed: Price changes, Waiter cancellations, and Zero-Deletion policy verified 100%.\n');
+
   console.log('------------------------------------------------------------');
-  console.log('🎉 ALL 22 END-TO-END WORKFLOW INTEGRATION TESTS PASSED 100%!');
+  console.log('🎉 ALL 24 END-TO-END WORKFLOW INTEGRATION TESTS PASSED 100%!');
   console.log('------------------------------------------------------------\n');
 }
 

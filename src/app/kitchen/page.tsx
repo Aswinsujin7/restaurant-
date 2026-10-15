@@ -167,12 +167,15 @@ export default function KitchenDashboardPage() {
                     {order.items.map((item) => {
                       const isItemReady = item.status === 'READY';
                       const isItemPreparing = item.status === 'PREPARING';
+                      const isItemCancelled = item.status === 'CANCELLED';
 
                       return (
                         <div
                           key={item.id}
                           className={`p-3 rounded-xl border flex items-start justify-between gap-3 transition-colors ${
-                            isItemReady
+                            isItemCancelled
+                              ? 'bg-rose-950/20 border-rose-900/60 text-rose-300'
+                              : isItemReady
                               ? 'bg-emerald-950/30 border-emerald-600/50 text-emerald-200'
                               : isItemPreparing
                               ? 'bg-amber-950/25 border-amber-600/40 text-amber-200'
@@ -181,15 +184,33 @@ export default function KitchenDashboardPage() {
                         >
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <span className="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-400 text-xs font-black flex items-center justify-center shrink-0 border border-amber-500/30">
+                              <span
+                                className={`w-6 h-6 rounded-lg text-xs font-black flex items-center justify-center shrink-0 border ${
+                                  isItemCancelled
+                                    ? 'bg-rose-950/60 text-rose-400 border-rose-800 line-through'
+                                    : 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+                                }`}
+                              >
                                 {item.quantity}
                               </span>
-                              <span className="font-bold text-sm text-white">{item.item_name}</span>
+                              <span
+                                className={`font-bold text-sm ${
+                                  isItemCancelled ? 'line-through text-slate-400' : 'text-white'
+                                }`}
+                              >
+                                {item.item_name}
+                              </span>
                             </div>
-                            {item.special_instructions && (
-                              <div className="mt-1 ml-8 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[10px] font-medium inline-block">
-                                Note: {item.special_instructions}
+                            {isItemCancelled ? (
+                              <div className="mt-1 ml-8 px-2 py-0.5 rounded bg-rose-950/50 border border-rose-800/60 text-rose-300 text-[10px] font-bold inline-block">
+                                🚫 Cancelled: {item.cancel_reason || 'Food not needed'} (Do Not Cook)
                               </div>
+                            ) : (
+                              item.special_instructions && (
+                                <div className="mt-1 ml-8 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[10px] font-medium inline-block">
+                                  Note: {item.special_instructions}
+                                </div>
+                              )
                             )}
                             <div className="mt-1 ml-8 text-[10px] text-slate-500">
                               Round {item.round_number}
@@ -198,6 +219,11 @@ export default function KitchenDashboardPage() {
 
                           {/* Individual Item Status Toggle */}
                           <div className="shrink-0 flex items-center gap-1">
+                            {isItemCancelled && (
+                              <span className="px-2 py-0.5 rounded bg-rose-600/30 border border-rose-500/50 text-rose-300 text-[10px] font-black uppercase tracking-wider">
+                                CANCELLED
+                              </span>
+                            )}
                             {item.status === 'NEW' && (
                               <button
                                 onClick={() =>

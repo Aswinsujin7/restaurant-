@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   X,
   Keyboard,
+  Edit,
   Snowflake,
   Sun,
   AlertCircle,
@@ -1151,12 +1152,22 @@ export function FastBillingModal({
                   <p className="text-[11px] text-slate-400">Order #{previewOrder.order_number}</p>
                 </div>
               </div>
-              <button
-                onClick={() => setIsPrintPreviewOpen(false)}
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white"
-              >
-                <X className="h-5 w-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsPrintPreviewOpen(false)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-bold transition-colors cursor-pointer border border-slate-700"
+                >
+                  <Edit className="w-3.5 h-3.5" />
+                  <span>Edit Bill Items</span>
+                </button>
+                <button
+                  onClick={() => setIsPrintPreviewOpen(false)}
+                  className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
             </div>
 
             {/* Scrollable Receipt Body */}
@@ -1283,10 +1294,18 @@ export function FastBillingModal({
             <div className="border-t border-slate-800 p-4 bg-slate-900 flex items-center justify-between gap-3">
               <button
                 type="button"
-                onClick={handleResetForNextCustomer}
-                className="px-4 py-2.5 rounded-xl bg-slate-800 text-xs font-semibold text-slate-300 hover:text-white cursor-pointer"
+                onClick={() => setIsPrintPreviewOpen(false)}
+                className="px-3.5 py-2.5 rounded-xl bg-slate-800 text-xs font-bold text-amber-300 hover:bg-slate-700 hover:text-white border border-slate-700 cursor-pointer flex items-center gap-1.5"
               >
-                Done / Next Bill [Esc]
+                <Edit className="w-3.5 h-3.5" />
+                <span>← Edit Bill Items</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleResetForNextCustomer}
+                className="px-3 py-2.5 rounded-xl bg-slate-800 text-xs font-semibold text-slate-300 hover:text-white cursor-pointer"
+              >
+                Next Bill [Esc]
               </button>
               <button
                 type="button"

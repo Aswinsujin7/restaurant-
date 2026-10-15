@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRestaurant } from '../../context/RestaurantContext';
 import { TableCard } from '../../components/TableCard';
 import { VegBadge, OrderStatusBadge } from '../../components/StatusBadge';
-import { RestaurantTable, MenuItem, Order, PricingSection } from '../../lib/types';
+import { RestaurantTable, MenuItem, Order, PricingSection, OrderItem } from '../../lib/types';
 import { getMenuItemNumber } from '../../components/MenuItemSearch';
 import {
   UtensilsCrossed,
@@ -26,6 +26,7 @@ import {
   Snowflake,
   Sun,
   Lock,
+  Ban,
 } from 'lucide-react';
 
 export default function WaiterDashboardPage() {
@@ -37,6 +38,8 @@ export default function WaiterDashboardPage() {
     addItemsToOrder,
     requestBill,
     updateOrderItemStatus,
+    updateOrderItems,
+    cancelOrderItem,
     getActiveOrderForTable,
   } = useRestaurant();
 
@@ -56,6 +59,14 @@ export default function WaiterDashboardPage() {
   const [walkInName, setWalkInName] = useState('Walk-in Guest');
   const [walkInGuests, setWalkInGuests] = useState('1');
   const [walkInPricingSection, setWalkInPricingSection] = useState<PricingSection>('NON_AC');
+
+  // Cancel / Edit Item Modal State (Customer changed mind)
+  const [cancellingItem, setCancellingItem] = useState<{
+    orderId: string;
+    item: OrderItem;
+  } | null>(null);
+  const [cancelReasonInput, setCancelReasonInput] = useState("Customer changed mind / don't want food");
+  const [cancelMode, setCancelMode] = useState<'ALL' | 'ONE'>('ALL');
 
   // Table section filter: ALL, AC, NON_AC
   const [tableSectionFilter, setTableSectionFilter] = useState<'ALL' | 'AC' | 'NON_AC'>('ALL');
@@ -301,6 +312,53 @@ export default function WaiterDashboardPage() {
   // Waiter marks item as SERVED
   const handleMarkServed = (orderId: string, itemId: string) => {
     updateOrderItemStatus(orderId, itemId, 'SERVED');
+  };
+
+  // Waiter Cancels or Edits Ordered Item (Customer changed mind)
+  const handleOpenCancelModal = (orderId: string, item: OrderItem) => {
+    setCancellingItem({ orderId, item });
+    setCancelReasonInput("Customer changed mind / don't want food");
+    setCancelMode(item.quantity > 1 ? 'ONE' : 'ALL');
+  };
+
+  const handleConfirmItemCancel = () => {
+    if (!cancellingItem || !currentActiveOrder) return;
+
+    if (cancelMode === 'ONE' && cancellingItem.item.quantity > 1) {
+      // Customer reduces 1 quantity
+      const updatedItems = currentActiveOrder.items.map((it) => {
+        if (it.id === cancellingItem.item.id) {
+          const newQty = it.quantity - 1;
+          return {
+            ...it,
+            quantity: newQty,
+            total_price: Number((it.unit_price * newQty).toFixed(2)),
+          };
+        }
+        return it;
+      });
+      const res = updateOrderItems(currentActiveOrder.id, updatedItems);
+      if (res.success) {
+        setOrderActionMessage(
+          `Reduced 1x ${cancellingItem.item.item_name}. Remaining: ${cancellingItem.item.quantity - 1}x`
+        );
+        setTimeout(() => setOrderActionMessage(null), 3500);
+      }
+    } else {
+      // Cancel entire item
+      const res = cancelOrderItem(
+        currentActiveOrder.id,
+        cancellingItem.item.id,
+        cancelReasonInput || 'Customer cancelled food'
+      );
+      if (res.success) {
+        setOrderActionMessage(
+          `Cancelled ${cancellingItem.item.item_name}. Marked CANCELLED in Kitchen and Cashier bill.`
+        );
+        setTimeout(() => setOrderActionMessage(null), 3500);
+      }
+    }
+    setCancellingItem(null);
   };
 
   const activeCategoryId =
@@ -1086,12 +1144,15 @@ export default function WaiterDashboardPage() {
                         {currentActiveOrder.items.map((item) => {
                           const isReady = item.status === 'READY';
                           const isServed = item.status === 'SERVED';
+                          const isCancelled = item.status === 'CANCELLED';
 
                           return (
                             <div
                               key={item.id}
                               className={`p-2.5 rounded-xl border flex items-center justify-between text-xs ${
-                                isReady
+                                isCancelled
+                                  ? 'bg-rose-950/20 border-rose-900/50 text-rose-300/80'
+                                  : isReady
                                   ? 'bg-amber-950/40 border-amber-500/50 text-amber-200 animate-pulse-slow'
                                   : isServed
                                   ? 'bg-slate-950/40 border-slate-800 text-slate-400'
@@ -1100,18 +1161,39 @@ export default function WaiterDashboardPage() {
                             >
                               <div className="flex-1 pr-2">
                                 <div className="flex items-center gap-1.5">
-                                  <span className="font-black text-white">{item.quantity}x</span>
-                                  <span className="font-semibold">{item.item_name}</span>
-                                </div>
-                                {item.special_instructions && (
-                                  <span className="text-[10px] text-amber-400/90 italic block">
-                                    {item.special_instructions}
+                                  <span className={`font-black ${isCancelled ? 'line-through text-slate-500' : 'text-white'}`}>
+                                    {item.quantity}x
                                   </span>
+                                  <span className={`font-semibold ${isCancelled ? 'line-through text-slate-400' : ''}`}>
+                                    {item.item_name}
+                                  </span>
+                                  {isCancelled && (
+                                    <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                                      CANCELLED
+                                    </span>
+                                  )}
+                                </div>
+                                {isCancelled ? (
+                                  <span className="text-[10px] text-rose-400/90 italic block mt-0.5">
+                                    Cancelled: {item.cancel_reason || 'Customer cancelled food'}
+                                  </span>
+                                ) : (
+                                  item.special_instructions && (
+                                    <span className="text-[10px] text-amber-400/90 italic block">
+                                      {item.special_instructions}
+                                    </span>
+                                  )
                                 )}
                                 <div className="flex items-center gap-2 text-[10px] text-slate-400 mt-0.5">
                                   <span>₹{item.unit_price.toFixed(2)} each</span>
                                   <span>•</span>
-                                  <span>Total: <strong className="text-white">₹{item.total_price.toFixed(2)}</strong></span>
+                                  <span>
+                                    Total:{' '}
+                                    <strong className={isCancelled ? 'line-through text-slate-500 font-normal' : 'text-white'}>
+                                      ₹{item.total_price.toFixed(2)}
+                                    </strong>{' '}
+                                    {isCancelled && <span className="text-rose-400 font-bold">(₹0.00 billed)</span>}
+                                  </span>
                                   <span>•</span>
                                   <span className="text-slate-500">Round {item.round_number}</span>
                                   {item.pricing_section && (
@@ -1133,6 +1215,16 @@ export default function WaiterDashboardPage() {
                                     className="px-2 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-[10px] font-bold transition-colors cursor-pointer"
                                   >
                                     Mark Served
+                                  </button>
+                                )}
+                                {!isCancelled && currentActiveOrder.status !== 'PAID' && (
+                                  <button
+                                    onClick={() => handleOpenCancelModal(currentActiveOrder.id, item)}
+                                    className="px-2 py-1 bg-rose-950/60 hover:bg-rose-900 border border-rose-800/60 text-rose-300 hover:text-white rounded-lg text-[10px] font-bold transition-colors cursor-pointer flex items-center gap-1"
+                                    title="Customer says they don't want this food / Cancel item"
+                                  >
+                                    <Ban className="w-3 h-3 text-rose-400" />
+                                    <span>Cancel Food</span>
                                   </button>
                                 )}
                               </div>
@@ -1429,6 +1521,116 @@ export default function WaiterDashboardPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          MODAL: CANCEL / EDIT ORDERED FOOD (CUSTOMER CHANGED MIND)
+      ========================================================================= */}
+      {cancellingItem && currentActiveOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-2 text-rose-400">
+                <Ban className="w-5 h-5" />
+                <h3 className="font-bold text-white text-base">Cancel Food Item</h3>
+              </div>
+              <button
+                onClick={() => setCancellingItem(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1">
+              <div className="flex justify-between items-center">
+                <span className="font-black text-white text-sm">{cancellingItem.item.item_name}</span>
+                <span className="text-xs font-bold text-amber-400">
+                  {cancellingItem.item.quantity}x @ ₹{cancellingItem.item.unit_price.toFixed(2)}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400">
+                Table {currentActiveOrder.table_number || 'Walk-in'} • Customer: {currentActiveOrder.customer_name}
+              </p>
+            </div>
+
+            {cancellingItem.item.quantity > 1 && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-300 block">Cancel Scope:</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCancelMode('ONE')}
+                    className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                      cancelMode === 'ONE'
+                        ? 'bg-amber-500/20 border-amber-500 text-amber-300 ring-1 ring-amber-500/50'
+                        : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    Reduce by 1 (Keep {cancellingItem.item.quantity - 1}x)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCancelMode('ALL')}
+                    className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                      cancelMode === 'ALL'
+                        ? 'bg-rose-500/20 border-rose-500 text-rose-300 ring-1 ring-rose-500/50'
+                        : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    Cancel Entire Item ({cancellingItem.item.quantity}x)
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-300 block">
+                Reason for Cancellation (Customer feedback):
+              </label>
+              <input
+                type="text"
+                value={cancelReasonInput}
+                onChange={(e) => setCancelReasonInput(e.target.value)}
+                placeholder="e.g. Customer changed mind / don't want food"
+                className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-500"
+              />
+              <div className="flex gap-1.5 flex-wrap pt-0.5">
+                {['Customer changed mind', 'Waiting too long', 'Ordered wrong item'].map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => setCancelReasonInput(preset)}
+                    className="text-[10px] px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 cursor-pointer"
+                  >
+                    {preset}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-amber-950/20 border border-amber-800/40 p-3 rounded-xl text-[11px] text-amber-200/90 leading-tight">
+              ℹ️ Item will be marked <strong>CANCELLED</strong> in Kitchen and Cashier bill. It will be <strong>strictly omitted</strong> from the printed receipt and customer will not be billed.
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setCancellingItem(null)}
+                className="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs cursor-pointer"
+              >
+                Keep Food
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmItemCancel}
+                className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-lg shadow-rose-950/40 cursor-pointer"
+              >
+                Confirm Cancellation
+              </button>
+            </div>
           </div>
         </div>
       )}

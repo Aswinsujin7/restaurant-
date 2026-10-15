@@ -10,6 +10,7 @@ import {
   UserRole,
   PaymentMethod,
   OrderItemStatus,
+  OrderItem,
   MenuItem,
   RestaurantTable,
   Order,
@@ -54,6 +55,8 @@ interface RestaurantContextType {
     orderId: string,
     newStatus: 'PREPARING' | 'READY' | 'SERVED'
   ) => { success: boolean; error?: string };
+  updateOrderItems: (orderId: string, items: OrderItem[]) => { success: boolean; error?: string };
+  cancelOrderItem: (orderId: string, itemId: string, reason?: string) => { success: boolean; error?: string };
   requestBill: (orderId: string) => { success: boolean; error?: string };
   processPayment: (
     orderId: string,
@@ -207,6 +210,8 @@ export function RestaurantProvider({ children }: { children: React.ReactNode }) 
     updateOrderItemStatus: (oId, iId, status) =>
       restaurantStore.updateOrderItemStatus(oId, iId, status),
     updateTicketStatus: (oId, status) => restaurantStore.updateTicketStatus(oId, status),
+    updateOrderItems: (oId, items) => restaurantStore.updateOrderItems(oId, items),
+    cancelOrderItem: (oId, iId, reason) => restaurantStore.cancelOrderItem(oId, iId, reason),
     requestBill: (oId) => restaurantStore.requestBill(oId),
     processPayment: (oId, pData) => restaurantStore.processPayment(oId, pData),
     createParcelOrder: (data) => restaurantStore.createParcelOrder(data),

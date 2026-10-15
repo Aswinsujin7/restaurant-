@@ -68,7 +68,7 @@ export type OrderStatus =
   | 'PAID'
   | 'CANCELLED';
 
-export type OrderItemStatus = 'NEW' | 'PREPARING' | 'READY' | 'SERVED';
+export type OrderItemStatus = 'NEW' | 'PREPARING' | 'READY' | 'SERVED' | 'CANCELLED';
 
 export interface OrderItem {
   id: string;
@@ -79,6 +79,7 @@ export interface OrderItem {
   unit_price: number;
   total_price: number;
   special_instructions?: string;
+  cancel_reason?: string;
   status: OrderItemStatus;
   round_number: number;
   pricing_section?: PricingSection;
@@ -214,4 +215,59 @@ export interface InventoryMovement {
   note?: string;
   createdAt: string;
 }
+
+export type AuditLogType = 'PRICE_CHANGE' | 'WAITER_CANCEL' | 'PURCHASE_CREATED';
+
+export interface PriceChangeAuditEntry {
+  id: string;
+  type: 'PRICE_CHANGE';
+  item_id: string;
+  item_name: string;
+  item_number?: number;
+  changed_by_name: string;
+  changed_by_role: string;
+  old_price_non_ac: number;
+  new_price_non_ac: number;
+  old_price_ac: number;
+  new_price_ac: number;
+  timestamp: string;
+}
+
+export interface WaiterCancelAuditEntry {
+  id: string;
+  type: 'WAITER_CANCEL';
+  order_id: string;
+  order_number: string;
+  table_number?: number;
+  customer_name: string;
+  item_id: string;
+  item_name: string;
+  item_number?: number;
+  quantity: number;
+  unit_price: number;
+  total_void_amount: number;
+  pricing_section?: PricingSection;
+  cancelled_by_name: string;
+  cancelled_by_role: string;
+  cancel_reason: string;
+  timestamp: string;
+}
+
+export interface PurchaseAuditEntry {
+  id: string;
+  type: 'PURCHASE_CREATED';
+  ref_number: string;
+  item_name: string;
+  supplier?: string;
+  old_stock: number;
+  new_stock: number;
+  quantity_added: number;
+  user_name: string;
+  user_role: string;
+  description: string;
+  timestamp: string;
+}
+
+export type AuditLogEntry = PriceChangeAuditEntry | WaiterCancelAuditEntry | PurchaseAuditEntry;
+
 

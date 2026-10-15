@@ -123,14 +123,16 @@ export function ThermalReceipt({ order, payment, onClose, autoPrint }: ThermalRe
               <span className="col-span-2 text-right">Amt</span>
             </div>
             <div className="space-y-1.5 pt-1">
-              {order.items.map((item, idx) => (
-                <div key={idx} className="grid grid-cols-12 text-[11px] leading-tight">
-                  <span className="col-span-6 truncate">{item.item_name}</span>
-                  <span className="col-span-2 text-center">{item.quantity}</span>
-                  <span className="col-span-2 text-right">{item.unit_price}</span>
-                  <span className="col-span-2 text-right font-semibold">{item.total_price.toFixed(2)}</span>
-                </div>
-              ))}
+              {order.items
+                .filter((item) => item.status !== 'CANCELLED')
+                .map((item, idx) => (
+                  <div key={idx} className="grid grid-cols-12 text-[11px] leading-tight">
+                    <span className="col-span-6 truncate">{item.item_name}</span>
+                    <span className="col-span-2 text-center">{item.quantity}</span>
+                    <span className="col-span-2 text-right">{item.unit_price}</span>
+                    <span className="col-span-2 text-right font-semibold">{item.total_price.toFixed(2)}</span>
+                  </div>
+                ))}
             </div>
           </div>
 

@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useRestaurant } from '../context/RestaurantContext';
-import { Order, PaymentMethod, Payment } from '../lib/types';
+import { Order, PaymentMethod, Payment, OrderItem, MenuItem, PricingSection } from '../lib/types';
 import { ThermalReceipt } from './ThermalReceipt';
+import { getMenuItemNumber } from './MenuItemSearch';
 import confetti from 'canvas-confetti';
 import {
   X,
@@ -16,6 +17,12 @@ import {
   Receipt,
   Percent,
   Keyboard,
+  Plus,
+  Minus,
+  Trash2,
+  Search,
+  Ban,
+  RotateCcw,
 } from 'lucide-react';
 
 interface BillModalProps {
@@ -24,7 +31,11 @@ interface BillModalProps {
 }
 
 export function BillModal({ order, onClose }: BillModalProps) {
-  const { processPayment } = useRestaurant();
+  const { state, processPayment, updateOrderItems } = useRestaurant();
+
+  const [items, setItems] = useState<OrderItem[]>(order.items || []);
+  const [addItemQuery, setAddItemQuery] = useState('');
+  const [isAddItemDropdownOpen, setIsAddItemDropdownOpen] = useState(false);
 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('UPI');
   const [discountInput, setDiscountInput] = useState<string>('0');
@@ -35,8 +46,19 @@ export function BillModal({ order, onClose }: BillModalProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Recalculate financial breakdown
-  const subtotal = order.subtotal || 0;
+  const isAc = order.pricing_section === 'AC' || (order.section && order.section.toUpperCase().includes('AC'));
+  const targetSection: PricingSection = isAc ? 'AC' : 'NON_AC';
+
+  // Recalculate financial breakdown (Omit CANCELLED items from total)
+  const subtotal = useMemo(() => {
+    return Number(
+      items
+        .filter((it) => it.status !== 'CANCELLED')
+        .reduce((sum, it) => sum + (it.total_price || 0), 0)
+        .toFixed(2)
+    );
+  }, [items]);
+
   const taxRate = order.tax_rate || 5;
   const taxAmount = Number(((subtotal * taxRate) / 100).toFixed(2));
 
@@ -51,6 +73,119 @@ export function BillModal({ order, onClose }: BillModalProps) {
   // Cash change calculation
   const tendered = parseFloat(cashTendered) || 0;
   const changeDue = Math.max(0, tendered - finalTotal);
+
+  // Filter matching dishes when adding an item
+  const matchingDishes = useMemo(() => {
+    const rawQ = addItemQuery.trim();
+    if (!rawQ) return [];
+    const q = rawQ.toLowerCase();
+    const cleanNum = q.startsWith('#') ? q.slice(1).trim() : q;
+    const isNumeric = /^\d+$/.test(cleanNum);
+
+    return state.menuItems
+      .filter((m) => m.is_available && (m.is_active ?? true))
+      .filter((m) => {
+        const itemNum = String(getMenuItemNumber(m));
+        if (isNumeric && (itemNum === cleanNum || itemNum.startsWith(cleanNum))) {
+          return true;
+        }
+        if (q.startsWith('#') && itemNum === cleanNum) {
+          return true;
+        }
+        return m.name.toLowerCase().includes(q) || (m.description?.toLowerCase().includes(q) ?? false);
+      })
+      .slice(0, 8);
+  }, [addItemQuery, state.menuItems]);
+
+  const handleUpdateItemQty = (index: number, delta: number) => {
+    setItems((prev) => {
+      const copy = [...prev];
+      const target = copy[index];
+      const newQty = target.quantity + delta;
+      if (newQty <= 0) {
+        copy[index] = {
+          ...target,
+          status: 'CANCELLED',
+          cancel_reason: 'Cancelled at Cashier Counter',
+        };
+      } else {
+        copy[index] = {
+          ...target,
+          quantity: newQty,
+          total_price: Number((target.unit_price * newQty).toFixed(2)),
+          status: target.status === 'CANCELLED' ? 'SERVED' : target.status,
+          cancel_reason: target.status === 'CANCELLED' ? undefined : target.cancel_reason,
+        };
+      }
+      updateOrderItems(order.id, copy);
+      return copy;
+    });
+  };
+
+  const handleRemoveItem = (index: number) => {
+    setItems((prev) => {
+      const copy = prev.filter((_, i) => i !== index);
+      updateOrderItems(order.id, copy);
+      return copy;
+    });
+  };
+
+  const handleToggleItemCancel = (index: number) => {
+    setItems((prev) => {
+      const copy = [...prev];
+      const target = copy[index];
+      const isCurrentlyCancelled = target.status === 'CANCELLED';
+      copy[index] = {
+        ...target,
+        status: isCurrentlyCancelled ? 'SERVED' : 'CANCELLED',
+        cancel_reason: isCurrentlyCancelled ? undefined : 'Cancelled at Cashier Counter',
+      };
+      updateOrderItems(order.id, copy);
+      return copy;
+    });
+  };
+
+  const handleAddDish = (dish: MenuItem) => {
+    const nonAcPrice = dish.price_non_ac ?? dish.non_ac_price ?? dish.price;
+    const acPrice = dish.price_ac ?? dish.ac_price ?? nonAcPrice;
+    const unitPrice = targetSection === 'AC' ? acPrice : nonAcPrice;
+
+    setItems((prev) => {
+      const existingIdx = prev.findIndex(
+        (it) => it.menu_item_id === dish.id || it.item_name.toLowerCase() === dish.name.toLowerCase()
+      );
+      let next: OrderItem[];
+      if (existingIdx >= 0) {
+        next = [...prev];
+        const existing = next[existingIdx];
+        const newQty = existing.quantity + 1;
+        next[existingIdx] = {
+          ...existing,
+          quantity: newQty,
+          total_price: Number((existing.unit_price * newQty).toFixed(2)),
+        };
+      } else {
+        const newItem: OrderItem = {
+          id: `item-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          order_id: order.id,
+          menu_item_id: dish.id,
+          item_name: dish.name,
+          quantity: 1,
+          unit_price: unitPrice,
+          total_price: unitPrice,
+          pricing_section: targetSection,
+          status: 'SERVED',
+          round_number: 99,
+          created_at: new Date().toISOString(),
+        };
+        next = [...prev, newItem];
+      }
+      updateOrderItems(order.id, next);
+      return next;
+    });
+    setAddItemQuery('');
+    setIsAddItemDropdownOpen(false);
+  };
 
   const handleConfirmPayment = () => {
     if (isProcessing) return;
@@ -134,6 +269,9 @@ export function BillModal({ order, onClose }: BillModalProps) {
       <ThermalReceipt
         order={{
           ...order,
+          items,
+          subtotal,
+          tax_amount: taxAmount,
           discount_amount: computedDiscount,
           final_total: finalTotal,
           status: 'PAID',
@@ -208,39 +346,202 @@ export function BillModal({ order, onClose }: BillModalProps) {
             </div>
           )}
 
-          {/* Itemized Order Table */}
-          <div className="border border-slate-800 rounded-xl overflow-hidden bg-slate-950/50">
-            <div className="px-4 py-2 bg-slate-800/60 border-b border-slate-800 flex justify-between text-xs font-bold text-slate-300">
-              <span>Ordered Items ({order.items.length})</span>
-              <span>Amount</span>
+          {/* Itemized Order Table with Direct '-' and '+' Controls */}
+          <div className="border border-slate-800 rounded-2xl overflow-hidden bg-slate-950/60 shadow-lg">
+            <div className="px-4 py-2.5 bg-slate-900 border-b border-slate-800 flex justify-between items-center text-xs">
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-slate-200">Bill Items ({items.length})</span>
+                <span className="text-[10px] text-slate-400">
+                  • Use <kbd className="bg-rose-950 text-rose-300 font-bold px-1.5 py-0.5 rounded border border-rose-800">-</kbd> to reduce qty or cancel food
+                </span>
+              </div>
+              <span className="text-[10px] font-bold text-amber-400 bg-amber-950/40 border border-amber-800/40 px-2 py-0.5 rounded-full">
+                ⚡ Direct Quick Edit
+              </span>
             </div>
-            <div className="divide-y divide-slate-800/60 max-h-44 overflow-y-auto">
-              {order.items.map((item, idx) => (
-                <div key={idx} className="px-4 py-2 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded bg-slate-800 text-slate-300 text-[11px] font-bold flex items-center justify-center shrink-0">
-                      {item.quantity}
-                    </span>
-                    <div>
-                      <span className="font-medium text-slate-200">{item.item_name}</span>
-                      {item.special_instructions && (
-                        <span className="block text-[10px] text-amber-400/90 italic">
-                          Note: {item.special_instructions}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className="font-semibold text-slate-100">
-                      ₹{item.total_price.toFixed(2)}
-                    </span>
-                    <span className="block text-[10px] text-slate-500">
-                      ₹{item.unit_price} each{item.pricing_section ? ` (${item.pricing_section})` : ''}
-                    </span>
-                  </div>
+
+            {/* Items list */}
+            <div className="divide-y divide-slate-800/60 max-h-52 overflow-y-auto">
+              {items.length === 0 ? (
+                <div className="p-6 text-center text-xs text-slate-500">
+                  No items in bill. Add items using the search bar below.
                 </div>
-              ))}
+              ) : (
+                items.map((item, idx) => {
+                  const isCancelled = item.status === 'CANCELLED';
+
+                  return (
+                    <div
+                      key={item.id || idx}
+                      className={`px-4 py-2.5 flex items-center justify-between text-xs transition-colors ${
+                        isCancelled
+                          ? 'bg-rose-950/20 border-l-4 border-l-rose-500'
+                          : 'hover:bg-slate-900/30'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                        {!isCancelled ? (
+                          <div className="flex items-center rounded-lg border border-slate-700 bg-slate-900 p-0.5 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateItemQty(idx, -1)}
+                              className="w-7 h-7 flex items-center justify-center text-rose-300 hover:text-white rounded bg-rose-950/60 hover:bg-rose-600 border border-rose-800/60 font-black cursor-pointer transition-colors shadow-sm"
+                              title="Click '-' to reduce quantity or cancel item"
+                            >
+                              <Minus className="w-3.5 h-3.5" />
+                            </button>
+                            <span className="w-7 text-center font-black text-amber-400 text-xs">
+                              {item.quantity}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateItemQty(idx, 1)}
+                              className="w-7 h-7 flex items-center justify-center text-slate-300 hover:text-white rounded hover:bg-slate-800 border border-slate-700/60 font-bold cursor-pointer transition-colors"
+                              title="Increase quantity"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="w-7 h-7 rounded-lg bg-rose-950/50 text-rose-400 text-xs font-black flex items-center justify-center shrink-0 border border-rose-800 line-through">
+                            {item.quantity}×
+                          </span>
+                        )}
+
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span
+                              className={`font-bold block truncate ${
+                                isCancelled ? 'text-slate-400 line-through' : 'text-white'
+                              }`}
+                            >
+                              {item.item_name}
+                            </span>
+                            {isCancelled && (
+                              <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-rose-500/20 text-rose-400 border border-rose-500/40 uppercase tracking-wider">
+                                CANCELLED (₹0)
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[10px] text-slate-400 block">
+                            ₹{item.unit_price} each{item.pricing_section ? ` (${item.pricing_section})` : ''}
+                            {isCancelled && (
+                              <span className="text-rose-400/90 ml-1.5 italic">
+                                • {item.cancel_reason || 'Customer cancelled food'} (Not billed, not printed)
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2.5 shrink-0">
+                        {isCancelled ? (
+                          <div className="text-right">
+                            <span className="text-[10px] text-slate-500 line-through block">
+                              ₹{item.total_price.toFixed(2)}
+                            </span>
+                            <span className="font-black text-rose-400 text-xs">
+                              ₹0.00
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="font-black text-amber-400 text-sm">
+                            ₹{item.total_price.toFixed(2)}
+                          </span>
+                        )}
+
+                        <div className="flex items-center gap-1">
+                          {isCancelled ? (
+                            <button
+                              type="button"
+                              onClick={() => handleToggleItemCancel(idx)}
+                              className="px-2 py-1 rounded-lg bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800 text-emerald-300 text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                              title="Restore/Uncancel this item"
+                            >
+                              <RotateCcw className="w-3 h-3 text-emerald-400" />
+                              <span>Restore</span>
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleToggleItemCancel(idx)}
+                              className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-950/40 transition-colors cursor-pointer"
+                              title="Mark as cancelled by customer"
+                            >
+                              <Ban className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveItem(idx)}
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-950/40 transition-colors cursor-pointer"
+                            title="Delete item from bill"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
+
+            {/* Add Extra Dish Section (Always available) */}
+            <div className="p-3 bg-slate-900/90 border-t border-slate-800 space-y-2">
+                <span className="text-[11px] font-bold text-slate-300 block">
+                  + Add Extra Item to Bill (Counter Adjustment):
+                </span>
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5" />
+                  <input
+                    type="text"
+                    value={addItemQuery}
+                    onChange={(e) => {
+                      setAddItemQuery(e.target.value);
+                      setIsAddItemDropdownOpen(e.target.value.trim().length > 0);
+                    }}
+                    onFocus={() => {
+                      if (addItemQuery.trim().length > 0) setIsAddItemDropdownOpen(true);
+                    }}
+                    placeholder="Search dish # or name to add... (e.g. 1, 6, Biryani, Parotta)"
+                    className="w-full pl-8 pr-3 py-1.5 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                  />
+
+                  {/* Dropdown for Add Item */}
+                  {isAddItemDropdownOpen && matchingDishes.length > 0 && (
+                    <div className="absolute left-0 right-0 top-full mt-1 z-30 max-h-48 overflow-y-auto bg-slate-900 border border-slate-700 rounded-xl shadow-2xl divide-y divide-slate-800">
+                      {matchingDishes.map((dish) => {
+                        const nonAcPrice = dish.price_non_ac ?? dish.non_ac_price ?? dish.price;
+                        const acPrice = dish.price_ac ?? dish.ac_price ?? nonAcPrice;
+                        const unitPrice = targetSection === 'AC' ? acPrice : nonAcPrice;
+                        const itemNum = getMenuItemNumber(dish);
+
+                        return (
+                          <div
+                            key={dish.id}
+                            onClick={() => handleAddDish(dish)}
+                            className="px-3 py-2 flex items-center justify-between text-xs hover:bg-slate-800 cursor-pointer transition-colors"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-[10px] font-bold text-amber-400 bg-slate-950 px-1 py-0.5 rounded border border-slate-800">
+                                #{itemNum}
+                              </span>
+                              <span className="font-bold text-white">{dish.name}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-amber-400 font-bold">₹{unitPrice}</span>
+                              <span className="text-[10px] bg-amber-500 text-slate-950 font-black px-1.5 py-0.5 rounded">
+                                + Add
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
           </div>
 
           {/* Bill Calculation & Discounts */}

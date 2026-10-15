@@ -21,6 +21,9 @@ import {
   InventoryMovement,
   InventoryCategory,
   InventoryMovementType,
+  AuditLogEntry,
+  PriceChangeAuditEntry,
+  WaiterCancelAuditEntry,
 } from '../types';
 import {
   INITIAL_TABLES,
@@ -33,6 +36,7 @@ import {
   INITIAL_CATERINGS,
   INITIAL_INVENTORY_ITEMS,
   INITIAL_INVENTORY_MOVEMENTS,
+  INITIAL_AUDIT_LOGS,
 } from './initial-data';
 import { getSupabaseClient, isSupabaseConfigured } from '../supabase/client';
 
@@ -62,6 +66,7 @@ export interface RestaurantState {
   activeRole: UserRole;
   activeStaff: StaffUser;
   notifications: ToastNotification[];
+  auditLogs: AuditLogEntry[];
   isRealtimeConnected: boolean;
 }
 
@@ -88,6 +93,7 @@ class RestaurantStore {
       activeRole: 'cashier',
       activeStaff: INITIAL_STAFF[1], // Default to Cashier
       notifications: [],
+      auditLogs: INITIAL_AUDIT_LOGS,
       isRealtimeConnected: false,
     };
   }
@@ -107,6 +113,7 @@ class RestaurantStore {
       activeRole: 'cashier',
       activeStaff: INITIAL_STAFF[1],
       notifications: [],
+      auditLogs: INITIAL_AUDIT_LOGS,
       isRealtimeConnected: false,
     };
   }
@@ -192,10 +199,16 @@ class RestaurantStore {
       const storedCaterings = localStorage.getItem(STORAGE_KEY_PREFIX + 'caterings');
       const storedInventoryItems = localStorage.getItem(STORAGE_KEY_PREFIX + 'inventory_items');
       const storedInventoryMovements = localStorage.getItem(STORAGE_KEY_PREFIX + 'inventory_movements');
+      const storedAuditLogs = localStorage.getItem(STORAGE_KEY_PREFIX + 'audit_logs');
       if (storedParcels) this.state.parcels = JSON.parse(storedParcels);
       if (storedCaterings) this.state.caterings = JSON.parse(storedCaterings);
       if (storedInventoryItems) this.state.inventoryItems = JSON.parse(storedInventoryItems);
       if (storedInventoryMovements) this.state.inventoryMovements = JSON.parse(storedInventoryMovements);
+      if (storedAuditLogs) {
+        this.state.auditLogs = JSON.parse(storedAuditLogs);
+      } else {
+        this.state.auditLogs = INITIAL_AUDIT_LOGS;
+      }
       this.linkFoodInventoryToMenu();
 
       if (storedRole) {
@@ -221,6 +234,7 @@ class RestaurantStore {
       localStorage.setItem(STORAGE_KEY_PREFIX + 'caterings', JSON.stringify(this.state.caterings));
       localStorage.setItem(STORAGE_KEY_PREFIX + 'inventory_items', JSON.stringify(this.state.inventoryItems));
       localStorage.setItem(STORAGE_KEY_PREFIX + 'inventory_movements', JSON.stringify(this.state.inventoryMovements));
+      localStorage.setItem(STORAGE_KEY_PREFIX + 'audit_logs', JSON.stringify(this.state.auditLogs));
       localStorage.setItem(STORAGE_KEY_PREFIX + 'role', this.state.activeRole);
     } catch (e) {
       console.warn('Failed to save to storage:', e);
@@ -787,7 +801,8 @@ class RestaurantStore {
     });
 
     const allItems = [...order.items, ...newOrderItems];
-    const subtotal = Number(allItems.reduce((sum, it) => sum + it.total_price, 0).toFixed(2));
+    const activeItems = allItems.filter((it) => it.status !== 'CANCELLED');
+    const subtotal = Number(activeItems.reduce((sum, it) => sum + it.total_price, 0).toFixed(2));
     const taxRate = order.tax_rate || 5.0;
     const taxAmount = Number(((subtotal * taxRate) / 100).toFixed(2));
     const finalTotal = Number(
@@ -818,6 +833,238 @@ class RestaurantStore {
 
     this.broadcastChange('STATE_UPDATE', {
       orders: this.state.orders,
+    });
+    this.notifyListeners();
+
+    return { success: true };
+  }
+
+  /**
+   * Cashier / Waiter updates active order items (e.g. adjust quantity, remove item, or add item before final billing).
+   */
+  public updateOrderItems(
+    orderId: string,
+    newItems: OrderItem[]
+  ): { success: boolean; error?: string } {
+    const orderIndex = this.state.orders.findIndex((o) => o.id === orderId);
+    if (orderIndex === -1) return { success: false, error: 'Order not found' };
+
+    const order = this.state.orders[orderIndex];
+    if (order.status === 'PAID' || order.status === 'CANCELLED') {
+      return { success: false, error: 'Cannot modify a completed or cancelled order.' };
+    }
+
+    const activeItems = newItems.filter((it) => it.status !== 'CANCELLED');
+    const subtotal = Number(activeItems.reduce((sum, it) => sum + it.total_price, 0).toFixed(2));
+    const taxRate = order.tax_rate || 5.0;
+    const taxAmount = Number(((subtotal * taxRate) / 100).toFixed(2));
+    const finalTotal = Number(
+      Math.max(0, subtotal + taxAmount - (order.discount_amount || 0)).toFixed(2)
+    );
+
+    const updatedOrder: Order = {
+      ...order,
+      items: newItems,
+      subtotal,
+      tax_amount: taxAmount,
+      final_total: finalTotal,
+      updated_at: new Date().toISOString(),
+    };
+
+    // Audit log any items cancelled, reduced, or removed
+    for (const newItem of newItems) {
+      const existingItem = order.items.find((it) => it.id === newItem.id);
+      if (newItem.status === 'CANCELLED') {
+        if (!existingItem || existingItem.status !== 'CANCELLED') {
+          const cancelAudit: WaiterCancelAuditEntry = {
+            id: `audit-cancel-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            type: 'WAITER_CANCEL',
+            order_id: order.id,
+            order_number: order.order_number,
+            table_number: order.table_number,
+            customer_name: order.customer_name || 'Guest',
+            item_id: newItem.id,
+            item_name: newItem.item_name,
+            item_number: newItem.menu_item_id
+              ? this.state.menuItems.find((m) => m.id === newItem.menu_item_id)?.item_number
+              : undefined,
+            quantity: newItem.quantity,
+            unit_price: newItem.unit_price,
+            total_void_amount: newItem.total_price,
+            pricing_section: newItem.pricing_section || order.pricing_section,
+            cancelled_by_name: this.state.activeStaff?.full_name || 'Staff / Waiter',
+            cancelled_by_role: this.state.activeRole || 'waiter',
+            cancel_reason: newItem.cancel_reason || 'Item cancelled by customer request',
+            timestamp: new Date().toISOString(),
+          };
+          this.state.auditLogs = [cancelAudit, ...(this.state.auditLogs || [])];
+        }
+      } else if (existingItem && existingItem.quantity > newItem.quantity) {
+        // Customer reduced quantity of this item
+        const reducedQty = existingItem.quantity - newItem.quantity;
+        const voidAmount = Number((reducedQty * newItem.unit_price).toFixed(2));
+        const cancelAudit: WaiterCancelAuditEntry = {
+          id: `audit-cancel-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: 'WAITER_CANCEL',
+          order_id: order.id,
+          order_number: order.order_number,
+          table_number: order.table_number,
+          customer_name: order.customer_name || 'Guest',
+          item_id: newItem.id,
+          item_name: newItem.item_name,
+          item_number: newItem.menu_item_id
+            ? this.state.menuItems.find((m) => m.id === newItem.menu_item_id)?.item_number
+            : undefined,
+          quantity: reducedQty,
+          unit_price: newItem.unit_price,
+          total_void_amount: voidAmount,
+          pricing_section: newItem.pricing_section || order.pricing_section,
+          cancelled_by_name: this.state.activeStaff?.full_name || 'Staff / Waiter',
+          cancelled_by_role: this.state.activeRole || 'waiter',
+          cancel_reason: newItem.cancel_reason || `Customer reduced quantity by ${reducedQty}x`,
+          timestamp: new Date().toISOString(),
+        };
+        this.state.auditLogs = [cancelAudit, ...(this.state.auditLogs || [])];
+      }
+    }
+
+    // Check for any active items that were removed completely
+    for (const oldIt of order.items) {
+      if (oldIt.status !== 'CANCELLED' && !newItems.some((ni) => ni.id === oldIt.id)) {
+        const cancelAudit: WaiterCancelAuditEntry = {
+          id: `audit-cancel-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: 'WAITER_CANCEL',
+          order_id: order.id,
+          order_number: order.order_number,
+          table_number: order.table_number,
+          customer_name: order.customer_name || 'Guest',
+          item_id: oldIt.id,
+          item_name: oldIt.item_name,
+          item_number: oldIt.menu_item_id
+            ? this.state.menuItems.find((m) => m.id === oldIt.menu_item_id)?.item_number
+            : undefined,
+          quantity: oldIt.quantity,
+          unit_price: oldIt.unit_price,
+          total_void_amount: oldIt.total_price,
+          pricing_section: oldIt.pricing_section || order.pricing_section,
+          cancelled_by_name: this.state.activeStaff?.full_name || 'Staff / Waiter',
+          cancelled_by_role: this.state.activeRole || 'waiter',
+          cancel_reason: oldIt.cancel_reason || 'Item removed from order by waiter',
+          timestamp: new Date().toISOString(),
+        };
+        this.state.auditLogs = [cancelAudit, ...(this.state.auditLogs || [])];
+      }
+    }
+
+    const newOrders = [...this.state.orders];
+    newOrders[orderIndex] = updatedOrder;
+    this.state.orders = newOrders;
+
+    this.saveToStorage();
+    this.broadcastChange('STATE_UPDATE', {
+      orders: this.state.orders,
+      auditLogs: this.state.auditLogs,
+    });
+    this.notifyListeners();
+    return { success: true };
+  }
+
+  /**
+   * Waiter / Cashier cancels an ordered item (e.g. customer says they don't want the food).
+   * Item remains marked CANCELLED for kitchen/cashier audit, but is omitted from total and print receipt.
+   */
+  public cancelOrderItem(
+    orderId: string,
+    itemId: string,
+    reason?: string
+  ): { success: boolean; error?: string } {
+    const orderIndex = this.state.orders.findIndex((o) => o.id === orderId);
+    if (orderIndex === -1) return { success: false, error: 'Order not found' };
+
+    const order = this.state.orders[orderIndex];
+    if (order.status === 'PAID') {
+      return { success: false, error: 'Cannot cancel item from an already paid order.' };
+    }
+
+    const itemIndex = order.items.findIndex((it) => it.id === itemId);
+    if (itemIndex === -1) return { success: false, error: 'Item not found in order.' };
+
+    const updatedItems = [...order.items];
+    const targetItem = updatedItems[itemIndex];
+    const cancelReason = reason || 'Customer cancelled food';
+
+    updatedItems[itemIndex] = {
+      ...targetItem,
+      status: 'CANCELLED',
+      cancel_reason: cancelReason,
+    };
+
+    const activeItems = updatedItems.filter((it) => it.status !== 'CANCELLED');
+    const subtotal = Number(activeItems.reduce((sum, it) => sum + it.total_price, 0).toFixed(2));
+    const taxRate = order.tax_rate || 5.0;
+    const taxAmount = Number(((subtotal * taxRate) / 100).toFixed(2));
+    const finalTotal = Number(
+      Math.max(0, subtotal + taxAmount - (order.discount_amount || 0)).toFixed(2)
+    );
+
+    let derivedStatus: OrderStatus = order.status;
+    if (activeItems.length === 0) {
+      derivedStatus = 'NEW';
+    } else if (activeItems.every((it) => it.status === 'SERVED')) {
+      derivedStatus = 'SERVED';
+    } else if (activeItems.every((it) => it.status === 'READY' || it.status === 'SERVED')) {
+      derivedStatus = 'READY';
+    }
+
+    const updatedOrder: Order = {
+      ...order,
+      items: updatedItems,
+      subtotal,
+      tax_amount: taxAmount,
+      final_total: finalTotal,
+      status: derivedStatus,
+      updated_at: new Date().toISOString(),
+    };
+
+    const newOrders = [...this.state.orders];
+    newOrders[orderIndex] = updatedOrder;
+    this.state.orders = newOrders;
+
+    // Record immutable audit entry
+    const cancelAudit: WaiterCancelAuditEntry = {
+      id: `audit-cancel-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      type: 'WAITER_CANCEL',
+      order_id: order.id,
+      order_number: order.order_number,
+      table_number: order.table_number,
+      customer_name: order.customer_name || 'Guest',
+      item_id: targetItem.id,
+      item_name: targetItem.item_name,
+      item_number: targetItem.menu_item_id
+        ? this.state.menuItems.find((m) => m.id === targetItem.menu_item_id)?.item_number
+        : undefined,
+      quantity: targetItem.quantity,
+      unit_price: targetItem.unit_price,
+      total_void_amount: targetItem.total_price,
+      pricing_section: targetItem.pricing_section || order.pricing_section,
+      cancelled_by_name: this.state.activeStaff?.full_name || 'Waiter',
+      cancelled_by_role: this.state.activeRole || 'waiter',
+      cancel_reason: cancelReason,
+      timestamp: new Date().toISOString(),
+    };
+    this.state.auditLogs = [cancelAudit, ...(this.state.auditLogs || [])];
+
+    this.addNotification({
+      title: `Item Cancelled: Table ${order.table_number || 'Walk-in'}`,
+      message: `${targetItem.item_name} (x${targetItem.quantity}) cancelled: ${cancelReason}`,
+      type: 'warning',
+      sound: true,
+    });
+
+    this.saveToStorage();
+    this.broadcastChange('STATE_UPDATE', {
+      orders: this.state.orders,
+      auditLogs: this.state.auditLogs,
     });
     this.notifyListeners();
 
@@ -1202,6 +1449,29 @@ class RestaurantStore {
       is_available: updated.is_available ?? true,
     };
 
+    const previous = this.state.menuItems[index];
+    const prevNonAc = previous.price_non_ac ?? previous.price;
+    const prevAc = previous.price_ac ?? previous.ac_price ?? prevNonAc;
+
+    // Record immutable audit log if price changed
+    if (prevNonAc !== nonAcPrice || prevAc !== acPrice) {
+      const priceAudit: PriceChangeAuditEntry = {
+        id: `audit-price-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        type: 'PRICE_CHANGE',
+        item_id: updated.id,
+        item_name: updated.name,
+        item_number: normalized.item_number,
+        changed_by_name: this.state.activeStaff?.full_name || 'Admin',
+        changed_by_role: role,
+        old_price_non_ac: prevNonAc,
+        new_price_non_ac: nonAcPrice,
+        old_price_ac: prevAc,
+        new_price_ac: acPrice,
+        timestamp: new Date().toISOString(),
+      };
+      this.state.auditLogs = [priceAudit, ...(this.state.auditLogs || [])];
+    }
+
     const newItems = [...this.state.menuItems];
     newItems[index] = normalized;
     this.state.menuItems = newItems;
@@ -1214,6 +1484,7 @@ class RestaurantStore {
     this.broadcastChange('STATE_UPDATE', {
       menuItems: this.state.menuItems,
       inventoryItems: this.state.inventoryItems,
+      auditLogs: this.state.auditLogs,
     });
     this.notifyListeners();
     return { success: true };
@@ -1548,6 +1819,7 @@ class RestaurantStore {
       staff: INITIAL_STAFF,
       activeRole: 'cashier',
       activeStaff: INITIAL_STAFF[1],
+      auditLogs: INITIAL_AUDIT_LOGS,
       notifications: [
         {
           id: `notif-reset-${Date.now()}`,

@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRestaurant } from '../../../context/RestaurantContext';
-import { MenuItem, PricingSection, RestaurantTable } from '../../../lib/types';
+import { MenuItem, PricingSection, RestaurantTable, AuditLogEntry, PriceChangeAuditEntry, WaiterCancelAuditEntry, PurchaseAuditEntry } from '../../../lib/types';
 import { VegBadge } from '../../../components/StatusBadge';
 import { getMenuItemNumber } from '../../../components/MenuItemSearch';
 import {
@@ -23,6 +23,16 @@ import {
   AlertCircle,
   LayoutGrid,
   ShieldAlert,
+  ShieldCheck,
+  History,
+  Ban,
+  Tag,
+  Lock,
+  ArrowRight,
+  Clock,
+  Download,
+  FileSpreadsheet,
+  RotateCcw,
 } from 'lucide-react';
 
 export default function AdminMenuPage() {
@@ -36,8 +46,15 @@ export default function AdminMenuPage() {
     addCategory,
   } = useRestaurant();
 
-  // Primary Tab: Menu vs Tables Setup
-  const [activeTab, setActiveTab] = useState<'MENU' | 'TABLES'>('MENU');
+  // Primary Tabs: Menu vs Tables vs Food Price Changes vs Waiter Cancellations
+  const [activeTab, setActiveTab] = useState<'MENU' | 'TABLES' | 'PRICE_CHANGES' | 'WAITER_CANCELS'>('MENU');
+
+  // Individual Food Price Changes Filter States
+  const [priceSearchQuery, setPriceSearchQuery] = useState('');
+
+  // Individual Waiter Order Cancellation Filter States
+  const [cancelSearchQuery, setCancelSearchQuery] = useState('');
+  const [cancelReasonFilter, setCancelReasonFilter] = useState('ALL');
 
   // Filters - default to first category (e.g. Chinese)
   const [selectedCategory, setSelectedCategory] = useState<string>('cat-chinese');
@@ -285,6 +302,141 @@ export default function AdminMenuPage() {
       m.price_non_ac === null ||
       isNaN(m.price_non_ac)
   ).length;
+ 
+  // Audit log calculations & normalization helpers
+  const formatAuditRowDateTime = (isoStr: string) => {
+    try {
+      const d = new Date(isoStr);
+      const dateStr = d.toISOString().split('T')[0];
+      const timeStr = d.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true,
+      });
+      return { dateStr, timeStr };
+    } catch {
+      return { dateStr: isoStr, timeStr: '' };
+    }
+  };
+
+  // 1. INDIVIDUAL: Food Price Changes
+  const priceChangeLogs = useMemo(() => {
+    return (state.auditLogs || []).filter((l): l is PriceChangeAuditEntry => l.type === 'PRICE_CHANGE');
+  }, [state.auditLogs]);
+
+  const filteredPriceChanges = useMemo(() => {
+    return priceChangeLogs.filter((entry) => {
+      if (priceSearchQuery.trim()) {
+        const q = priceSearchQuery.toLowerCase().trim();
+        const matchName = entry.item_name.toLowerCase().includes(q);
+        const matchNum = entry.item_number ? String(entry.item_number).includes(q) : false;
+        const matchStaff = entry.changed_by_name.toLowerCase().includes(q);
+        const matchRole = entry.changed_by_role.toLowerCase().includes(q);
+        if (!matchName && !matchNum && !matchStaff && !matchRole) return false;
+      }
+      return true;
+    });
+  }, [priceChangeLogs, priceSearchQuery]);
+
+  const handleExportPriceChangesCSV = () => {
+    if (!filteredPriceChanges.length) return;
+    const headers = ['DATE', 'EXACT TIME', 'DISH #', 'FOOD ITEM NAME', 'CHANGED BY', 'ROLE', 'OLD NON-AC (₹)', 'NEW NON-AC (₹)', 'OLD AC (₹)', 'NEW AC (₹)', 'NON-AC DELTA', 'AC DELTA'];
+    const csvLines = [headers.join(',')];
+
+    filteredPriceChanges.forEach((row) => {
+      const { dateStr, timeStr } = formatAuditRowDateTime(row.timestamp);
+      const escape = (str: string | number) => `"${String(str).replace(/"/g, '""')}"`;
+      csvLines.push([
+        escape(dateStr),
+        escape(timeStr),
+        escape(row.item_number ?? 'Auto'),
+        escape(row.item_name),
+        escape(row.changed_by_name),
+        escape(row.changed_by_role),
+        escape(row.old_price_non_ac),
+        escape(row.new_price_non_ac),
+        escape(row.old_price_ac),
+        escape(row.new_price_ac),
+        escape(row.new_price_non_ac - row.old_price_non_ac),
+        escape(row.new_price_ac - row.old_price_ac),
+      ].join(','));
+    });
+
+    const blob = new Blob([csvLines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Food_Price_Changes_Log_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  // 2. INDIVIDUAL: Waiter Order Cancellations
+  const waiterCancelLogs = useMemo(() => {
+    return (state.auditLogs || []).filter((l): l is WaiterCancelAuditEntry => l.type === 'WAITER_CANCEL');
+  }, [state.auditLogs]);
+
+  const totalVoidAmount = useMemo(() => {
+    return waiterCancelLogs.reduce((sum, l) => sum + (l.total_void_amount || 0), 0);
+  }, [waiterCancelLogs]);
+
+  const filteredWaiterCancels = useMemo(() => {
+    return waiterCancelLogs.filter((entry) => {
+      if (cancelReasonFilter !== 'ALL' && !entry.cancel_reason.toLowerCase().includes(cancelReasonFilter.toLowerCase())) {
+        return false;
+      }
+      if (cancelSearchQuery.trim()) {
+        const q = cancelSearchQuery.toLowerCase().trim();
+        const matchName = entry.item_name.toLowerCase().includes(q);
+        const matchStaff = entry.cancelled_by_name.toLowerCase().includes(q);
+        const matchRole = entry.cancelled_by_role ? entry.cancelled_by_role.toLowerCase().includes(q) : false;
+        const matchTable = entry.table_number !== undefined ? String(entry.table_number).toLowerCase().includes(q) : false;
+        const matchOrder = entry.order_number.toLowerCase().includes(q);
+        const matchReason = entry.cancel_reason.toLowerCase().includes(q);
+        const matchCustomer = entry.customer_name ? entry.customer_name.toLowerCase().includes(q) : false;
+        if (!matchName && !matchStaff && !matchRole && !matchTable && !matchOrder && !matchReason && !matchCustomer) return false;
+      }
+      return true;
+    });
+  }, [waiterCancelLogs, cancelSearchQuery, cancelReasonFilter]);
+
+  const handleExportWaiterCancelsCSV = () => {
+    if (!filteredWaiterCancels.length) return;
+    const headers = ['DATE', 'EXACT TIME', 'TABLE #', 'ORDER #', 'GUEST NAME', 'CANCELLED DISH', 'QTY', 'UNIT PRICE (₹)', 'TOTAL VOID (₹)', 'CANCELLATION REASON', 'CANCELLED BY', 'ROLE'];
+    const csvLines = [headers.join(',')];
+
+    filteredWaiterCancels.forEach((row) => {
+      const { dateStr, timeStr } = formatAuditRowDateTime(row.timestamp);
+      const escape = (str: string | number) => `"${String(str).replace(/"/g, '""')}"`;
+      csvLines.push([
+        escape(dateStr),
+        escape(timeStr),
+        escape(row.table_number ? `Table ${row.table_number}` : 'Takeaway'),
+        escape(row.order_number),
+        escape(row.customer_name || 'Walk-in'),
+        escape(row.item_name),
+        escape(row.quantity),
+        escape(row.unit_price),
+        escape(row.total_void_amount),
+        escape(row.cancel_reason),
+        escape(row.cancelled_by_name),
+        escape(row.cancelled_by_role),
+      ].join(','));
+    });
+
+    const blob = new Blob([csvLines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Waiter_Order_Cancellations_Log_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 lg:p-8">
@@ -328,11 +480,11 @@ export default function AdminMenuPage() {
           </div>
         </div>
 
-        {/* Top Tab Switcher: Menu vs Tables Configuration */}
-        <div className="flex items-center gap-2 border-b border-slate-800 pb-2">
+        {/* Top Tab Switcher: Menu vs Tables vs Audit Log */}
+        <div className="flex items-center gap-2 border-b border-slate-800 pb-2 overflow-x-auto">
           <button
             onClick={() => setActiveTab('MENU')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'MENU'
                 ? 'bg-amber-500 text-slate-950 shadow-md font-black'
                 : 'text-slate-400 hover:text-white hover:bg-slate-900'
@@ -343,7 +495,7 @@ export default function AdminMenuPage() {
           </button>
           <button
             onClick={() => setActiveTab('TABLES')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'TABLES'
                 ? 'bg-amber-500 text-slate-950 shadow-md font-black'
                 : 'text-slate-400 hover:text-white hover:bg-slate-900'
@@ -351,6 +503,28 @@ export default function AdminMenuPage() {
           >
             <LayoutGrid className="w-4 h-4" />
             <span>Restaurant Sections & Tables ({state.tables.length})</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('PRICE_CHANGES')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'PRICE_CHANGES'
+                ? 'bg-amber-500 text-slate-950 shadow-md font-black'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
+            }`}
+          >
+            <Tag className="w-4 h-4 text-amber-400" />
+            <span>Food Price Changes ({priceChangeLogs.length})</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('WAITER_CANCELS')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'WAITER_CANCELS'
+                ? 'bg-rose-500 text-white shadow-md font-black'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
+            }`}
+          >
+            <Ban className="w-4 h-4 text-rose-400" />
+            <span>Waiter Cancellations ({waiterCancelLogs.length})</span>
           </button>
         </div>
 
@@ -687,6 +861,362 @@ export default function AdminMenuPage() {
                   );
                 })}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* =========================================================================
+            TAB 3: AUDIT TRAIL & CANCELLATION LOG (IMMUTABLE - NO DELETIONS)
+        ========================================================================= */}
+        {/* =========================================================================
+            TAB 3: ACTIVITY & AUDIT LOG (MATCHING EXACT USER SCREENSHOT DESIGN)
+        ========================================================================= */}
+        {/* =========================================================================
+            TAB 3: FOOD PRICE CHANGES INDIVIDUAL LOG (IMMUTABLE)
+        ========================================================================= */}
+        {activeTab === 'PRICE_CHANGES' && (
+          <div className="bg-white text-slate-900 rounded-2xl border border-slate-200 p-6 shadow-xl space-y-5 animate-in fade-in">
+            {/* Header: Title, Subtitle, and Export / Reset buttons */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="p-1.5 rounded-lg bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                    <Tag className="w-5 h-5 text-amber-600" />
+                  </span>
+                  <h2 className="text-xl font-bold text-slate-900">Food Price Changes & Rate Revisions Log</h2>
+                </div>
+                <p className="text-xs text-slate-500 mt-1">
+                  Individual immutable ledger of all dish price modifications (Non-AC and AC rates). Deletions are permanently disabled.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('WAITER_CANCELS')}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-xs font-bold text-rose-700 shadow-sm cursor-pointer transition"
+                  title="Switch to Waiter Cancellations"
+                >
+                  <Ban className="w-3.5 h-3.5 text-rose-600" />
+                  <span>Switch to Waiter Cancellations ({waiterCancelLogs.length})</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleExportPriceChangesCSV}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-sm cursor-pointer transition"
+                  title="Export price changes to CSV"
+                >
+                  <Download className="w-3.5 h-3.5 text-slate-600" />
+                  <span>Export Excel / CSV</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPriceSearchQuery('')}
+                  className="inline-flex items-center px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-sm cursor-pointer transition"
+                  title="Reset search filter"
+                >
+                  <span>Reset Search</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Filter Bar: Dedicated Search */}
+            <div className="relative">
+              <Search className="w-4 h-4 text-amber-500 absolute left-3 top-2.5" />
+              <input
+                type="text"
+                placeholder="Search food item name, dish # (code), or admin name who changed price..."
+                value={priceSearchQuery}
+                onChange={(e) => setPriceSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-xl bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:border-amber-500 transition"
+              />
+            </div>
+
+            {/* Status Sub-bar */}
+            <div className="flex flex-wrap items-center gap-6 text-xs text-slate-600 pt-1 border-t border-slate-100">
+              <span>
+                Total Price Changes Recorded: <strong className="text-slate-900 font-bold">{priceChangeLogs.length}</strong>
+              </span>
+              <span>
+                Filtered Results: <strong className="text-slate-900 font-bold">{filteredPriceChanges.length}</strong>
+              </span>
+              <div className="flex items-center gap-2">
+                <span>System Policy:</span>
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold border border-emerald-200">
+                  Append-Only / Immutable
+                </span>
+              </div>
+            </div>
+
+            {/* Dedicated Food Price Changes Table */}
+            <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+              <table className="w-full text-left border-collapse min-w-[1050px] text-xs">
+                <thead className="bg-slate-50 text-[11px] font-bold text-slate-600 uppercase border-b border-slate-200">
+                  <tr>
+                    <th className="px-4 py-3.5 font-bold whitespace-nowrap">DATE</th>
+                    <th className="px-4 py-3.5 font-bold whitespace-nowrap">EXACT TIME</th>
+                    <th className="px-4 py-3.5 font-bold whitespace-nowrap">DISH #</th>
+                    <th className="px-4 py-3.5 font-bold whitespace-nowrap">FOOD ITEM NAME</th>
+                    <th className="px-4 py-3.5 font-bold whitespace-nowrap">CHANGED BY</th>
+                    <th className="px-4 py-3.5 font-bold whitespace-nowrap">ROLE</th>
+                    <th className="px-4 py-3.5 font-bold whitespace-nowrap">OLD NON-AC</th>
+                    <th className="px-4 py-3.5 font-bold whitespace-nowrap">NEW NON-AC</th>
+                    <th className="px-4 py-3.5 font-bold whitespace-nowrap">OLD AC</th>
+                    <th className="px-4 py-3.5 font-bold whitespace-nowrap">NEW AC</th>
+                    <th className="px-4 py-3.5 font-bold whitespace-nowrap">PRICE DELTA</th>
+                    <th className="px-4 py-3.5 font-bold whitespace-nowrap">AUDIT POLICY</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filteredPriceChanges.length === 0 ? (
+                    <tr>
+                      <td colSpan={12} className="px-4 py-12 text-center text-slate-500">
+                        No food price changes recorded yet.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredPriceChanges.map((entry) => {
+                      const { dateStr, timeStr } = formatAuditRowDateTime(entry.timestamp);
+                      const nonAcDiff = entry.new_price_non_ac - entry.old_price_non_ac;
+                      const acDiff = entry.new_price_ac - entry.old_price_ac;
+
+                      return (
+                        <tr key={entry.id} className="hover:bg-slate-50/80 transition-colors">
+                          <td className="px-4 py-3.5 font-mono text-slate-700 whitespace-nowrap">{dateStr}</td>
+                          <td className="px-4 py-3.5 font-mono text-slate-500 whitespace-nowrap">{timeStr}</td>
+                          <td className="px-4 py-3.5 font-mono font-bold text-amber-700 whitespace-nowrap">
+                            #{entry.item_number ?? 'Auto'}
+                          </td>
+                          <td className="px-4 py-3.5 font-bold text-slate-900">{entry.item_name}</td>
+                          <td className="px-4 py-3.5 font-bold text-slate-900 whitespace-nowrap">
+                            {entry.changed_by_name || 'Admin'}
+                          </td>
+                          <td className="px-4 py-3.5 whitespace-nowrap">
+                            <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[11px] font-medium capitalize">
+                              {entry.changed_by_role || 'admin'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3.5 whitespace-nowrap">
+                            <span className="px-2 py-0.5 rounded-md bg-rose-100/80 text-rose-800 text-[11px] font-mono border border-rose-200/60 line-through">
+                              ₹{entry.old_price_non_ac.toFixed(2)}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3.5 whitespace-nowrap">
+                            <span className="px-2 py-0.5 rounded-md bg-emerald-100/90 text-emerald-800 text-[11px] font-mono font-bold border border-emerald-200/80">
+                              ₹{entry.new_price_non_ac.toFixed(2)}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3.5 whitespace-nowrap">
+                            <span className="px-2 py-0.5 rounded-md bg-rose-100/80 text-rose-800 text-[11px] font-mono border border-rose-200/60 line-through">
+                              ₹{entry.old_price_ac.toFixed(2)}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3.5 whitespace-nowrap">
+                            <span className="px-2 py-0.5 rounded-md bg-emerald-100/90 text-emerald-800 text-[11px] font-mono font-bold border border-emerald-200/80">
+                              ₹{entry.new_price_ac.toFixed(2)}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3.5 whitespace-nowrap">
+                            <span className="px-2 py-0.5 rounded-md text-[11px] font-mono font-bold bg-slate-100 text-slate-800 border border-slate-200">
+                              {nonAcDiff >= 0 ? `+₹${nonAcDiff.toFixed(2)}` : `-₹${Math.abs(nonAcDiff).toFixed(2)}`} / {acDiff >= 0 ? `+₹${acDiff.toFixed(2)}` : `-₹${Math.abs(acDiff).toFixed(2)}`}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3.5 whitespace-nowrap">
+                            <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                              <Lock className="w-3 h-3 text-emerald-600" />
+                              <span>Non-Deletable</span>
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* =========================================================================
+            TAB 4: WAITER ORDER CANCELLATIONS INDIVIDUAL LOG (IMMUTABLE)
+        ========================================================================= */}
+        {activeTab === 'WAITER_CANCELS' && (
+          <div className="bg-white text-slate-900 rounded-2xl border border-slate-200 p-6 shadow-xl space-y-5 animate-in fade-in">
+            {/* Header: Title, Subtitle, and Export / Reset buttons */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="p-1.5 rounded-lg bg-rose-500/10 text-rose-600 border border-rose-500/20">
+                    <Ban className="w-5 h-5 text-rose-600" />
+                  </span>
+                  <h2 className="text-xl font-bold text-slate-900">Waiter Order Cancellations & Voided Items Log</h2>
+                </div>
+                <p className="text-xs text-slate-500 mt-1">
+                  Individual immutable ledger of every item cancelled from tables by floor waiters. Deletions are permanently disabled.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('PRICE_CHANGES')}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-200 bg-amber-50 hover:bg-amber-100 text-xs font-bold text-amber-700 shadow-sm cursor-pointer transition"
+                  title="Switch to Food Price Changes"
+                >
+                  <Tag className="w-3.5 h-3.5 text-amber-600" />
+                  <span>Switch to Price Changes ({priceChangeLogs.length})</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleExportWaiterCancelsCSV}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-sm cursor-pointer transition"
+                  title="Export cancellations to CSV"
+                >
+                  <Download className="w-3.5 h-3.5 text-slate-600" />
+                  <span>Export Excel / CSV</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCancelSearchQuery('');
+                    setCancelReasonFilter('ALL');
+                  }}
+                  className="inline-flex items-center px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-sm cursor-pointer transition"
+                  title="Reset cancel filters"
+                >
+                  <span>Reset Filters</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Filter Bar: Dedicated Search + Reason Filter */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="relative md:col-span-2">
+                <Search className="w-4 h-4 text-rose-500 absolute left-3 top-2.5" />
+                <input
+                  type="text"
+                  placeholder="Search waiter name, table #, order #, dish name, or cancel reason..."
+                  value={cancelSearchQuery}
+                  onChange={(e) => setCancelSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-xl bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:border-rose-500 transition"
+                />
+              </div>
+
+              <select
+                value={cancelReasonFilter}
+                onChange={(e) => setCancelReasonFilter(e.target.value)}
+                className="px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white text-slate-700 focus:outline-none focus:border-rose-500 cursor-pointer transition"
+              >
+                <option value="ALL">All Cancellation Reasons</option>
+                <option value="changed mind">Customer Changed Mind</option>
+                <option value="wrong">Wrong Dish Ordered</option>
+                <option value="delay">Kitchen Delay</option>
+                <option value="reduced">Quantity Reduced</option>
+              </select>
+            </div>
+
+            {/* Status Sub-bar with Voided Sales Amount */}
+            <div className="flex flex-wrap items-center gap-6 text-xs text-slate-600 pt-1 border-t border-slate-100">
+              <span>
+                Total Cancellations Recorded: <strong className="text-slate-900 font-bold">{waiterCancelLogs.length}</strong>
+              </span>
+              <span>
+                Filtered Results: <strong className="text-slate-900 font-bold">{filteredWaiterCancels.length}</strong>
+              </span>
+              <span>
+                Total Voided Amount: <strong className="text-rose-600 font-bold">₹{totalVoidAmount.toFixed(2)}</strong>
+              </span>
+              <div className="flex items-center gap-2">
+                <span>System Policy:</span>
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold border border-emerald-200">
+                  Append-Only / Immutable
+                </span>
+              </div>
+            </div>
+
+            {/* Dedicated Waiter Cancellations Table */}
+            <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+              <table className="w-full text-left border-collapse min-w-[1100px] text-xs">
+                <thead className="bg-slate-50 text-[11px] font-bold text-slate-600 uppercase border-b border-slate-200">
+                  <tr>
+                    <th className="px-4 py-3.5 font-bold whitespace-nowrap">DATE</th>
+                    <th className="px-4 py-3.5 font-bold whitespace-nowrap">EXACT TIME</th>
+                    <th className="px-4 py-3.5 font-bold whitespace-nowrap">TABLE #</th>
+                    <th className="px-4 py-3.5 font-bold whitespace-nowrap">ORDER #</th>
+                    <th className="px-4 py-3.5 font-bold whitespace-nowrap">GUEST NAME</th>
+                    <th className="px-4 py-3.5 font-bold whitespace-nowrap">CANCELLED FOOD DISH</th>
+                    <th className="px-4 py-3.5 font-bold whitespace-nowrap">QTY</th>
+                    <th className="px-4 py-3.5 font-bold whitespace-nowrap">UNIT PRICE</th>
+                    <th className="px-4 py-3.5 font-bold whitespace-nowrap">VOID AMOUNT (₹)</th>
+                    <th className="px-4 py-3.5 font-bold whitespace-nowrap">CANCELLATION REASON</th>
+                    <th className="px-4 py-3.5 font-bold whitespace-nowrap">CANCELLED BY</th>
+                    <th className="px-4 py-3.5 font-bold whitespace-nowrap">AUDIT POLICY</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filteredWaiterCancels.length === 0 ? (
+                    <tr>
+                      <td colSpan={12} className="px-4 py-12 text-center text-slate-500">
+                        No waiter cancellations recorded yet.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredWaiterCancels.map((entry) => {
+                      const { dateStr, timeStr } = formatAuditRowDateTime(entry.timestamp);
+
+                      return (
+                        <tr key={entry.id} className="hover:bg-slate-50/80 transition-colors">
+                          <td className="px-4 py-3.5 font-mono text-slate-700 whitespace-nowrap">{dateStr}</td>
+                          <td className="px-4 py-3.5 font-mono text-slate-500 whitespace-nowrap">{timeStr}</td>
+                          <td className="px-4 py-3.5 whitespace-nowrap">
+                            <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-900 font-bold border border-slate-200">
+                              Table {entry.table_number ?? 'N/A'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3.5 font-mono text-slate-700 whitespace-nowrap">
+                            #{entry.order_number}
+                          </td>
+                          <td className="px-4 py-3.5 text-slate-700 whitespace-nowrap">
+                            {entry.customer_name || 'Walk-in'}
+                          </td>
+                          <td className="px-4 py-3.5 font-bold text-slate-900">
+                            {entry.item_name} {entry.item_number !== undefined && <span className="font-mono text-amber-600 font-normal">#{entry.item_number}</span>}
+                          </td>
+                          <td className="px-4 py-3.5 whitespace-nowrap">
+                            <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[11px] font-bold border border-rose-200">
+                              {entry.quantity}x
+                            </span>
+                          </td>
+                          <td className="px-4 py-3.5 font-mono text-slate-700 whitespace-nowrap">
+                            ₹{entry.unit_price.toFixed(2)}
+                          </td>
+                          <td className="px-4 py-3.5 whitespace-nowrap">
+                            <span className="px-2 py-0.5 rounded-md bg-rose-100 text-rose-800 text-[11px] font-mono font-bold border border-rose-300">
+                              ₹{entry.total_void_amount.toFixed(2)}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3.5 max-w-xs">
+                            <span className="px-2 py-1 rounded-md bg-amber-50 text-amber-900 text-[11px] font-medium border border-amber-200 inline-block">
+                              "{entry.cancel_reason}"
+                            </span>
+                          </td>
+                          <td className="px-4 py-3.5 font-bold text-slate-900 whitespace-nowrap">
+                            {entry.cancelled_by_name} <span className="text-[10px] text-slate-500 font-normal capitalize">({entry.cancelled_by_role})</span>
+                          </td>
+                          <td className="px-4 py-3.5 whitespace-nowrap">
+                            <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                              <Lock className="w-3 h-3 text-emerald-600" />
+                              <span>Non-Deletable</span>
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
