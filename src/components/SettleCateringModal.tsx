@@ -51,46 +51,46 @@ export function SettleCateringModal({ catering, onClose, onSuccess }: SettleCate
   }, [catering.id, paymentMethod, paymentRef]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-md w-full p-6 shadow-2xl">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-          <h3 className="font-black text-white text-base">Settle Catering Balance</h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+      <div className="bg-white border border-[#E2E8F0] rounded-3xl max-w-md w-full p-6 shadow-2xl text-[#0F172A]">
+        <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0]">
+          <h3 className="font-black text-[#0F172A] text-base">Settle Catering Balance</h3>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-[#64748B] hover:text-[#0F172A] hover:bg-slate-100 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {errorMessage && (
-          <div className="mt-3 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold">
+          <div className="mt-3 p-3 rounded-xl bg-red-50 border border-red-200 text-[#EF4444] text-xs font-semibold">
             {errorMessage}
           </div>
         )}
 
         <div className="my-4 space-y-3">
-          <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-1 text-xs">
-            <div className="flex justify-between text-slate-400">
+          <div className="p-3 bg-[#F8FAFC] rounded-2xl border border-[#E2E8F0] space-y-1 text-xs">
+            <div className="flex justify-between text-[#64748B]">
               <span>Invoice Number:</span>
-              <span className="font-bold text-white">{catering.invoice_number}</span>
+              <span className="font-bold text-[#0F172A]">{catering.invoice_number}</span>
             </div>
-            <div className="flex justify-between text-slate-400">
+            <div className="flex justify-between text-[#64748B]">
               <span>Client Name:</span>
-              <span className="font-bold text-white">{catering.customer_name}</span>
+              <span className="font-bold text-[#0F172A]">{catering.customer_name}</span>
             </div>
-            <div className="flex justify-between text-slate-400">
+            <div className="flex justify-between text-[#64748B]">
               <span>Event / Occasion:</span>
-              <span className="text-white">{catering.event_name}</span>
+              <span className="text-[#0F172A]">{catering.event_name}</span>
             </div>
-            <div className="flex justify-between text-base font-black text-rose-400 pt-2 border-t border-slate-800">
+            <div className="flex justify-between text-base font-black text-[#EF4444] pt-2 border-t border-[#E2E8F0]">
               <span>Outstanding Balance Due:</span>
               <span>₹{catering.balance_due.toLocaleString('en-IN')}</span>
             </div>
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-300 block mb-1.5">
+            <label className="text-xs font-semibold text-[#64748B] block mb-1.5">
               Select Settlement Payment Mode
             </label>
             <div className="grid grid-cols-3 gap-2">
@@ -99,10 +99,10 @@ export function SettleCateringModal({ catering, onClose, onSuccess }: SettleCate
                   key={mode}
                   type="button"
                   onClick={() => setPaymentMethod(mode)}
-                  className={`py-2 rounded-xl text-xs font-bold transition-all ${
+                  className={`py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     paymentMethod === mode
-                      ? 'bg-amber-500 text-slate-950 font-black shadow-md'
-                      : 'bg-slate-950 text-slate-400 border border-slate-800'
+                      ? 'bg-[#10B981] text-white font-bold shadow-xs'
+                      : 'bg-white text-[#64748B] border border-[#E2E8F0] hover:text-[#0F172A]'
                   }`}
                 >
                   {mode}
@@ -112,7 +112,7 @@ export function SettleCateringModal({ catering, onClose, onSuccess }: SettleCate
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-300 block mb-1">
+            <label className="text-xs font-semibold text-[#64748B] block mb-1">
               Transaction / Reference Note
             </label>
             <input
@@ -120,7 +120,7 @@ export function SettleCateringModal({ catering, onClose, onSuccess }: SettleCate
               placeholder="e.g. UPI Ref / Cash Memo"
               value={paymentRef}
               onChange={(e) => setPaymentRef(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
+              className="w-full px-3 py-2 bg-white border border-[#E2E8F0] rounded-xl text-xs text-[#0F172A] focus:outline-none focus:border-[#10B981]"
             />
           </div>
         </div>
@@ -128,17 +128,17 @@ export function SettleCateringModal({ catering, onClose, onSuccess }: SettleCate
         <div className="flex items-center gap-2 pt-2">
           <button
             onClick={onClose}
-            className="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition-colors cursor-pointer"
+            className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#0F172A] font-bold text-xs transition-colors cursor-pointer"
           >
             Cancel
           </button>
           <button
             onClick={handleSettle}
-            className="flex-2 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs transition-all shadow-lg shadow-emerald-950/40 flex items-center justify-center gap-1.5 cursor-pointer"
+            className="flex-2 py-2.5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-white font-black text-xs transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <CheckCircle2 className="w-4 h-4" />
             <span>Confirm Settlement (₹{catering.balance_due.toLocaleString('en-IN')})</span>
-            <kbd className="rounded bg-black/25 px-1.5 py-0.5 text-[10px] font-mono font-bold text-slate-950 border border-black/20">
+            <kbd className="rounded bg-black/20 px-1.5 py-0.5 text-[10px] font-mono font-bold text-white border border-white/20">
               Space
             </kbd>
           </button>

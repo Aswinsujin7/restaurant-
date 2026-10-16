@@ -105,17 +105,17 @@ function SearchResultRow({
           onSelectItem();
         }
       }}
-      className={`flex items-center gap-3 px-3 py-2.5 border-b border-slate-800/70 last:border-0 transition-colors ${
-        onSelectItem && isAvailable ? 'cursor-pointer hover:bg-slate-800/50' : ''
+      className={`flex items-center gap-3 px-3 py-2.5 border-b border-[#E2E8F0] last:border-0 transition-colors ${
+        onSelectItem && isAvailable ? 'cursor-pointer hover:bg-slate-50' : ''
       } ${
-        isExact ? 'bg-amber-950/20' : 'hover:bg-slate-800/30'
+        isExact ? 'bg-emerald-50/50' : 'hover:bg-slate-50'
       } ${!isAvailable ? 'opacity-50' : ''}`}
     >
       <div
         className={`shrink-0 w-9 h-9 rounded-xl flex flex-col items-center justify-center text-[10px] font-black border ${
           isExact
-            ? 'bg-amber-500/20 border-amber-500/60 text-amber-300'
-            : 'bg-slate-900 border-slate-700 text-slate-400'
+            ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+            : 'bg-slate-100 border-[#E2E8F0] text-[#0F172A]'
         }`}
       >
         <Hash className="w-2.5 h-2.5 mb-0.5 opacity-60" />
@@ -126,21 +126,21 @@ function SearchResultRow({
         <div className="flex items-center gap-1.5 flex-wrap">
           <VegBadge isVeg={item.is_veg} />
           {isExact && (
-            <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/30 uppercase tracking-wide">
+            <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300 uppercase tracking-wide">
               Exact
             </span>
           )}
-          <span className="font-bold text-sm text-white leading-tight truncate">
+          <span className="font-bold text-sm text-[#0F172A] leading-tight truncate">
             {item.name}
           </span>
         </div>
         <div className="flex items-center gap-2 mt-0.5">
-          <span className="text-[10px] text-slate-500 truncate max-w-[160px]">
+          <span className="text-[10px] text-[#64748B] truncate max-w-[160px]">
             {(item.description || '').slice(0, 50)}
             {(item.description?.length || 0) > 50 ? '...' : ''}
           </span>
           {item.spicy_level > 0 && (
-            <span className="flex items-center gap-0.5 text-rose-400 shrink-0">
+            <span className="flex items-center gap-0.5 text-rose-500 shrink-0">
               {Array.from({ length: item.spicy_level }).map((_, i) => (
                 <Flame key={i} className="w-2.5 h-2.5 fill-rose-500" />
               ))}
@@ -149,10 +149,10 @@ function SearchResultRow({
         </div>
       </div>
 
-      <span className="font-black text-amber-400 text-sm shrink-0">Rs.{item.price}</span>
+      <span className="font-black text-[#0F172A] text-sm shrink-0">Rs.{item.price}</span>
 
       {!isAvailable ? (
-        <span className="text-[10px] text-rose-400 font-bold shrink-0">Out of Stock</span>
+        <span className="text-[10px] text-[#EF4444] font-bold shrink-0">Out of Stock</span>
       ) : quantity === 0 ? (
         <button
           onClick={(e) => {
@@ -163,19 +163,19 @@ function SearchResultRow({
               onAdd();
             }
           }}
-          className="shrink-0 w-8 h-8 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black flex items-center justify-center transition-colors cursor-pointer"
+          className="shrink-0 w-8 h-8 rounded-xl bg-[#10B981] hover:bg-[#059669] text-white font-black flex items-center justify-center transition-colors cursor-pointer shadow-xs"
           aria-label={`Add ${item.name}`}
         >
           <Plus className="w-4 h-4" />
         </button>
       ) : (
         <div
-          className="shrink-0 flex items-center gap-1.5 bg-slate-900 px-1.5 py-1 rounded-xl border border-slate-700"
+          className="shrink-0 flex items-center gap-1.5 bg-slate-100 px-1.5 py-1 rounded-xl border border-[#E2E8F0]"
           onClick={(e) => e.stopPropagation()}
         >
           <button
             onClick={onRemove}
-            className="w-6 h-6 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-200 transition-colors cursor-pointer"
+            className="w-6 h-6 rounded-lg bg-white hover:bg-slate-200 flex items-center justify-center text-[#0F172A] transition-colors cursor-pointer shadow-xs"
             aria-label={`Remove one ${item.name}`}
           >
             <Minus className="w-3 h-3" />
@@ -184,7 +184,7 @@ function SearchResultRow({
             onClick={() => {
               if (onSelectItem) onSelectItem();
             }}
-            className={`font-black text-amber-400 text-sm px-1 ${onSelectItem ? 'hover:underline cursor-pointer' : ''}`}
+            className={`font-black text-[#0F172A] text-sm px-1 ${onSelectItem ? 'hover:underline cursor-pointer' : ''}`}
             title={onSelectItem ? 'Click to change quantity' : undefined}
           >
             {quantity}
@@ -197,7 +197,7 @@ function SearchResultRow({
                 onAdd();
               }
             }}
-            className="w-6 h-6 rounded-lg bg-amber-500 hover:bg-amber-400 flex items-center justify-center text-slate-950 font-bold transition-colors cursor-pointer"
+            className="w-6 h-6 rounded-lg bg-[#10B981] hover:bg-[#059669] flex items-center justify-center text-white font-bold transition-colors cursor-pointer shadow-xs"
             aria-label={`Add one more ${item.name}`}
           >
             <Plus className="w-3 h-3" />
@@ -290,11 +290,11 @@ export function MenuItemSearch({
       <div
         className={`relative flex items-center gap-2 rounded-xl border transition-colors ${
           isFocused
-            ? 'border-amber-500 bg-slate-950 ring-1 ring-amber-500/30'
-            : 'border-slate-700 bg-slate-950 hover:border-slate-600'
+            ? 'border-[#10B981] bg-white ring-1 ring-[#10B981]/30 shadow-xs'
+            : 'border-[#E2E8F0] bg-white hover:border-slate-300'
         }`}
       >
-        <Search className="w-4 h-4 text-slate-500 ml-3 shrink-0" />
+        <Search className="w-4 h-4 text-[#64748B] ml-3 shrink-0" />
         <input
           ref={inputRef}
           type="text"
@@ -304,7 +304,7 @@ export function MenuItemSearch({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           autoComplete="off"
-          className="flex-1 bg-transparent py-2.5 pr-3 text-sm text-white placeholder-slate-500 focus:outline-none"
+          className="flex-1 bg-transparent py-2.5 pr-3 text-sm text-[#0F172A] placeholder-slate-400 focus:outline-none"
           aria-label="Menu item search"
           aria-autocomplete="list"
           aria-expanded={showDropdown}
@@ -312,13 +312,13 @@ export function MenuItemSearch({
         {query && (
           <button
             onClick={clearSearch}
-            className="mr-2 shrink-0 text-slate-500 hover:text-white transition-colors cursor-pointer"
+            className="mr-2 shrink-0 text-[#64748B] hover:text-[#0F172A] transition-colors cursor-pointer"
             aria-label="Clear search"
           >
             <X className="w-4 h-4" />
           </button>
         )}
-        <span className="mr-3 text-[10px] text-slate-600 hidden sm:block shrink-0">
+        <span className="mr-3 text-[10px] text-[#64748B] hidden sm:block shrink-0">
           # or name
         </span>
       </div>
@@ -326,22 +326,22 @@ export function MenuItemSearch({
       {showDropdown && (
         <div
           ref={dropdownRef}
-          className="absolute top-full left-0 right-0 mt-1.5 z-50 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl shadow-black/60 overflow-hidden max-h-96 overflow-y-auto"
+          className="absolute top-full left-0 right-0 mt-1.5 z-50 bg-white border border-[#E2E8F0] rounded-2xl shadow-xl overflow-hidden max-h-96 overflow-y-auto"
           role="listbox"
           aria-label="Menu search results"
         >
           {!hasResults && (
             <div className="py-8 text-center space-y-1">
-              <Search className="w-5 h-5 text-slate-600 mx-auto" />
-              <p className="text-xs text-slate-500">No items match &quot;{query}&quot;</p>
-              <p className="text-[10px] text-slate-600">Try a different item number or name</p>
+              <Search className="w-5 h-5 text-[#64748B] mx-auto" />
+              <p className="text-xs text-[#64748B]">No items match &quot;{query}&quot;</p>
+              <p className="text-[10px] text-slate-400">Try a different item number or name</p>
             </div>
           )}
 
           {exact.length > 0 && (
             <div>
-              <div className="px-3 py-1.5 bg-amber-950/30 border-b border-amber-900/40">
-                <span className="text-[10px] font-black uppercase tracking-wider text-amber-400">
+              <div className="px-3 py-1.5 bg-emerald-50 border-b border-emerald-100">
+                <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800">
                   Exact Match{exact.length > 1 ? 'es' : ''} ({exact.length})
                 </span>
               </div>
@@ -361,8 +361,8 @@ export function MenuItemSearch({
 
           {partial.length > 0 && (
             <div>
-              <div className="px-3 py-1.5 bg-slate-950/60 border-b border-slate-800">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+              <div className="px-3 py-1.5 bg-[#F8FAFC] border-b border-[#E2E8F0]">
+                <span className="text-[10px] font-black uppercase tracking-wider text-[#64748B]">
                   Partial Matches ({partial.length})
                 </span>
               </div>

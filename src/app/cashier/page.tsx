@@ -305,17 +305,17 @@ export default function CashierDashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-full bg-[#F1F5F9] text-[#0F172A] p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Dashboard Top Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#E2E8F0]">
           <div className="flex items-center gap-3">
-            <span className="p-2.5 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
+            <span className="p-2.5 rounded-2xl bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30">
               <Receipt className="w-6 h-6" />
             </span>
             <div>
-              <h1 className="text-2xl font-black tracking-tight text-white">Cashier Counter</h1>
-              <p className="text-xs text-slate-400">
+              <h1 className="text-2xl font-black tracking-tight text-[#0F172A]">Cashier Counter</h1>
+              <p className="text-xs text-[#64748B]">
                 Multi-channel billing operations: Table Dine-in, Takeaway Parcels & Catering Contracts
               </p>
             </div>
@@ -325,19 +325,19 @@ export default function CashierDashboardPage() {
             <button
               type="button"
               onClick={startQuickOrder}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs transition-all shadow-md shadow-amber-950/40 cursor-pointer"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-white font-bold text-xs transition-all shadow-sm cursor-pointer"
               title="Fast Keyboard Billing POS (F2)"
             >
               <Keyboard className="w-4 h-4" />
               <span>⚡ Fast Keyboard Billing</span>
-              <kbd className="hidden sm:inline-block bg-slate-950/30 px-1.5 py-0.5 rounded text-[10px] font-mono text-slate-950 border border-slate-950/20">F2</kbd>
+              <kbd className="hidden sm:inline-block bg-black/20 px-1.5 py-0.5 rounded text-[10px] font-mono text-white border border-white/20">F2</kbd>
             </button>
 
             <Link
               href="/admin/billing"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-300 hover:text-white transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-50 border border-[#E2E8F0] text-xs font-semibold text-slate-700 hover:text-[#0F172A] transition-colors shadow-sm"
             >
-              <History className="w-4 h-4 text-amber-400" />
+              <History className="w-4 h-4 text-[#10B981]" />
               <span>Billing History</span>
             </Link>
           </div>
@@ -346,20 +346,20 @@ export default function CashierDashboardPage() {
         {/* =================================================================== */}
         {/* PRIMARY CATEGORY SELECTOR TABS: A, B, C */}
         {/* =================================================================== */}
-        <div className="p-1.5 bg-slate-900/90 border border-slate-800 rounded-2xl flex flex-col lg:flex-row gap-2">
+        <div className="p-1.5 bg-white border border-[#E2E8F0] rounded-2xl flex flex-col lg:flex-row gap-2 shadow-sm">
           {/* TAB A: Table Bills with embedded AC / NON split selectors */}
           <div
             onClick={() => setActiveCategory('A_TABLE')}
             className={`flex-1 py-2.5 px-3 rounded-xl font-bold text-xs transition-all flex flex-wrap items-center justify-between gap-2 cursor-pointer ${
               activeCategory === 'A_TABLE'
-                ? 'bg-amber-500 text-slate-950 font-black shadow-lg shadow-amber-950/40 ring-2 ring-amber-400/50'
-                : 'bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800/60'
+                ? 'bg-[#10B981] text-white font-black shadow-md'
+                : 'bg-slate-50 border border-slate-200/80 text-slate-700 hover:text-[#0F172A] hover:bg-slate-100'
             }`}
           >
             <div className="flex items-center gap-2">
               <span
                 className={`w-6 h-6 rounded-lg text-xs font-black flex items-center justify-center shrink-0 ${
-                  activeCategory === 'A_TABLE' ? 'bg-slate-950 text-amber-400' : 'bg-slate-800 text-slate-300'
+                  activeCategory === 'A_TABLE' ? 'bg-[#0F172A] text-white' : 'bg-white text-slate-700 border border-slate-200'
                 }`}
               >
                 A
@@ -378,7 +378,7 @@ export default function CashierDashboardPage() {
             </div>
 
             {/* Split controls: AC (6) | NON (6) as sketched by user with live Free / Busy */}
-            <div className="flex items-center gap-1.5 bg-black/25 p-1 rounded-xl border border-black/15 flex-wrap">
+            <div className="flex items-center gap-1.5 bg-black/10 p-1 rounded-xl border border-black/10 flex-wrap">
               <button
                 type="button"
                 onClick={(e) => {
@@ -388,13 +388,17 @@ export default function CashierDashboardPage() {
                 }}
                 className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all flex items-center gap-1.5 cursor-pointer ${
                   activeCategory === 'A_TABLE' && sectionFilter === 'AC'
-                    ? 'bg-cyan-500 text-slate-950 ring-2 ring-cyan-300 shadow-md scale-105'
-                    : 'bg-slate-900/90 text-cyan-300 hover:bg-cyan-950 border border-cyan-500/30'
+                    ? 'bg-white text-[#0F172A] shadow-md scale-105'
+                    : activeCategory === 'A_TABLE'
+                    ? 'bg-white/20 text-white hover:bg-white/30 border border-white/30'
+                    : sectionFilter === 'AC'
+                    ? 'bg-cyan-600 text-white shadow-sm'
+                    : 'bg-white text-cyan-800 hover:bg-cyan-50 border border-cyan-200'
                 }`}
                 title={`AC: ${acStats.free} Free, ${acStats.occupied + acStats.billRequested} Occupied`}
               >
                 <span>❄️ AC (6)</span>
-                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-black/40 text-cyan-200">
+                <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded ${activeCategory === 'A_TABLE' && sectionFilter === 'AC' ? 'bg-slate-100 text-slate-800' : 'bg-black/20 text-current'}`}>
                   {acStats.free} Free · {acStats.occupied + acStats.billRequested} Busy
                 </span>
               </button>
@@ -408,13 +412,17 @@ export default function CashierDashboardPage() {
                 }}
                 className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all flex items-center gap-1.5 cursor-pointer ${
                   activeCategory === 'A_TABLE' && sectionFilter === 'NON_AC'
-                    ? 'bg-emerald-500 text-slate-950 ring-2 ring-emerald-300 shadow-md scale-105'
-                    : 'bg-slate-900/90 text-emerald-300 hover:bg-emerald-950 border border-emerald-500/30'
+                    ? 'bg-white text-[#0F172A] shadow-md scale-105'
+                    : activeCategory === 'A_TABLE'
+                    ? 'bg-white/20 text-white hover:bg-white/30 border border-white/30'
+                    : sectionFilter === 'NON_AC'
+                    ? 'bg-[#10B981] text-white shadow-sm'
+                    : 'bg-white text-emerald-800 hover:bg-emerald-50 border border-emerald-200'
                 }`}
                 title={`Non-AC: ${nonAcStats.free} Free, ${nonAcStats.occupied + nonAcStats.billRequested} Occupied`}
               >
                 <span>🌿 NON (6)</span>
-                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-black/40 text-emerald-200">
+                <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded ${activeCategory === 'A_TABLE' && sectionFilter === 'NON_AC' ? 'bg-slate-100 text-slate-800' : 'bg-black/20 text-current'}`}>
                   {nonAcStats.free} Free · {nonAcStats.occupied + nonAcStats.billRequested} Busy
                 </span>
               </button>
@@ -439,10 +447,10 @@ export default function CashierDashboardPage() {
                 suppressHydrationWarning
                 className={`text-[10px] px-2 py-0.5 rounded-full font-bold cursor-pointer transition-colors ${
                   activeCategory === 'A_TABLE' && sectionFilter === 'ALL'
-                    ? 'bg-slate-950 text-amber-400 font-black'
+                    ? 'bg-[#0F172A] text-white font-black'
                     : activeCategory === 'A_TABLE'
-                    ? 'bg-slate-950/20 text-slate-950'
-                    : 'bg-slate-800 text-slate-400 hover:text-white'
+                    ? 'bg-black/20 text-white'
+                    : 'bg-white text-slate-600 border border-slate-200 hover:text-slate-900'
                 }`}
               >
                 {state.tables.length} Tables
@@ -459,14 +467,14 @@ export default function CashierDashboardPage() {
             }}
             className={`flex-1 py-3 px-4 rounded-xl font-bold text-xs transition-all flex items-center justify-between gap-2 cursor-pointer ${
               activeCategory === 'B_PARCEL'
-                ? 'bg-amber-500 text-slate-950 font-black shadow-lg shadow-amber-950/40 ring-2 ring-amber-400/50'
-                : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                ? 'bg-[#10B981] text-white font-black shadow-md'
+                : 'bg-slate-50 border border-slate-200/80 text-slate-700 hover:text-[#0F172A] hover:bg-slate-100'
             }`}
           >
             <div className="flex items-center gap-2">
               <span
                 className={`w-6 h-6 rounded-lg text-xs font-black flex items-center justify-center ${
-                  activeCategory === 'B_PARCEL' ? 'bg-slate-950 text-amber-400' : 'bg-slate-800 text-slate-300'
+                  activeCategory === 'B_PARCEL' ? 'bg-[#0F172A] text-white' : 'bg-white text-slate-700 border border-slate-200'
                 }`}
               >
                 B
@@ -476,7 +484,7 @@ export default function CashierDashboardPage() {
             <span
               suppressHydrationWarning
               className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                activeCategory === 'B_PARCEL' ? 'bg-slate-950/20 text-slate-950' : 'bg-slate-800 text-slate-400'
+                activeCategory === 'B_PARCEL' ? 'bg-black/20 text-white' : 'bg-white text-slate-600 border border-slate-200'
               }`}
             >
               {state.parcels.length} Orders
@@ -489,14 +497,14 @@ export default function CashierDashboardPage() {
             onClick={() => setActiveCategory('C_CATERING')}
             className={`flex-1 py-3 px-4 rounded-xl font-bold text-xs transition-all flex items-center justify-between gap-2 cursor-pointer ${
               activeCategory === 'C_CATERING'
-                ? 'bg-amber-500 text-slate-950 font-black shadow-lg shadow-amber-950/40 ring-2 ring-amber-400/50'
-                : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                ? 'bg-[#10B981] text-white font-black shadow-md'
+                : 'bg-slate-50 border border-slate-200/80 text-slate-700 hover:text-[#0F172A] hover:bg-slate-100'
             }`}
           >
             <div className="flex items-center gap-2">
               <span
                 className={`w-6 h-6 rounded-lg text-xs font-black flex items-center justify-center ${
-                  activeCategory === 'C_CATERING' ? 'bg-slate-950 text-amber-400' : 'bg-slate-800 text-slate-300'
+                  activeCategory === 'C_CATERING' ? 'bg-[#0F172A] text-white' : 'bg-white text-slate-700 border border-slate-200'
                 }`}
               >
                 C
@@ -515,7 +523,7 @@ export default function CashierDashboardPage() {
               <span
                 suppressHydrationWarning
                 className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                  activeCategory === 'C_CATERING' ? 'bg-slate-950/20 text-slate-950' : 'bg-slate-800 text-slate-400'
+                  activeCategory === 'C_CATERING' ? 'bg-black/20 text-white' : 'bg-white text-slate-600 border border-slate-200'
                 }`}
               >
                 {state.caterings.length} Invoices
@@ -531,22 +539,22 @@ export default function CashierDashboardPage() {
           <div className="space-y-6 animate-in fade-in">
             {/* Prominent Bill Request Notification Banner */}
             {mounted && billRequests.length > 0 && (
-              <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-950/80 via-indigo-950/70 to-slate-900 border border-purple-500/50 shadow-xl shadow-purple-950/40">
+              <div className="p-4 rounded-2xl bg-purple-50 border border-purple-200 shadow-sm">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-purple-500 flex items-center justify-center text-slate-950 font-black shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-purple-600 flex items-center justify-center text-white font-black shrink-0">
                       <Receipt className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                      <h3 className="text-sm font-bold text-purple-950 flex items-center gap-2">
                         <span>
                           {billRequests.length} Bill Request{billRequests.length > 1 ? 's' : ''} Pending Settlement!
                         </span>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-purple-500/30 text-purple-200 border border-purple-400/40">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-purple-200 text-purple-800 border border-purple-300">
                           Action Required
                         </span>
                       </h3>
-                      <p className="text-xs text-purple-200/80 mt-0.5">
+                      <p className="text-xs text-purple-700 mt-0.5">
                         Waiter requested bill for tables:{' '}
                         <strong>{billRequests.map((b) => `T${b.table_number}`).join(', ')}</strong>
                       </p>
@@ -557,15 +565,15 @@ export default function CashierDashboardPage() {
                       <button
                         key={req.id}
                         onClick={() => setSelectedOrderForBill(req)}
-                        className="px-3.5 py-1.5 rounded-xl bg-purple-500 hover:bg-purple-400 text-slate-950 font-bold text-xs transition-colors shadow-md flex items-center gap-1.5 cursor-pointer"
+                        className="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition-colors shadow-sm flex items-center gap-1.5 cursor-pointer"
                       >
                         <span>Settle Table {req.table_number}</span>
                         {idx === 0 && (
-                          <span className="text-[10px] bg-slate-950 text-amber-300 px-1.5 py-0.5 rounded font-mono font-bold border border-amber-400/40">
+                          <span className="text-[10px] bg-white text-purple-900 px-1.5 py-0.5 rounded font-mono font-bold">
                             Space
                           </span>
                         )}
-                        <span className="text-[10px] bg-purple-900/40 text-purple-950 px-1.5 py-0.5 rounded font-black">
+                        <span className="text-[10px] bg-purple-900/40 text-white px-1.5 py-0.5 rounded font-black">
                           ₹{req.final_total.toFixed(0)}
                         </span>
                       </button>
@@ -576,74 +584,58 @@ export default function CashierDashboardPage() {
             )}
 
             {/* Section Summary Banner when AC or Non-AC or ALL is active */}
-            <div
-              className={`p-3.5 sm:p-4 rounded-2xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg ${
-                sectionFilter === 'AC'
-                  ? 'bg-cyan-950/40 border-cyan-500/50 text-cyan-200'
-                  : sectionFilter === 'NON_AC'
-                  ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-200'
-                  : 'bg-slate-900/80 border-slate-800 text-slate-200'
-              }`}
-            >
+            <div className="p-3.5 sm:p-4 rounded-2xl border border-[#E2E8F0] bg-white shadow-sm transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div
                   className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg shrink-0 ${
                     sectionFilter === 'AC'
-                      ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
+                      ? 'bg-cyan-50 text-cyan-700 border border-cyan-200'
                       : sectionFilter === 'NON_AC'
-                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                      : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      : 'bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/25'
                   }`}
                 >
                   {sectionFilter === 'AC' ? '❄️' : sectionFilter === 'NON_AC' ? '🌿' : '🍽️'}
                 </div>
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-black text-sm sm:text-base text-white">
+                    <span className="font-black text-sm sm:text-base text-[#0F172A]">
                       {sectionFilter === 'AC'
                         ? '❄️ AC Dining Hall (Tables 1 - 6)'
                         : sectionFilter === 'NON_AC'
                         ? '🌿 Non-AC Dining Hall (Tables 7 - 12)'
                         : '🍽️ All Dining Tables (AC + Non-AC)'}
                     </span>
-                    <span
-                      className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${
-                        sectionFilter === 'AC'
-                          ? 'bg-cyan-900/60 text-cyan-200 border-cyan-400/40'
-                          : sectionFilter === 'NON_AC'
-                          ? 'bg-emerald-900/60 text-emerald-200 border-emerald-400/40'
-                          : 'bg-slate-800 text-slate-300 border-slate-700'
-                      }`}
-                    >
+                    <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
                       {activeMetrics.total} Tables
                     </span>
                   </div>
-                  <p className="text-xs text-slate-400 mt-1">
+                  <p className="text-xs text-[#64748B] mt-1">
                     {sectionFilter === 'AC' ? (
                       <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                        <span className="text-emerald-400 font-bold">{acStats.free} Available (Not Occupied)</span>
-                        <span className="text-slate-600">•</span>
-                        <span className="text-amber-400 font-bold">{acStats.occupied} Dining (Occupied)</span>
-                        <span className="text-slate-600">•</span>
-                        <span className="text-purple-400 font-bold">{acStats.billRequested} Bill Req</span>
+                        <span className="text-[#10B981] font-bold">{acStats.free} Available (Not Occupied)</span>
+                        <span className="text-slate-300">•</span>
+                        <span className="text-amber-600 font-bold">{acStats.occupied} Dining (Occupied)</span>
+                        <span className="text-slate-300">•</span>
+                        <span className="text-purple-600 font-bold">{acStats.billRequested} Bill Req</span>
                       </span>
                     ) : sectionFilter === 'NON_AC' ? (
                       <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                        <span className="text-emerald-400 font-bold">{nonAcStats.free} Available (Not Occupied)</span>
-                        <span className="text-slate-600">•</span>
-                        <span className="text-amber-400 font-bold">{nonAcStats.occupied} Dining (Occupied)</span>
-                        <span className="text-slate-600">•</span>
-                        <span className="text-purple-400 font-bold">{nonAcStats.billRequested} Bill Req</span>
+                        <span className="text-[#10B981] font-bold">{nonAcStats.free} Available (Not Occupied)</span>
+                        <span className="text-slate-300">•</span>
+                        <span className="text-amber-600 font-bold">{nonAcStats.occupied} Dining (Occupied)</span>
+                        <span className="text-slate-300">•</span>
+                        <span className="text-purple-600 font-bold">{nonAcStats.billRequested} Bill Req</span>
                       </span>
                     ) : (
                       <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                        <span className="text-emerald-400 font-bold">{stats.freeTables} Free</span>
-                        <span className="text-slate-600">•</span>
-                        <span className="text-amber-400 font-bold">{stats.occupiedTables} Occupied</span>
-                        <span className="text-slate-600">•</span>
-                        <span className="text-cyan-400 font-semibold">AC: {acStats.free} Free / {acStats.occupied + acStats.billRequested} Occupied</span>
-                        <span className="text-slate-600">•</span>
-                        <span className="text-emerald-400 font-semibold">Non-AC: {nonAcStats.free} Free / {nonAcStats.occupied + nonAcStats.billRequested} Occupied</span>
+                        <span className="text-[#10B981] font-bold">{stats.freeTables} Free</span>
+                        <span className="text-slate-300">•</span>
+                        <span className="text-amber-600 font-bold">{stats.occupiedTables} Occupied</span>
+                        <span className="text-slate-300">•</span>
+                        <span className="text-cyan-700 font-semibold">AC: {acStats.free} Free / {acStats.occupied + acStats.billRequested} Occupied</span>
+                        <span className="text-slate-300">•</span>
+                        <span className="text-emerald-700 font-semibold">Non-AC: {nonAcStats.free} Free / {nonAcStats.occupied + nonAcStats.billRequested} Occupied</span>
                       </span>
                     )}
                   </p>
@@ -657,8 +649,8 @@ export default function CashierDashboardPage() {
                   onClick={() => setSectionFilter('ALL')}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     sectionFilter === 'ALL'
-                      ? 'bg-amber-500 text-slate-950 font-black shadow-md'
-                      : 'bg-slate-950/70 text-slate-400 hover:text-white border border-slate-800'
+                      ? 'bg-[#10B981] text-white font-black shadow-sm'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
                   }`}
                 >
                   All ({state.tables.length})
@@ -668,12 +660,12 @@ export default function CashierDashboardPage() {
                   onClick={() => setSectionFilter('AC')}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                     sectionFilter === 'AC'
-                      ? 'bg-cyan-500 text-slate-950 font-black shadow-md shadow-cyan-950/50 ring-2 ring-cyan-300'
-                      : 'bg-slate-950/70 text-cyan-300 hover:text-white border border-cyan-900/50'
+                      ? 'bg-cyan-600 text-white font-black shadow-sm'
+                      : 'bg-slate-100 text-cyan-800 hover:bg-slate-200 border border-slate-200'
                   }`}
                 >
                   <span>❄️ AC (6)</span>
-                  <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-black/50 font-mono font-bold">
+                  <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-black/10 font-mono font-bold">
                     {acStats.free} Free · {acStats.occupied + acStats.billRequested} Occupied
                   </span>
                 </button>
@@ -682,12 +674,12 @@ export default function CashierDashboardPage() {
                   onClick={() => setSectionFilter('NON_AC')}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                     sectionFilter === 'NON_AC'
-                      ? 'bg-emerald-500 text-slate-950 font-black shadow-md shadow-emerald-950/50 ring-2 ring-emerald-300'
-                      : 'bg-slate-950/70 text-emerald-300 hover:text-white border border-emerald-900/50'
+                      ? 'bg-[#10B981] text-white font-black shadow-sm'
+                      : 'bg-slate-100 text-emerald-800 hover:bg-slate-200 border border-slate-200'
                   }`}
                 >
                   <span>🌿 Non-AC (6)</span>
-                  <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-black/50 font-mono font-bold">
+                  <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-black/10 font-mono font-bold">
                     {nonAcStats.free} Free · {nonAcStats.occupied + nonAcStats.billRequested} Occupied
                   </span>
                 </button>
@@ -696,58 +688,58 @@ export default function CashierDashboardPage() {
 
             {/* Dynamic Metrics Row */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
-              <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between">
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wider truncate">
+              <div className="bg-white border border-[#E2E8F0] rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between shadow-sm">
+                <span className="text-xs font-semibold text-[#64748B] uppercase tracking-wider truncate">
                   {sectionFilter === 'AC' ? 'Total AC Tables' : sectionFilter === 'NON_AC' ? 'Total Non-AC Tables' : 'Total Tables'}
                 </span>
                 <div className="mt-2 flex items-baseline justify-between">
-                  <span className="text-2xl sm:text-3xl font-black text-white">{activeMetrics.total}</span>
-                  <span className="text-[11px] sm:text-xs text-slate-500 font-medium truncate ml-1">{activeMetrics.subLabel}</span>
+                  <span className="text-2xl sm:text-3xl font-black text-[#0F172A]">{activeMetrics.total}</span>
+                  <span className="text-[11px] sm:text-xs text-[#64748B] font-medium truncate ml-1">{activeMetrics.subLabel}</span>
                 </div>
               </div>
 
-              <div className="bg-slate-900/80 border border-emerald-900/40 rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between">
-                <span className="text-xs font-medium text-emerald-400 uppercase tracking-wider truncate">
+              <div className="bg-white border border-[#E2E8F0] rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between shadow-sm">
+                <span className="text-xs font-semibold text-[#10B981] uppercase tracking-wider truncate">
                   Free Tables (Available)
                 </span>
                 <div className="mt-2 flex items-baseline justify-between">
-                  <span className="text-2xl sm:text-3xl font-black text-emerald-400">{activeMetrics.free}</span>
-                  <span className="text-[11px] sm:text-xs text-emerald-500/80 font-medium truncate ml-1">{activeMetrics.freeSub}</span>
+                  <span className="text-2xl sm:text-3xl font-black text-[#10B981]">{activeMetrics.free}</span>
+                  <span className="text-[11px] sm:text-xs text-[#10B981] font-medium truncate ml-1">{activeMetrics.freeSub}</span>
                 </div>
               </div>
 
-              <div className="bg-slate-900/80 border border-amber-900/40 rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between">
-                <span className="text-xs font-medium text-amber-400 uppercase tracking-wider truncate">
+              <div className="bg-white border border-[#E2E8F0] rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between shadow-sm">
+                <span className="text-xs font-semibold text-amber-600 uppercase tracking-wider truncate">
                   Occupied (Busy)
                 </span>
                 <div className="mt-2 flex items-baseline justify-between">
-                  <span className="text-2xl sm:text-3xl font-black text-amber-400">{activeMetrics.occupied}</span>
-                  <span className="text-[11px] sm:text-xs text-amber-500/80 font-medium truncate ml-1">{activeMetrics.occupiedSub}</span>
+                  <span className="text-2xl sm:text-3xl font-black text-amber-600">{activeMetrics.occupied}</span>
+                  <span className="text-[11px] sm:text-xs text-amber-600 font-medium truncate ml-1">{activeMetrics.occupiedSub}</span>
                 </div>
               </div>
 
-              <div className="bg-slate-900/80 border border-purple-900/40 rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between">
-                <span className="text-xs font-medium text-purple-400 uppercase tracking-wider truncate">
+              <div className="bg-white border border-[#E2E8F0] rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between shadow-sm">
+                <span className="text-xs font-semibold text-purple-600 uppercase tracking-wider truncate">
                   Bill Requests
                 </span>
                 <div className="mt-2 flex items-baseline justify-between">
-                  <span className="text-2xl sm:text-3xl font-black text-purple-400">
+                  <span className="text-2xl sm:text-3xl font-black text-purple-600">
                     {activeMetrics.billRequested}
                   </span>
-                  <span className="text-[11px] sm:text-xs text-purple-500/80 font-medium truncate ml-1">{activeMetrics.billSub}</span>
+                  <span className="text-[11px] sm:text-xs text-purple-600 font-medium truncate ml-1">{activeMetrics.billSub}</span>
                 </div>
               </div>
             </div>
 
             {/* Filters and Search Bar - Fully Responsive */}
-            <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 p-3 bg-slate-900/60 border border-slate-800 rounded-2xl">
+            <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 p-3 bg-white border border-[#E2E8F0] rounded-2xl shadow-sm">
               <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
                 <button
                   onClick={() => setStatusFilter('ALL')}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                     statusFilter === 'ALL'
-                      ? 'bg-amber-500 text-slate-950 font-black'
-                      : 'bg-slate-950 text-slate-400 hover:text-white'
+                      ? 'bg-[#10B981] text-white font-black shadow-sm'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                   }`}
                 >
                   All ({activeMetrics.total})
@@ -756,8 +748,8 @@ export default function CashierDashboardPage() {
                   onClick={() => setStatusFilter('FREE')}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                     statusFilter === 'FREE'
-                      ? 'bg-emerald-500 text-slate-950 font-black'
-                      : 'bg-slate-950 text-emerald-400 hover:bg-slate-900'
+                      ? 'bg-[#10B981] text-white font-black shadow-sm'
+                      : 'bg-slate-100 text-emerald-700 hover:bg-slate-200'
                   }`}
                 >
                   Free ({activeMetrics.free})
@@ -766,8 +758,8 @@ export default function CashierDashboardPage() {
                   onClick={() => setStatusFilter('OCCUPIED')}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                     statusFilter === 'OCCUPIED'
-                      ? 'bg-amber-500 text-slate-950 font-black'
-                      : 'bg-slate-950 text-amber-400 hover:bg-slate-900'
+                      ? 'bg-amber-500 text-white font-black shadow-sm'
+                      : 'bg-slate-100 text-amber-700 hover:bg-slate-200'
                   }`}
                 >
                   Occupied ({activeMetrics.occupied})
@@ -776,8 +768,8 @@ export default function CashierDashboardPage() {
                   onClick={() => setStatusFilter('BILL_REQUESTED')}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                     statusFilter === 'BILL_REQUESTED'
-                      ? 'bg-purple-500 text-slate-950 font-black'
-                      : 'bg-slate-950 text-purple-400 hover:bg-slate-900'
+                      ? 'bg-purple-600 text-white font-black shadow-sm'
+                      : 'bg-slate-100 text-purple-700 hover:bg-slate-200'
                   }`}
                 >
                   Bill Requested ({activeMetrics.billRequested})
@@ -785,14 +777,14 @@ export default function CashierDashboardPage() {
               </div>
 
               <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-                <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 shrink-0">
+                <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 shrink-0">
                   <button
                     type="button"
                     onClick={() => setSectionFilter('ALL')}
                     className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                       sectionFilter === 'ALL'
-                        ? 'bg-amber-500 text-slate-950 font-black'
-                        : 'text-slate-400 hover:text-white'
+                        ? 'bg-white text-[#0F172A] font-black shadow-sm'
+                        : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
                     All ({state.tables.length})
@@ -802,12 +794,12 @@ export default function CashierDashboardPage() {
                     onClick={() => setSectionFilter('AC')}
                     className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
                       sectionFilter === 'AC'
-                        ? 'bg-cyan-500 text-slate-950 font-black shadow-md'
-                        : 'text-cyan-400 hover:bg-slate-900'
+                        ? 'bg-cyan-600 text-white font-black shadow-sm'
+                        : 'text-cyan-800 hover:text-cyan-950'
                     }`}
                   >
                     <span>❄️ AC</span>
-                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-cyan-950/60 text-cyan-200">
+                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/10 font-bold">
                       {acStats.free}F / {acStats.occupied + acStats.billRequested}B
                     </span>
                   </button>
@@ -816,25 +808,25 @@ export default function CashierDashboardPage() {
                     onClick={() => setSectionFilter('NON_AC')}
                     className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
                       sectionFilter === 'NON_AC'
-                        ? 'bg-emerald-500 text-slate-950 font-black shadow-md'
-                        : 'text-emerald-400 hover:bg-slate-900'
+                        ? 'bg-[#10B981] text-white font-black shadow-sm'
+                        : 'text-emerald-800 hover:text-emerald-950'
                     }`}
                   >
                     <span>🌿 Non-AC</span>
-                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-950/60 text-emerald-200">
+                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/10 font-bold">
                       {nonAcStats.free}F / {nonAcStats.occupied + nonAcStats.billRequested}B
                     </span>
                   </button>
                 </div>
 
                 <div className="relative flex-1 sm:flex-initial">
-                  <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5" />
+                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
                   <input
                     type="text"
                     placeholder="Search table or guest..."
                     value={tableSearchQuery}
                     onChange={(e) => setTableSearchQuery(e.target.value)}
-                    className="w-full sm:w-52 pl-8 pr-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                    className="w-full sm:w-52 pl-8 pr-3 py-1.5 bg-white border border-[#E2E8F0] rounded-xl text-xs text-[#0F172A] placeholder-slate-400 focus:outline-none focus:border-[#10B981]"
                   />
                 </div>
               </div>
@@ -857,37 +849,37 @@ export default function CashierDashboardPage() {
             </div>
 
             {filteredTables.length === 0 && (
-              <div className="text-center py-12 bg-slate-900/40 border border-dashed border-slate-800 rounded-2xl">
-                <AlertCircle className="w-8 h-8 text-slate-500 mx-auto mb-2" />
-                <p className="text-sm text-slate-400 font-medium">No tables match the selected filter</p>
+              <div className="text-center py-12 bg-white border border-dashed border-[#E2E8F0] rounded-2xl">
+                <AlertCircle className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                <p className="text-sm text-[#64748B] font-medium">No tables match the selected filter</p>
               </div>
             )}
 
-            <section className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/70">
-              <div className="border-b border-slate-800 px-4 py-3">
-                <h2 className="text-sm font-bold text-white">Active Walk-in Orders</h2>
-                <p className="text-[11px] text-slate-500">Orders created without table assignment</p>
+            <section className="overflow-hidden rounded-2xl border border-[#E2E8F0] bg-white shadow-sm">
+              <div className="border-b border-[#E2E8F0] px-4 py-3 bg-slate-50/60">
+                <h2 className="text-sm font-bold text-[#0F172A]">Active Walk-in Orders</h2>
+                <p className="text-[11px] text-[#64748B]">Orders created without table assignment</p>
               </div>
               {activeWalkInOrders.length === 0 ? (
-                <p className="p-4 text-xs text-slate-500">No active walk-in orders.</p>
+                <p className="p-4 text-xs text-[#64748B]">No active walk-in orders.</p>
               ) : (
-                <div className="divide-y divide-slate-800">
+                <div className="divide-y divide-slate-100">
                   {activeWalkInOrders.map((order) => {
                     const isAc = order.pricing_section === 'AC' || (order.section && order.section.includes('AC'));
                     return (
-                      <div key={order.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+                      <div key={order.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 hover:bg-slate-50/60 transition-colors">
                         <div>
                           <div className="flex items-center gap-2">
-                            <p className="text-xs font-bold text-white">{order.order_number} • {order.customer_name}</p>
-                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${isAc ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40' : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'}`}>
+                            <p className="text-xs font-bold text-[#0F172A]">{order.order_number} • {order.customer_name}</p>
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${isAc ? 'bg-cyan-50 text-cyan-700 border-cyan-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
                               {isAc ? '❄️ AC' : '🌿 Non-AC'}
                             </span>
                           </div>
-                          <p className="mt-1 text-[10px] text-slate-400">
+                          <p className="mt-1 text-[10px] text-[#64748B]">
                             {order.items.map((item) => `${item.item_name} ×${item.quantity}`).join(', ') || 'Items pending'} · {order.status.replace('_', ' ')}
                           </p>
                         </div>
-                        <button onClick={() => setSelectedOrderForBill(order)} className="rounded-lg bg-amber-500 px-3 py-2 text-xs font-black text-slate-950 hover:bg-amber-400">
+                        <button onClick={() => setSelectedOrderForBill(order)} className="rounded-lg bg-[#10B981] px-3 py-2 text-xs font-bold text-white hover:bg-[#059669] shadow-sm cursor-pointer">
                           <Receipt className="mr-1 inline h-3.5 w-3.5" />Open Bill
                         </button>
                       </div>
@@ -897,26 +889,26 @@ export default function CashierDashboardPage() {
               )}
             </section>
 
-            <section className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/70">
-              <div className="flex items-center justify-between border-b border-slate-800 px-4 py-3">
-                <div><h2 className="text-sm font-bold text-white">Recent Paid Bills</h2><p className="text-[11px] text-slate-500">Select previous bill to reprint thermal receipt.</p></div>
-                <History className="h-4 w-4 text-amber-400" />
+            <section className="overflow-hidden rounded-2xl border border-[#E2E8F0] bg-white shadow-sm">
+              <div className="flex items-center justify-between border-b border-[#E2E8F0] px-4 py-3 bg-slate-50/60">
+                <div><h2 className="text-sm font-bold text-[#0F172A]">Recent Paid Bills</h2><p className="text-[11px] text-[#64748B]">Select previous bill to reprint thermal receipt.</p></div>
+                <History className="h-4 w-4 text-[#10B981]" />
               </div>
-              {state.payments.length === 0 ? <p className="p-4 text-xs text-slate-500">No settled bills yet.</p> : (
-                <div className="divide-y divide-slate-800">
+              {state.payments.length === 0 ? <p className="p-4 text-xs text-[#64748B]">No settled bills yet.</p> : (
+                <div className="divide-y divide-slate-100">
                   {[...state.payments].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 6).map((payment) => (
-                    <div key={payment.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+                    <div key={payment.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 hover:bg-slate-50/60 transition-colors">
                       <div>
-                        <p className="text-xs font-bold text-white">{payment.order_number} • {payment.customer_name}</p>
-                        <p className="mt-1 text-[10px] text-slate-500">
+                        <p className="text-xs font-bold text-[#0F172A]">{payment.order_number} • {payment.customer_name}</p>
+                        <p className="mt-1 text-[10px] text-[#64748B]">
                           {payment.table_number > 0 ? `Table ${payment.table_number}` : 'Walk-in'}
                           {payment.pricing_section ? ` (${payment.pricing_section})` : payment.section ? ` (${payment.section})` : ''} · {payment.payment_method} · {new Date(payment.created_at).toLocaleString('en-IN')}
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-sm font-black text-amber-400">₹{payment.final_total.toFixed(2)}</span>
-                        <button onClick={() => openPaidReceipt(payment)} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-200 hover:border-amber-500">
-                          <Printer className="h-3.5 w-3.5 text-amber-400" />Reprint
+                        <span className="text-sm font-black text-[#10B981]">₹{payment.final_total.toFixed(2)}</span>
+                        <button onClick={() => openPaidReceipt(payment)} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-[#0F172A] shadow-sm cursor-pointer">
+                          <Printer className="h-3.5 w-3.5 text-[#10B981]" />Reprint
                         </button>
                       </div>
                     </div>
@@ -935,30 +927,30 @@ export default function CashierDashboardPage() {
             {/* Fast Keyboard Billing Option in Category B */}
             <button
               onClick={startQuickOrder}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-amber-500 px-4 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-amber-950/30 transition-all hover:bg-amber-400 cursor-pointer"
+              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#10B981] px-4 py-3.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-[#059669] cursor-pointer"
             >
-              <Keyboard className="h-4 w-4 text-slate-950" />
+              <Keyboard className="h-4 w-4 text-white" />
               <span>⚡ Fast Keyboard Billing (POS) • Direct Counter Bill</span>
-              <span className="rounded bg-black/25 px-2 py-0.5 text-xs font-mono font-bold text-slate-950 border border-black/20">
+              <span className="rounded bg-black/20 px-2 py-0.5 text-xs font-mono font-bold text-white border border-white/20">
                 Press F2
               </span>
             </button>
 
             {/* Parcel Quick Stats & Action */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-4 bg-slate-900/80 border border-slate-800 rounded-2xl">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-4 bg-white border border-[#E2E8F0] rounded-2xl shadow-sm">
               <div className="flex items-center gap-4">
                 <div>
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                  <span className="text-[11px] font-bold text-[#64748B] uppercase tracking-wider block">
                     Total Parcel Orders
                   </span>
-                  <span className="text-2xl font-black text-white">{state.parcels.length}</span>
+                  <span className="text-2xl font-black text-[#0F172A]">{state.parcels.length}</span>
                 </div>
-                <div className="h-8 w-px bg-slate-800" />
+                <div className="h-8 w-px bg-slate-200" />
                 <div>
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                  <span className="text-[11px] font-bold text-[#64748B] uppercase tracking-wider block">
                     Parcel Revenue
                   </span>
-                  <span className="text-2xl font-black text-amber-400">
+                  <span className="text-2xl font-black text-[#10B981]">
                     ₹{totalParcelSales.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
@@ -966,19 +958,19 @@ export default function CashierDashboardPage() {
 
               <div className="flex items-center gap-2 flex-wrap">
                 <div className="relative">
-                  <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5" />
+                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
                   <input
                     type="text"
                     placeholder="Search token, guest, phone..."
                     value={parcelSearchQuery}
                     onChange={(e) => setParcelSearchQuery(e.target.value)}
-                    className="pl-8 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 w-52 sm:w-64"
+                    className="pl-8 pr-3 py-2 bg-white border border-[#E2E8F0] rounded-xl text-xs text-[#0F172A] placeholder-slate-400 focus:outline-none focus:border-[#10B981] w-52 sm:w-64"
                   />
                 </div>
                 <button
                   type="button"
                   onClick={startQuickOrder}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs transition-colors shadow-md shadow-amber-950/40 cursor-pointer"
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-white font-bold text-xs transition-colors shadow-sm cursor-pointer"
                 >
                   <Keyboard className="w-4 h-4" />
                   <span>⚡ Fast Billing (F2)</span>
@@ -986,19 +978,19 @@ export default function CashierDashboardPage() {
                 <button
                   type="button"
                   onClick={() => setShowNewParcelModal(true)}
-                  className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition-colors border border-slate-700 cursor-pointer"
+                  className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs transition-colors border border-slate-200 shadow-sm cursor-pointer"
                 >
-                  <Plus className="w-4 h-4 text-amber-400" />
+                  <Plus className="w-4 h-4 text-[#10B981]" />
                   <span>+ Standard Parcel Form</span>
                 </button>
               </div>
             </div>
 
             {/* Parcel Orders Table / List */}
-            <div className="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden">
+            <div className="bg-white border border-[#E2E8F0] rounded-2xl overflow-hidden shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-950/80 border-b border-slate-800 text-slate-400 font-bold uppercase text-[10px] tracking-wider">
+                  <thead className="bg-slate-50 border-b border-[#E2E8F0] text-[#64748B] font-bold uppercase text-[10px] tracking-wider">
                     <tr>
                       <th className="py-3 px-4">Token #</th>
                       <th className="py-3 px-4">Customer</th>
@@ -1009,45 +1001,45 @@ export default function CashierDashboardPage() {
                       <th className="py-3 px-4 text-right">Receipt</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/60">
+                  <tbody className="divide-y divide-slate-100">
                     {filteredParcels.map((parcel) => (
-                      <tr key={parcel.id} className="hover:bg-slate-900/40 transition-colors">
+                      <tr key={parcel.id} className="hover:bg-slate-50/70 transition-colors">
                         <td className="py-3 px-4">
-                          <span className="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 font-black font-mono text-xs">
+                          <span className="px-2.5 py-1 rounded-lg bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 font-black font-mono text-xs">
                             {parcel.token_number}
                           </span>
                         </td>
                         <td className="py-3 px-4">
-                          <span className="font-bold text-white block">{parcel.customer_name}</span>
+                          <span className="font-bold text-[#0F172A] block">{parcel.customer_name}</span>
                           {parcel.customer_phone ? (
-                            <span className="text-[11px] text-slate-400 font-mono">
+                            <span className="text-[11px] text-[#64748B] font-mono">
                               {parcel.customer_phone}
                             </span>
                           ) : (
-                            <span className="text-[10px] text-slate-500">Counter walk-in</span>
+                            <span className="text-[10px] text-slate-400">Counter walk-in</span>
                           )}
                         </td>
                         <td className="py-3 px-4 max-w-xs">
-                          <div className="truncate text-slate-300">
+                          <div className="truncate text-slate-700">
                             {parcel.items.map((i) => `${i.item_name} (×${i.quantity})`).join(', ')}
                           </div>
-                          <span suppressHydrationWarning className="text-[10px] text-slate-500">
+                          <span suppressHydrationWarning className="text-[10px] text-[#64748B]">
                             {new Date(parcel.created_at).toLocaleTimeString('en-IN', {
                               hour: '2-digit',
                               minute: '2-digit',
                             })}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-right text-slate-400">
+                        <td className="py-3 px-4 text-right text-[#64748B]">
                           ₹{parcel.packaging_charge.toFixed(2)}
                         </td>
                         <td className="py-3 px-4 text-right">
-                          <span className="font-black text-amber-400 text-sm">
+                          <span className="font-black text-[#0F172A] text-sm">
                             ₹{parcel.final_total.toFixed(2)}
                           </span>
                         </td>
                         <td className="py-3 px-4 text-center">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                             {parcel.payment_method} • PAID
                           </span>
                         </td>
@@ -1055,9 +1047,9 @@ export default function CashierDashboardPage() {
                           <button
                             type="button"
                             onClick={() => setSelectedParcelForReceipt(parcel)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-colors cursor-pointer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors cursor-pointer border border-slate-200"
                           >
-                            <Printer className="w-3.5 h-3.5 text-amber-400" />
+                            <Printer className="w-3.5 h-3.5 text-[#10B981]" />
                             <span>Print Slip</span>
                           </button>
                         </td>
@@ -1069,11 +1061,11 @@ export default function CashierDashboardPage() {
 
               {filteredParcels.length === 0 && (
                 <div className="text-center py-12 space-y-3">
-                  <ShoppingBag className="w-8 h-8 text-slate-600 mx-auto" />
-                  <p className="text-sm text-slate-400 font-medium">No parcel bills recorded yet</p>
+                  <ShoppingBag className="w-8 h-8 text-slate-400 mx-auto" />
+                  <p className="text-sm text-[#64748B] font-medium">No parcel bills recorded yet</p>
                   <button
                     onClick={() => setShowNewParcelModal(true)}
-                    className="px-3.5 py-1.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs"
+                    className="px-3.5 py-1.5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-white font-bold text-xs shadow-sm cursor-pointer"
                   >
                     + Create First Parcel Bill
                   </button>
@@ -1090,56 +1082,56 @@ export default function CashierDashboardPage() {
           <div className="space-y-6 animate-in fade-in">
             {/* Catering Overview Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="p-4 bg-slate-900/80 border border-slate-800 rounded-2xl flex items-center justify-between">
+              <div className="p-4 bg-white border border-[#E2E8F0] rounded-2xl flex items-center justify-between shadow-sm">
                 <div>
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                  <span className="text-[11px] font-bold text-[#64748B] uppercase tracking-wider block">
                     Active Contracts
                   </span>
-                  <span className="text-2xl font-black text-white">{state.caterings.length}</span>
+                  <span className="text-2xl font-black text-[#0F172A]">{state.caterings.length}</span>
                 </div>
-                <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-[#10B981]/10 text-[#10B981] flex items-center justify-center">
                   <FileText className="w-5 h-5" />
                 </div>
               </div>
 
-              <div className="p-4 bg-slate-900/80 border border-emerald-900/40 rounded-2xl flex items-center justify-between">
+              <div className="p-4 bg-white border border-[#E2E8F0] rounded-2xl flex items-center justify-between shadow-sm">
                 <div>
-                  <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider block">
+                  <span className="text-[11px] font-bold text-[#10B981] uppercase tracking-wider block">
                     Advance Collected
                   </span>
-                  <span className="text-2xl font-black text-emerald-400">
+                  <span className="text-2xl font-black text-[#10B981]">
                     ₹{totalCateringAdvance.toLocaleString('en-IN')}
                   </span>
                 </div>
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-100">
                   <CheckCircle2 className="w-5 h-5" />
                 </div>
               </div>
 
-              <div className="p-4 bg-slate-900/80 border border-rose-900/40 rounded-2xl flex items-center justify-between">
+              <div className="p-4 bg-white border border-[#E2E8F0] rounded-2xl flex items-center justify-between shadow-sm">
                 <div>
-                  <span className="text-[11px] font-bold text-rose-400 uppercase tracking-wider block">
+                  <span className="text-[11px] font-bold text-rose-600 uppercase tracking-wider block">
                     Pending Balances Due
                   </span>
-                  <span className="text-2xl font-black text-rose-400">
+                  <span className="text-2xl font-black text-rose-600">
                     ₹{totalCateringBalance.toLocaleString('en-IN')}
                   </span>
                 </div>
-                <div className="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-100">
                   <AlertCircle className="w-5 h-5" />
                 </div>
               </div>
             </div>
 
             {/* Filter and New Catering Action Bar */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-slate-900/60 border border-slate-800 rounded-2xl">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-white border border-[#E2E8F0] rounded-2xl shadow-sm">
               <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
                 <button
                   onClick={() => setCateringStatusFilter('ALL')}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     cateringStatusFilter === 'ALL'
-                      ? 'bg-amber-500 text-slate-950 font-black'
-                      : 'bg-slate-950 text-slate-400 hover:text-white'
+                      ? 'bg-[#10B981] text-white font-black shadow-sm'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                   }`}
                 >
                   All ({state.caterings.length})
@@ -1148,8 +1140,8 @@ export default function CashierDashboardPage() {
                   onClick={() => setCateringStatusFilter('ADVANCE_PAID')}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     cateringStatusFilter === 'ADVANCE_PAID'
-                      ? 'bg-amber-500 text-slate-950 font-black'
-                      : 'bg-slate-950 text-amber-400'
+                      ? 'bg-amber-500 text-white font-black shadow-sm'
+                      : 'bg-slate-100 text-amber-700 hover:bg-slate-200'
                   }`}
                 >
                   Balance Pending ({state.caterings.filter((c) => c.status === 'ADVANCE_PAID').length})
@@ -1158,8 +1150,8 @@ export default function CashierDashboardPage() {
                   onClick={() => setCateringStatusFilter('FULLY_PAID')}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     cateringStatusFilter === 'FULLY_PAID'
-                      ? 'bg-emerald-500 text-slate-950 font-black'
-                      : 'bg-slate-950 text-emerald-400'
+                      ? 'bg-[#10B981] text-white font-black shadow-sm'
+                      : 'bg-slate-100 text-emerald-700 hover:bg-slate-200'
                   }`}
                 >
                   Fully Paid ({state.caterings.filter((c) => c.status === 'FULLY_PAID').length})
@@ -1168,19 +1160,19 @@ export default function CashierDashboardPage() {
 
               <div className="flex items-center gap-2">
                 <div className="relative">
-                  <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5" />
+                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
                   <input
                     type="text"
                     placeholder="Search invoice, client, event..."
                     value={cateringSearchQuery}
                     onChange={(e) => setCateringSearchQuery(e.target.value)}
-                    className="pl-8 pr-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 w-52 sm:w-60"
+                    className="pl-8 pr-3 py-1.5 bg-white border border-[#E2E8F0] rounded-xl text-xs text-[#0F172A] placeholder-slate-400 focus:outline-none focus:border-[#10B981] w-52 sm:w-60"
                   />
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowNewCateringModal(true)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition-colors shadow-md shadow-amber-950/40 cursor-pointer"
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-white font-bold text-xs transition-colors shadow-sm cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   <span>+ New Catering Bill</span>
@@ -1195,40 +1187,40 @@ export default function CashierDashboardPage() {
                 return (
                   <div
                     key={catering.id}
-                    className="bg-slate-900/80 border border-slate-800 hover:border-slate-700 rounded-2xl p-5 flex flex-col justify-between space-y-4 transition-all shadow-md"
+                    className="bg-white border border-[#E2E8F0] hover:border-slate-300 rounded-2xl p-5 flex flex-col justify-between space-y-4 transition-all shadow-sm"
                   >
                     <div>
                       {/* Card Header */}
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-mono font-black text-amber-400 text-xs px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/30">
+                            <span className="font-mono font-bold text-[#0F172A] text-xs px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200">
                               {catering.invoice_number}
                             </span>
                             <span
-                              className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                                 isFullyPaid
-                                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                                  : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                  : 'bg-amber-50 text-amber-700 border border-amber-200'
                               }`}
                             >
                               {isFullyPaid ? 'FULLY PAID' : 'ADVANCE PAID'}
                             </span>
                           </div>
-                          <h3 className="text-base font-black text-white mt-2">
+                          <h3 className="text-base font-black text-[#0F172A] mt-2">
                             {catering.customer_name}
                           </h3>
-                          <span className="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
-                            <Phone className="w-3 h-3 text-slate-500" />
+                          <span className="text-xs text-[#64748B] flex items-center gap-1.5 mt-0.5">
+                            <Phone className="w-3 h-3 text-slate-400" />
                             <span>{catering.customer_phone}</span>
                           </span>
                         </div>
 
                         <div className="text-right">
-                          <span className="text-xs font-black text-slate-300 block">
+                          <span className="text-xs font-bold text-slate-700 block">
                             {catering.event_name}
                           </span>
-                          <span className="text-[11px] text-amber-400/90 flex items-center justify-end gap-1 mt-0.5">
+                          <span className="text-[11px] text-[#10B981] font-semibold flex items-center justify-end gap-1 mt-0.5">
                             <Calendar className="w-3 h-3" />
                             <span>{catering.event_date}</span>
                           </span>
@@ -1236,24 +1228,24 @@ export default function CashierDashboardPage() {
                       </div>
 
                       {/* Pax & Per Plate Specs */}
-                      <div className="my-3 p-3 bg-slate-950 rounded-xl border border-slate-800/80 flex items-center justify-between text-xs">
+                      <div className="my-3 p-3 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between text-xs">
                         <div>
-                          <span className="text-[10px] uppercase font-bold text-slate-500 block">
+                          <span className="text-[10px] uppercase font-bold text-[#64748B] block">
                             Guest Count
                           </span>
-                          <span className="font-black text-white">{catering.pax_count} Pax</span>
+                          <span className="font-black text-[#0F172A]">{catering.pax_count} Pax</span>
                         </div>
                         <div className="text-center">
-                          <span className="text-[10px] uppercase font-bold text-slate-500 block">
+                          <span className="text-[10px] uppercase font-bold text-[#64748B] block">
                             Rate / Plate
                           </span>
-                          <span className="font-black text-amber-400">₹{catering.price_per_plate}</span>
+                          <span className="font-black text-[#10B981]">₹{catering.price_per_plate}</span>
                         </div>
                         <div className="text-right">
-                          <span className="text-[10px] uppercase font-bold text-slate-500 block">
+                          <span className="text-[10px] uppercase font-bold text-[#64748B] block">
                             Total Contract
                           </span>
-                          <span className="font-black text-white">
+                          <span className="font-black text-[#0F172A]">
                             ₹{catering.total_amount.toLocaleString('en-IN')}
                           </span>
                         </div>
@@ -1261,17 +1253,17 @@ export default function CashierDashboardPage() {
 
                       {/* Advance & Balance Breakdown */}
                       <div className="space-y-1 text-xs">
-                        <div className="flex justify-between text-slate-400">
+                        <div className="flex justify-between text-[#64748B]">
                           <span>Advance Received ({catering.payment_method})</span>
-                          <span className="font-bold text-emerald-400">
+                          <span className="font-bold text-[#10B981]">
                             ₹{catering.advance_paid.toLocaleString('en-IN')}
                           </span>
                         </div>
-                        <div className="flex justify-between text-slate-400">
+                        <div className="flex justify-between text-[#64748B]">
                           <span>Balance Due</span>
                           <span
                             className={`font-black ${
-                              catering.balance_due > 0 ? 'text-rose-400' : 'text-emerald-400'
+                              catering.balance_due > 0 ? 'text-rose-600' : 'text-[#10B981]'
                             }`}
                           >
                             ₹{catering.balance_due.toLocaleString('en-IN')}
@@ -1281,13 +1273,13 @@ export default function CashierDashboardPage() {
                     </div>
 
                     {/* Card Actions */}
-                    <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-2">
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
                       <button
                         type="button"
                         onClick={() => setSelectedCateringForInvoice(catering)}
-                        className="flex-1 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                        className="flex-1 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer border border-slate-200"
                       >
-                        <Printer className="w-3.5 h-3.5 text-amber-400" />
+                        <Printer className="w-3.5 h-3.5 text-[#10B981]" />
                         <span>Tax Invoice</span>
                       </button>
 
@@ -1295,7 +1287,7 @@ export default function CashierDashboardPage() {
                         <button
                           type="button"
                           onClick={() => setCateringToSettle(catering)}
-                          className="flex-1 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                          className="flex-1 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-white text-xs font-bold transition-colors flex items-center justify-center gap-1 cursor-pointer shadow-sm"
                         >
                           <CheckCircle2 className="w-3.5 h-3.5" />
                           <span>Settle Bal (₹{catering.balance_due.toLocaleString('en-IN')})</span>
@@ -1308,12 +1300,12 @@ export default function CashierDashboardPage() {
             </div>
 
             {filteredCaterings.length === 0 && (
-              <div className="text-center py-12 bg-slate-900/40 border border-dashed border-slate-800 rounded-2xl space-y-2">
-                <FileText className="w-8 h-8 text-slate-600 mx-auto" />
-                <p className="text-sm text-slate-400 font-medium">No catering contracts match this filter</p>
+              <div className="text-center py-12 bg-white border border-dashed border-[#E2E8F0] rounded-2xl space-y-2">
+                <FileText className="w-8 h-8 text-slate-400 mx-auto" />
+                <p className="text-sm text-[#64748B] font-medium">No catering contracts match this filter</p>
                 <button
                   onClick={() => setShowNewCateringModal(true)}
-                  className="px-3.5 py-1.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs"
+                  className="px-3.5 py-1.5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-white font-bold text-xs shadow-sm cursor-pointer"
                 >
                   + Book Catering Contract
                 </button>

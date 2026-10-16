@@ -115,36 +115,36 @@ export function ParcelOrderModal({ onClose, onSuccess }: ParcelOrderModalProps) 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-4xl w-full p-4 sm:p-6 shadow-2xl flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+      <div className="bg-white border border-[#E2E8F0] rounded-3xl max-w-4xl w-full p-4 sm:p-6 shadow-2xl flex flex-col max-h-[92vh] text-[#0F172A]">
         {/* Modal Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-[#10B981] border border-emerald-200 flex items-center justify-center">
               <ShoppingBag className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded text-[10px] font-black bg-amber-500 text-slate-950 uppercase tracking-wider">
+                <span className="px-2 py-0.5 rounded text-[10px] font-black bg-[#10B981] text-white uppercase tracking-wider">
                   Category B
                 </span>
-                <h2 className="text-lg font-black text-white">New Parcel / Takeaway Bill</h2>
+                <h2 className="text-lg font-black text-[#0F172A]">New Parcel / Takeaway Bill</h2>
               </div>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-[#64748B]">
                 Fast counter billing with token generation and packing charge
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-2 rounded-xl text-[#64748B] hover:text-[#0F172A] hover:bg-slate-100 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {errorMessage && (
-          <div className="mt-3 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold">
+          <div className="mt-3 p-3 rounded-xl bg-red-50 border border-red-200 text-[#EF4444] text-xs font-semibold">
             {errorMessage}
           </div>
         )}
@@ -152,16 +152,16 @@ export function ParcelOrderModal({ onClose, onSuccess }: ParcelOrderModalProps) 
         {/* Modal Body: Left menu picker, Right cart & billing */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mt-3 flex-1 overflow-hidden">
           {/* Left: Cuisine Tabs & Items (7 cols) */}
-          <div className="lg:col-span-7 flex flex-col gap-2 overflow-hidden border-b lg:border-b-0 lg:border-r border-slate-800 pb-3 lg:pb-0 lg:pr-3">
+          <div className="lg:col-span-7 flex flex-col gap-2 overflow-hidden border-b lg:border-b-0 lg:border-r border-[#E2E8F0] pb-3 lg:pb-0 lg:pr-3">
             {/* Search */}
             <div className="relative">
-              <Search className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
+              <Search className="w-4 h-4 text-[#64748B] absolute left-3 top-2.5" />
               <input
                 type="text"
                 placeholder="Search by dish # or name... (e.g. 1, Biryani)"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                className="w-full pl-9 pr-3 py-2 bg-white border border-[#E2E8F0] rounded-xl text-xs text-[#0F172A] placeholder-slate-400 focus:outline-none focus:border-[#10B981]"
               />
             </div>
 
@@ -186,8 +186,8 @@ export function ParcelOrderModal({ onClose, onSuccess }: ParcelOrderModalProps) 
                     onClick={() => setSelectedCuisine(cat.id)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1 ${
                       isSelected
-                        ? 'bg-amber-500 text-slate-950 font-black shadow-md'
-                        : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+                        ? 'bg-[#10B981] text-white font-bold shadow-xs'
+                        : 'bg-white text-[#64748B] hover:text-[#0F172A] border border-[#E2E8F0]'
                     }`}
                   >
                     <span>{emoji}</span>
@@ -205,38 +205,38 @@ export function ParcelOrderModal({ onClose, onSuccess }: ParcelOrderModalProps) 
                 return (
                   <div
                     key={item.id}
-                    className="p-2.5 rounded-xl bg-slate-950 border border-slate-800/80 flex items-center justify-between gap-2 hover:border-slate-700 transition-colors"
+                    className="p-2.5 rounded-xl bg-white border border-[#E2E8F0] flex items-center justify-between gap-2 hover:border-slate-300 transition-colors shadow-xs"
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-slate-900 border border-slate-700/80 font-mono text-[10px] font-black text-amber-400">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-slate-100 border border-[#E2E8F0] font-mono text-[10px] font-black text-[#10B981]">
                           #{itemNum}
                         </span>
                         <span
                           className={`w-2 h-2 rounded-full shrink-0 ${
-                            item.is_veg ? 'bg-emerald-400' : 'bg-rose-400'
+                            item.is_veg ? 'bg-[#10B981]' : 'bg-[#EF4444]'
                           }`}
                         />
-                        <h4 className="text-xs font-bold text-white truncate">{item.name}</h4>
+                        <h4 className="text-xs font-bold text-[#0F172A] truncate">{item.name}</h4>
                       </div>
-                      <span className="text-xs font-black text-amber-400">₹{item.price}</span>
+                      <span className="text-xs font-black text-[#0F172A]">₹{item.price}</span>
                     </div>
 
                     <div className="flex items-center gap-1.5 shrink-0">
                       {qty > 0 ? (
-                        <div className="flex items-center gap-1 bg-slate-900 border border-slate-700 rounded-lg p-0.5">
+                        <div className="flex items-center gap-1 bg-slate-100 border border-[#E2E8F0] rounded-lg p-0.5">
                           <button
                             type="button"
                             onClick={() => updateCartQty(item.id, -1)}
-                            className="p-1 rounded text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
+                            className="p-1 rounded text-[#0F172A] hover:bg-white transition-colors"
                           >
                             <Minus className="w-3.5 h-3.5" />
                           </button>
-                          <span className="text-xs font-black text-amber-400 px-2">{qty}</span>
+                          <span className="text-xs font-black text-[#0F172A] px-2">{qty}</span>
                           <button
                             type="button"
                             onClick={() => updateCartQty(item.id, 1)}
-                            className="p-1 rounded text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
+                            className="p-1 rounded text-[#0F172A] hover:bg-white transition-colors"
                           >
                             <Plus className="w-3.5 h-3.5" />
                           </button>
@@ -245,7 +245,7 @@ export function ParcelOrderModal({ onClose, onSuccess }: ParcelOrderModalProps) 
                         <button
                           type="button"
                           onClick={() => updateCartQty(item.id, 1)}
-                          className="px-3 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 text-xs font-bold border border-amber-500/30 transition-colors cursor-pointer"
+                          className="px-3 py-1 rounded-lg bg-emerald-50 hover:bg-[#10B981] text-[#10B981] hover:text-white text-xs font-bold border border-emerald-200 transition-colors cursor-pointer"
                         >
                           + Add
                         </button>
@@ -263,7 +263,7 @@ export function ParcelOrderModal({ onClose, onSuccess }: ParcelOrderModalProps) 
               {/* Customer Inputs */}
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-400 block mb-1">
+                  <label className="text-[11px] font-semibold text-[#64748B] block mb-1">
                     Customer Name
                   </label>
                   <input
@@ -271,11 +271,11 @@ export function ParcelOrderModal({ onClose, onSuccess }: ParcelOrderModalProps) 
                     placeholder="Guest / Name"
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
-                    className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
+                    className="w-full px-2.5 py-1.5 bg-white border border-[#E2E8F0] rounded-xl text-xs text-[#0F172A] focus:outline-none focus:border-[#10B981]"
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-400 block mb-1">
+                  <label className="text-[11px] font-semibold text-[#64748B] block mb-1">
                     Mobile Number
                   </label>
                   <input
@@ -283,18 +283,18 @@ export function ParcelOrderModal({ onClose, onSuccess }: ParcelOrderModalProps) 
                     placeholder="Optional phone"
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
-                    className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
+                    className="w-full px-2.5 py-1.5 bg-white border border-[#E2E8F0] rounded-xl text-xs text-[#0F172A] focus:outline-none focus:border-[#10B981]"
                   />
                 </div>
               </div>
 
               {/* Selected Items Breakdown */}
-              <div className="bg-slate-950/70 border border-slate-800 rounded-2xl p-3 max-h-36 overflow-y-auto space-y-1.5">
-                <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">
+              <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-3 max-h-36 overflow-y-auto space-y-1.5">
+                <span className="text-[10px] font-black uppercase text-[#64748B] tracking-wider">
                   Parcel Cart ({cartItemCount} items)
                 </span>
                 {cartEntries.length === 0 ? (
-                  <p className="text-xs text-slate-500 italic py-2">Select dishes from the left</p>
+                  <p className="text-xs text-[#64748B] italic py-2">Select dishes from the left</p>
                 ) : (
                   cartEntries.map(([id, qty]) => {
                     const item = state.menuItems.find((m) => m.id === id);
@@ -302,12 +302,12 @@ export function ParcelOrderModal({ onClose, onSuccess }: ParcelOrderModalProps) 
                     return (
                       <div
                         key={id}
-                        className="flex items-center justify-between text-xs py-0.5 border-b border-slate-900"
+                        className="flex items-center justify-between text-xs py-0.5 border-b border-[#E2E8F0]"
                       >
-                        <span className="text-slate-300 truncate max-w-[150px]">
+                        <span className="text-[#0F172A] truncate max-w-[150px]">
                           {item.name} × {qty}
                         </span>
-                        <span className="font-bold text-white">₹{item.price * qty}</span>
+                        <span className="font-bold text-[#0F172A]">₹{item.price * qty}</span>
                       </div>
                     );
                   })
@@ -317,7 +317,7 @@ export function ParcelOrderModal({ onClose, onSuccess }: ParcelOrderModalProps) 
               {/* Packing Charge & Payment Mode */}
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-400 block mb-1">
+                  <label className="text-[11px] font-semibold text-[#64748B] block mb-1">
                     Packaging Charge (₹)
                   </label>
                   <input
@@ -325,11 +325,11 @@ export function ParcelOrderModal({ onClose, onSuccess }: ParcelOrderModalProps) 
                     min="0"
                     value={packagingCharge}
                     onChange={(e) => setPackagingCharge(e.target.value)}
-                    className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500 font-bold"
+                    className="w-full px-2.5 py-1.5 bg-white border border-[#E2E8F0] rounded-xl text-xs text-[#0F172A] focus:outline-none focus:border-[#10B981] font-bold"
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-400 block mb-1">
+                  <label className="text-[11px] font-semibold text-[#64748B] block mb-1">
                     Payment Method
                   </label>
                   <div className="grid grid-cols-3 gap-1">
@@ -338,10 +338,10 @@ export function ParcelOrderModal({ onClose, onSuccess }: ParcelOrderModalProps) 
                         key={mode}
                         type="button"
                         onClick={() => setPaymentMethod(mode)}
-                        className={`py-1.5 rounded-lg text-[10px] font-bold transition-all ${
+                        className={`py-1.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
                           paymentMethod === mode
-                            ? 'bg-amber-500 text-slate-950 font-black'
-                            : 'bg-slate-950 text-slate-400 border border-slate-800'
+                            ? 'bg-[#10B981] text-white font-bold'
+                            : 'bg-white text-[#64748B] border border-[#E2E8F0] hover:text-[#0F172A]'
                         }`}
                       >
                         {mode}
@@ -352,20 +352,20 @@ export function ParcelOrderModal({ onClose, onSuccess }: ParcelOrderModalProps) 
               </div>
 
               {/* Financial Summary */}
-              <div className="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-1 text-xs">
-                <div className="flex justify-between text-slate-400">
+              <div className="p-3 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1 text-xs">
+                <div className="flex justify-between text-[#64748B]">
                   <span>Food Subtotal</span>
-                  <span>₹{subtotal.toFixed(2)}</span>
+                  <span className="font-semibold text-[#0F172A]">₹{subtotal.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-slate-400">
+                <div className="flex justify-between text-[#64748B]">
                   <span>Packaging Charge</span>
-                  <span>₹{parsedPkgCharge.toFixed(2)}</span>
+                  <span className="font-semibold text-[#0F172A]">₹{parsedPkgCharge.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-slate-400">
+                <div className="flex justify-between text-[#64748B]">
                   <span>GST (5%)</span>
-                  <span>₹{taxAmount.toFixed(2)}</span>
+                  <span className="font-semibold text-[#0F172A]">₹{taxAmount.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-base font-black text-amber-400 pt-1 border-t border-slate-800">
+                <div className="flex justify-between text-base font-black text-[#10B981] pt-1 border-t border-[#E2E8F0]">
                   <span>Net Payable</span>
                   <span>₹{finalTotal.toFixed(2)}</span>
                 </div>
@@ -377,7 +377,7 @@ export function ParcelOrderModal({ onClose, onSuccess }: ParcelOrderModalProps) 
               type="button"
               onClick={handleSubmit}
               disabled={cartItemCount === 0}
-              className="w-full mt-2 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 font-black text-sm transition-all shadow-lg shadow-amber-950/40 flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full mt-2 py-3 rounded-xl bg-[#10B981] hover:bg-[#059669] disabled:opacity-50 text-white font-black text-sm transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 cursor-pointer"
             >
               <CheckCircle2 className="w-4 h-4" />
               <span>Bill Parcel & Generate Token (₹{finalTotal.toFixed(0)})</span>

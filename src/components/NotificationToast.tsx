@@ -30,21 +30,21 @@ export function NotificationToast() {
       {state.notifications.slice(0, 3).map((notif) => (
         <div
           key={notif.id}
-          className="pointer-events-auto flex items-start gap-3 p-3.5 rounded-xl shadow-xl border bg-slate-900/95 text-slate-100 border-slate-700/80 backdrop-blur-md transition-all animate-in slide-in-from-bottom-5"
+          className="pointer-events-auto flex items-start gap-3 p-3.5 rounded-xl shadow-xl border bg-white text-[#0F172A] border-[#E2E8F0] transition-all animate-in slide-in-from-bottom-5"
         >
           <div className="mt-0.5 shrink-0">
-            {notif.type === 'success' && <CheckCircle2 className="w-5 h-5 text-emerald-400" />}
-            {notif.type === 'warning' && <Bell className="w-5 h-5 text-amber-400 animate-bounce" />}
-            {notif.type === 'error' && <AlertCircle className="w-5 h-5 text-rose-400" />}
-            {notif.type === 'info' && <Info className="w-5 h-5 text-sky-400" />}
+            {notif.type === 'success' && <CheckCircle2 className="w-5 h-5 text-[#10B981]" />}
+            {notif.type === 'warning' && <Bell className="w-5 h-5 text-[#F59E0B] animate-bounce" />}
+            {notif.type === 'error' && <AlertCircle className="w-5 h-5 text-[#EF4444]" />}
+            {notif.type === 'info' && <Info className="w-5 h-5 text-sky-500" />}
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className="text-sm font-semibold tracking-wide text-white">{notif.title}</h4>
-            <p className="text-xs text-slate-300 mt-0.5 line-clamp-2">{notif.message}</p>
+            <h4 className="text-sm font-semibold tracking-wide text-[#0F172A]">{notif.title}</h4>
+            <p className="text-xs text-[#64748B] mt-0.5 line-clamp-2">{notif.message}</p>
           </div>
           <button
             onClick={() => clearNotification(notif.id)}
-            className="text-slate-400 hover:text-white p-1 rounded-lg transition-colors"
+            className="text-slate-400 hover:text-[#0F172A] p-1 rounded-lg transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>

@@ -619,39 +619,39 @@ export function FastBillingModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-2 sm:p-4 backdrop-blur-md animate-in fade-in">
-      <div className="flex max-h-[96vh] w-full max-w-6xl flex-col overflow-hidden rounded-3xl border border-slate-700 bg-slate-950 shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-2 sm:p-4 backdrop-blur-sm animate-in fade-in">
+      <div className="flex max-h-[96vh] w-full max-w-6xl flex-col overflow-hidden rounded-3xl border border-[#E2E8F0] bg-white shadow-2xl">
         {/* Terminal Header */}
-        <div className="flex flex-wrap items-center justify-between border-b border-slate-800 bg-slate-900/90 px-4 py-3 sm:px-6">
+        <div className="flex flex-wrap items-center justify-between border-b border-[#E2E8F0] bg-white px-4 py-3 sm:px-6">
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
+            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-[#10B981] border border-emerald-200">
               <Keyboard className="h-5 w-5" />
             </span>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base sm:text-lg font-black text-white">
+                <h2 className="text-base sm:text-lg font-black text-[#0F172A]">
                   Fast Keyboard Billing Counter
                 </h2>
-                <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-black text-emerald-400 border border-emerald-500/30">
+                <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-black text-[#10B981] border border-emerald-200">
                   ⚡ 100% Keyboard Driven
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400">
-                Chettinad & Multicuisine Billing • Naga Hotel POS
+              <p className="text-[11px] text-[#64748B]">
+                Chettinad & Multicuisine Billing • SR Hotel POS
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-3 mt-2 sm:mt-0">
             {/* Section Switcher (AC / Non-AC) */}
-            <div className="flex items-center rounded-xl bg-slate-950 p-1 border border-slate-800">
+            <div className="flex items-center rounded-xl bg-slate-100 p-1 border border-slate-200">
               <button
                 type="button"
                 onClick={() => setPricingSection('NON_AC')}
                 className={`flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
                   pricingSection === 'NON_AC'
-                    ? 'bg-emerald-500 text-slate-950 font-black shadow-md'
-                    : 'text-emerald-400 hover:bg-slate-900'
+                    ? 'bg-[#10B981] text-white font-black shadow-sm'
+                    : 'text-emerald-700 hover:bg-slate-200'
                 }`}
               >
                 <Sun className="h-3.5 w-3.5" />
@@ -662,8 +662,8 @@ export function FastBillingModal({
                 onClick={() => setPricingSection('AC')}
                 className={`flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
                   pricingSection === 'AC'
-                    ? 'bg-cyan-500 text-slate-950 font-black shadow-md'
-                    : 'text-cyan-400 hover:bg-slate-900'
+                    ? 'bg-cyan-600 text-white font-black shadow-sm'
+                    : 'text-cyan-700 hover:bg-slate-200'
                 }`}
               >
                 <Snowflake className="h-3.5 w-3.5" />
@@ -673,7 +673,7 @@ export function FastBillingModal({
 
             <button
               onClick={onClose}
-              className="rounded-xl p-2 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors cursor-pointer"
+              className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-[#0F172A] transition-colors cursor-pointer"
               aria-label="Close terminal"
             >
               <X className="h-5 w-5" />
@@ -681,41 +681,41 @@ export function FastBillingModal({
           </div>
         </div>
 
-        {/* Step 15: Visible Keyboard Shortcut Banner */}
-        <div className="border-b border-slate-800/80 bg-slate-900/40 px-4 py-2 sm:px-6">
-          <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
-            <span className="font-bold text-amber-400 flex items-center gap-1">
+        {/* Visible Keyboard Shortcut Banner */}
+        <div className="border-b border-[#E2E8F0] bg-slate-50 px-4 py-2 sm:px-6">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#64748B]">
+            <span className="font-bold text-[#10B981] flex items-center gap-1">
               <Keyboard className="h-3.5 w-3.5" />
               Keyboard Workflow:
             </span>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <span className="flex items-center gap-1">
-                <kbd className="rounded bg-slate-800 px-1.5 py-0.5 font-mono text-[10px] text-amber-300 border border-slate-700">Type</kbd>
+                <kbd className="rounded bg-white px-1.5 py-0.5 font-mono text-[10px] text-slate-700 border border-slate-200 shadow-xs">Type</kbd>
                 <span>Search Dish</span>
               </span>
-              <span className="text-slate-600">•</span>
+              <span className="text-slate-300">•</span>
               <span className="flex items-center gap-1">
-                <kbd className="rounded bg-slate-800 px-1.5 py-0.5 font-mono text-[10px] text-amber-300 border border-slate-700">↑ / ↓</kbd>
+                <kbd className="rounded bg-white px-1.5 py-0.5 font-mono text-[10px] text-slate-700 border border-slate-200 shadow-xs">↑ / ↓</kbd>
                 <span>Navigate</span>
               </span>
-              <span className="text-slate-600">•</span>
+              <span className="text-slate-300">•</span>
               <span className="flex items-center gap-1">
-                <kbd className="rounded bg-slate-800 px-1.5 py-0.5 font-mono text-[10px] text-amber-300 border border-slate-700">Enter</kbd>
+                <kbd className="rounded bg-white px-1.5 py-0.5 font-mono text-[10px] text-slate-700 border border-slate-200 shadow-xs">Enter</kbd>
                 <span>Select Dish → Qty</span>
               </span>
-              <span className="text-slate-600">•</span>
+              <span className="text-slate-300">•</span>
               <span className="flex items-center gap-1">
-                <kbd className="rounded bg-slate-800 px-1.5 py-0.5 font-mono text-[10px] text-amber-300 border border-slate-700">Enter</kbd>
+                <kbd className="rounded bg-white px-1.5 py-0.5 font-mono text-[10px] text-slate-700 border border-slate-200 shadow-xs">Enter</kbd>
                 <span>Add Item to Bill</span>
               </span>
-              <span className="text-slate-600">•</span>
+              <span className="text-slate-300">•</span>
               <span className="flex items-center gap-1">
-                <kbd className="rounded bg-slate-800 px-1.5 py-0.5 font-mono text-[10px] text-amber-300 border border-slate-700">Esc</kbd>
+                <kbd className="rounded bg-white px-1.5 py-0.5 font-mono text-[10px] text-slate-700 border border-slate-200 shadow-xs">Esc</kbd>
                 <span>Clear / Unfocus</span>
               </span>
-              <span className="text-slate-600">•</span>
+              <span className="text-slate-300">•</span>
               <span className="flex items-center gap-1">
-                <kbd className="rounded bg-purple-500/30 px-1.5 py-0.5 font-mono text-[10px] text-purple-200 border border-purple-400/50 font-bold">Space</kbd>
+                <kbd className="rounded bg-emerald-50 px-1.5 py-0.5 font-mono text-[10px] text-emerald-700 border border-emerald-200 font-bold">Space</kbd>
                 <span>Verify & Print</span>
               </span>
             </div>
@@ -729,7 +729,7 @@ export function FastBillingModal({
             {/* Meta Row: Customer Name */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-bold text-[#0F172A] mb-1">
                   Customer / Guest Name:
                 </label>
                 <input
@@ -737,29 +737,29 @@ export function FastBillingModal({
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
                   placeholder="e.g. Walk-in Guest or Mr. Kumar"
-                  className="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-amber-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-[#0F172A] placeholder:text-slate-400 focus:border-[#10B981] focus:ring-1 focus:ring-[#10B981] focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-bold text-[#0F172A] mb-1">
                   Active Pricing Section:
                 </label>
                 <div
                   className={`flex items-center justify-between rounded-xl border px-3 py-2 text-xs font-bold ${
                     pricingSection === 'AC'
-                      ? 'border-cyan-500/40 bg-cyan-950/40 text-cyan-200'
-                      : 'border-emerald-500/40 bg-emerald-950/40 text-emerald-200'
+                      ? 'border-cyan-200 bg-cyan-50 text-cyan-800'
+                      : 'border-emerald-200 bg-emerald-50 text-emerald-800'
                   }`}
                 >
                   <span className="flex items-center gap-1.5">
-                    {pricingSection === 'AC' ? <Snowflake className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+                    {pricingSection === 'AC' ? <Snowflake className="h-4 w-4 text-cyan-600" /> : <Sun className="h-4 w-4 text-emerald-600" />}
                     <span>{pricingSection === 'AC' ? 'AC Pricing Active' : 'Non-AC Pricing Active'}</span>
                   </span>
                   <button
                     type="button"
                     onClick={() => setPricingSection((s) => (s === 'AC' ? 'NON_AC' : 'AC'))}
-                    className="text-[10px] font-bold text-amber-400 hover:underline cursor-pointer"
+                    className="text-[10px] font-bold text-[#10B981] hover:underline cursor-pointer"
                   >
                     Switch
                   </button>
@@ -768,14 +768,14 @@ export function FastBillingModal({
             </div>
 
             {/* Fast Keyboard Entry Box */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 space-y-4 shadow-lg">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-4 shadow-sm">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                <span className="text-xs font-black uppercase tracking-wider text-[#10B981] flex items-center gap-1.5">
                   <Search className="h-3.5 w-3.5" />
                   Step 1 & 2: Search Dish & Select
                 </span>
                 {selectedDish && (
-                  <span className="rounded bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300 border border-emerald-500/40">
+                  <span className="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800 border border-emerald-300">
                     Selected: {selectedDish.name} (₹{getUnitPrice(selectedDish)})
                   </span>
                 )}
@@ -783,8 +783,8 @@ export function FastBillingModal({
 
               {/* Dish Search Input Field */}
               <div className="relative">
-                <div className="relative flex items-center rounded-xl border border-slate-700 bg-slate-950 focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-500/30 transition-all">
-                  <Search className="ml-3 h-4 w-4 text-slate-500 shrink-0" />
+                <div className="relative flex items-center rounded-xl border border-slate-300 bg-white focus-within:border-[#10B981] focus-within:ring-2 focus-within:ring-emerald-100 transition-all">
+                  <Search className="ml-3 h-4 w-4 text-slate-400 shrink-0" />
                   <input
                     ref={dishSearchInputRef}
                     type="text"
@@ -802,7 +802,7 @@ export function FastBillingModal({
                         : 'Type dish # or name... (e.g. 1, 6, Biryani, Parotta)'
                     }
                     autoComplete="off"
-                    className="w-full bg-transparent px-3 py-3 text-sm font-semibold text-white placeholder-slate-500 focus:outline-none"
+                    className="w-full bg-transparent px-3 py-3 text-sm font-semibold text-[#0F172A] placeholder:text-slate-400 focus:outline-none"
                     aria-label="Search dish name"
                   />
                   {dishSearchQuery && (
@@ -813,7 +813,7 @@ export function FastBillingModal({
                         setSelectedDish(null);
                         dishSearchInputRef.current?.focus();
                       }}
-                      className="mr-3 text-slate-500 hover:text-white cursor-pointer"
+                      className="mr-3 text-slate-400 hover:text-[#0F172A] cursor-pointer"
                     >
                       <X className="h-4 w-4" />
                     </button>
@@ -824,10 +824,10 @@ export function FastBillingModal({
                 {isDropdownOpen && matchingDishes.length > 0 && (
                   <div
                     ref={dropdownListRef}
-                    className="absolute left-0 right-0 top-full z-40 mt-1.5 max-h-72 overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl shadow-black/80"
+                    className="absolute left-0 right-0 top-full z-40 mt-1.5 max-h-72 overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl"
                     role="listbox"
                   >
-                    <div className="px-3 py-1.5 bg-slate-950/80 border-b border-slate-800 text-[10px] font-bold text-slate-400 flex justify-between">
+                    <div className="px-3 py-1.5 bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-[#64748B] flex justify-between">
                       <span>Matches ({matchingDishes.length}) — Use ↑ ↓ arrows & Enter</span>
                       <span>Press [Esc] to cancel</span>
                     </div>
@@ -843,30 +843,30 @@ export function FastBillingModal({
                           key={dish.id}
                           onClick={() => handleSelectDish(dish)}
                           onMouseEnter={() => setHighlightedIndex(idx)}
-                          className={`flex items-center justify-between gap-3 px-3.5 py-2.5 border-b border-slate-800/60 last:border-0 cursor-pointer transition-colors ${
+                          className={`flex items-center justify-between gap-3 px-3.5 py-2.5 border-b border-slate-100 last:border-0 cursor-pointer transition-colors ${
                             isHighlighted
-                              ? 'bg-amber-500/20 text-white border-l-4 border-l-amber-500'
-                              : 'hover:bg-slate-800/50 text-slate-300'
+                              ? 'bg-emerald-50 text-[#0F172A] border-l-4 border-l-[#10B981]'
+                              : 'hover:bg-slate-50 text-[#0F172A]'
                           }`}
                           role="option"
                           aria-selected={isHighlighted}
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
-                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-950 font-mono text-xs font-black text-amber-400 border border-slate-800">
+                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 font-mono text-xs font-black text-[#10B981] border border-slate-200">
                               #{itemNum}
                             </span>
                             <div className="min-w-0">
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 <VegBadge isVeg={dish.is_veg} />
-                                <span className="font-bold text-sm text-white truncate">
+                                <span className="font-bold text-sm text-[#0F172A] truncate">
                                   {dish.name}
                                 </span>
-                                <span className="text-[10px] text-slate-500">
+                                <span className="text-[10px] text-[#64748B]">
                                   ({category?.name || 'Dish'})
                                 </span>
                               </div>
                               {dish.description && (
-                                <p className="text-[11px] text-slate-400 truncate max-w-sm">
+                                <p className="text-[11px] text-[#64748B] truncate max-w-sm">
                                   {dish.description}
                                 </p>
                               )}
@@ -875,15 +875,15 @@ export function FastBillingModal({
 
                           <div className="flex items-center gap-3 shrink-0 text-right">
                             <div>
-                              <span className="text-sm font-black text-amber-400">
+                              <span className="text-sm font-black text-[#10B981]">
                                 ₹{unitPrice.toFixed(2)}
                               </span>
-                              <span className="block text-[9px] text-slate-500">
+                              <span className="block text-[9px] text-[#64748B]">
                                 {pricingSection === 'AC' ? '❄️ AC Rate' : '🌿 Non-AC'}
                               </span>
                             </div>
                             {isHighlighted && (
-                              <span className="rounded bg-amber-500 px-2 py-1 text-[10px] font-black text-slate-950 shadow">
+                              <span className="rounded bg-[#10B981] px-2 py-1 text-[10px] font-black text-white shadow">
                                 ↵ Select
                               </span>
                             )}
@@ -896,26 +896,26 @@ export function FastBillingModal({
               </div>
 
               {/* Step 3 & 4: Quantity Input */}
-              <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3.5">
+              <div className="rounded-xl border border-slate-200 bg-white p-3.5">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-slate-300">
+                    <label className="block text-xs font-bold text-[#0F172A]">
                       Step 3: Enter Quantity (Defaults to 1):
                     </label>
-                    <p className="text-[11px] text-slate-400">
-                      Press <kbd className="rounded bg-slate-800 px-1 py-0.5 text-amber-300 font-mono">Enter</kbd> to add to bill, or change number
+                    <p className="text-[11px] text-[#64748B]">
+                      Press <kbd className="rounded bg-slate-100 px-1 py-0.5 text-slate-700 font-mono border border-slate-200">Enter</kbd> to add to bill, or change number
                     </p>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <div className="flex items-center rounded-xl border border-slate-700 bg-slate-900 p-1">
+                    <div className="flex items-center rounded-xl border border-slate-300 bg-white p-1">
                       <button
                         type="button"
                         onClick={() => {
                           const curr = parseInt(quantityInput, 10) || 1;
                           setQuantityInput(String(Math.max(1, curr - 1)));
                         }}
-                        className="rounded-lg p-1.5 text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer"
+                        className="rounded-lg p-1.5 text-slate-600 hover:bg-slate-100 hover:text-[#0F172A] cursor-pointer"
                         aria-label="Decrease quantity"
                       >
                         <Minus className="h-3.5 w-3.5" />
@@ -937,7 +937,7 @@ export function FastBillingModal({
                           } catch {}
                         }}
                         onKeyDown={handleQuantityKeyDown}
-                        className="w-16 bg-transparent text-center text-base font-black text-amber-400 focus:outline-none"
+                        className="w-16 bg-transparent text-center text-base font-black text-[#0F172A] focus:outline-none"
                         aria-label="Item quantity"
                       />
 
@@ -947,7 +947,7 @@ export function FastBillingModal({
                           const curr = parseInt(quantityInput, 10) || 1;
                           setQuantityInput(String(curr + 1));
                         }}
-                        className="rounded-lg p-1.5 text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer"
+                        className="rounded-lg p-1.5 text-slate-600 hover:bg-slate-100 hover:text-[#0F172A] cursor-pointer"
                         aria-label="Increase quantity"
                       >
                         <Plus className="h-3.5 w-3.5" />
@@ -958,7 +958,7 @@ export function FastBillingModal({
                       type="button"
                       onClick={handleAddCurrentItem}
                       disabled={!selectedDish}
-                      className="flex items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2.5 text-xs font-black text-slate-950 hover:bg-amber-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md cursor-pointer shrink-0"
+                      className="flex items-center gap-1.5 rounded-xl bg-[#10B981] px-4 py-2.5 text-xs font-black text-white hover:bg-[#059669] transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md cursor-pointer shrink-0"
                     >
                       <Plus className="h-4 w-4" />
                       <span>Add Item [↵ Enter]</span>
@@ -969,8 +969,8 @@ export function FastBillingModal({
             </div>
 
             {/* Quick Suggestions / Most Popular Items for 1-click add */}
-            <div className="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-3">
-              <span className="text-[11px] font-bold text-slate-400 block mb-2">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+              <span className="text-[11px] font-bold text-[#64748B] block mb-2">
                 Fast Click / Touch Shortcuts (Popular Dishes):
               </span>
               <div className="flex flex-wrap gap-1.5">
@@ -981,13 +981,13 @@ export function FastBillingModal({
                       key={item.id}
                       type="button"
                       onClick={() => handleSelectDish(item)}
-                      className="flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-900 px-2.5 py-1.5 text-xs text-slate-300 hover:border-amber-500 hover:text-white transition-colors cursor-pointer"
+                      className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-700 hover:border-[#10B981] hover:text-[#0F172A] transition-colors cursor-pointer shadow-xs"
                     >
-                      <span className="font-mono text-[10px] font-bold text-amber-400 bg-slate-950 px-1 py-0.5 rounded border border-slate-800">
+                      <span className="font-mono text-[10px] font-bold text-[#10B981] bg-emerald-50 px-1 py-0.5 rounded border border-emerald-200">
                         #{num}
                       </span>
                       <span>{item.name}</span>
-                      <span className="text-amber-400 font-bold">₹{getUnitPrice(item)}</span>
+                      <span className="text-[#10B981] font-bold">₹{getUnitPrice(item)}</span>
                     </button>
                   );
                 })}
@@ -996,12 +996,12 @@ export function FastBillingModal({
           </div>
 
           {/* RIGHT: Current Bill / Cart & Financials */}
-          <div className="flex flex-col justify-between rounded-2xl border border-slate-800 bg-slate-900/90 p-4 shadow-xl">
+          <div className="flex flex-col justify-between rounded-2xl border border-[#E2E8F0] bg-white p-4 shadow-sm">
             <div>
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
                 <div className="flex items-center gap-2">
-                  <Receipt className="h-4 w-4 text-amber-400" />
-                  <h3 className="font-bold text-white text-sm">
+                  <Receipt className="h-4 w-4 text-[#10B981]" />
+                  <h3 className="font-bold text-[#0F172A] text-sm">
                     Current Bill Items ({cart.reduce((s, i) => s + i.quantity, 0)})
                   </h3>
                 </div>
@@ -1009,7 +1009,7 @@ export function FastBillingModal({
                   <button
                     type="button"
                     onClick={() => setCart([])}
-                    className="text-[11px] text-rose-400 hover:underline flex items-center gap-1 cursor-pointer"
+                    className="text-[11px] text-red-600 hover:underline flex items-center gap-1 cursor-pointer font-semibold"
                   >
                     <Trash2 className="h-3 w-3" /> Clear Bill
                   </button>
@@ -1019,63 +1019,63 @@ export function FastBillingModal({
               {/* Items Table */}
               <div className="mt-3 max-h-72 overflow-y-auto space-y-2 pr-1">
                 {cart.length === 0 ? (
-                  <div className="py-12 text-center text-slate-500 space-y-2">
-                    <Receipt className="h-8 w-8 mx-auto opacity-40" />
-                    <p className="text-xs font-medium">Bill is currently empty</p>
-                    <p className="text-[11px] text-slate-600">
-                      Type dish name in search box and press <kbd className="bg-slate-800 px-1 py-0.5 rounded text-amber-300">Enter</kbd> to add items
+                  <div className="py-12 text-center text-[#64748B] space-y-2">
+                    <Receipt className="h-8 w-8 mx-auto opacity-30 text-slate-400" />
+                    <p className="text-xs font-semibold text-[#0F172A]">Bill is currently empty</p>
+                    <p className="text-[11px] text-[#64748B]">
+                      Type dish name in search box and press <kbd className="bg-slate-100 border border-slate-200 px-1 py-0.5 rounded text-slate-700">Enter</kbd> to add items
                     </p>
                   </div>
                 ) : (
                   cart.map((entry) => (
                     <div
                       key={entry.item.id}
-                      className="flex items-center justify-between gap-2 rounded-xl border border-slate-800/80 bg-slate-950/70 p-2.5 text-xs transition-colors hover:border-slate-700"
+                      className="flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs transition-colors hover:border-slate-300"
                     >
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
                           <VegBadge isVeg={entry.item.is_veg} />
-                          <span className="font-bold text-white truncate">
+                          <span className="font-bold text-[#0F172A] truncate">
                             {entry.item.name}
                           </span>
                         </div>
-                        <span className="text-[10px] text-slate-400">
+                        <span className="text-[10px] text-[#64748B]">
                           ₹{entry.unitPrice.toFixed(2)} each ({pricingSection})
                         </span>
                       </div>
 
                       {/* Touch & Click Qty Controls */}
                       <div className="flex items-center gap-2 shrink-0">
-                        <div className="flex items-center rounded-lg border border-slate-800 bg-slate-900 p-0.5">
+                        <div className="flex items-center rounded-lg border border-slate-200 bg-white p-0.5">
                           <button
                             type="button"
                             onClick={() => handleUpdateCartQty(entry.item.id, -1)}
-                            className="rounded p-1 text-slate-400 hover:text-white cursor-pointer"
+                            className="rounded p-1 text-slate-500 hover:text-[#0F172A] hover:bg-slate-100 cursor-pointer"
                             aria-label={`Decrease ${entry.item.name}`}
                           >
                             <Minus className="h-3 w-3" />
                           </button>
-                          <span className="w-7 text-center font-bold text-white">
+                          <span className="w-7 text-center font-bold text-[#0F172A]">
                             {entry.quantity}
                           </span>
                           <button
                             type="button"
                             onClick={() => handleUpdateCartQty(entry.item.id, 1)}
-                            className="rounded p-1 text-slate-400 hover:text-white cursor-pointer"
+                            className="rounded p-1 text-slate-500 hover:text-[#0F172A] hover:bg-slate-100 cursor-pointer"
                             aria-label={`Increase ${entry.item.name}`}
                           >
                             <Plus className="h-3 w-3" />
                           </button>
                         </div>
 
-                        <span className="w-16 text-right font-black text-amber-400">
+                        <span className="w-16 text-right font-black text-[#10B981]">
                           ₹{entry.totalPrice.toFixed(2)}
                         </span>
 
                         <button
                           type="button"
                           onClick={() => handleRemoveFromCart(entry.item.id)}
-                          className="rounded p-1 text-slate-500 hover:text-rose-400 transition-colors cursor-pointer"
+                          className="rounded p-1 text-slate-400 hover:text-red-600 transition-colors cursor-pointer"
                           aria-label={`Remove ${entry.item.name}`}
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -1088,26 +1088,26 @@ export function FastBillingModal({
             </div>
 
             {/* Bill Summary & Actions */}
-            <div className="mt-4 border-t border-slate-800 pt-3 space-y-3">
-              <div className="space-y-1.5 text-xs text-slate-400">
+            <div className="mt-4 border-t border-[#E2E8F0] pt-3 space-y-3">
+              <div className="space-y-1.5 text-xs text-[#64748B]">
                 <div className="flex justify-between">
                   <span>Subtotal:</span>
-                  <span className="font-semibold text-white">₹{subtotal.toFixed(2)}</span>
+                  <span className="font-bold text-[#0F172A]">₹{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-[11px]">
                   <span>GST (5% - 2.5% CGST + 2.5% SGST):</span>
                   <span>₹{taxAmount.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between items-baseline border-t border-slate-800 pt-2 text-sm font-bold text-white">
+                <div className="flex justify-between items-baseline border-t border-slate-200 pt-2 text-sm font-bold text-[#0F172A]">
                   <span>Total Payable:</span>
-                  <span className="text-xl font-black text-amber-400">
+                  <span className="text-xl font-black text-[#10B981]">
                     ₹{finalTotal.toFixed(2)}
                   </span>
                 </div>
               </div>
 
               {errorMessage && (
-                <div className="rounded-xl border border-rose-800 bg-rose-950/60 p-2.5 text-xs text-rose-300 flex items-center gap-2">
+                <div className="rounded-xl border border-red-200 bg-red-50 p-2.5 text-xs text-red-600 flex items-center gap-2">
                   <AlertCircle className="h-4 w-4 shrink-0" />
                   <span>{errorMessage}</span>
                 </div>
@@ -1119,17 +1119,17 @@ export function FastBillingModal({
                   type="button"
                   onClick={handleExecuteSettleAndPrint}
                   disabled={cart.length === 0}
-                  className="w-full rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 py-3.5 text-sm font-black text-slate-950 hover:from-amber-400 hover:to-amber-300 transition-all shadow-lg shadow-amber-950/50 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full rounded-2xl bg-[#10B981] hover:bg-[#059669] py-3.5 text-sm font-black text-white transition-all shadow-md shadow-emerald-500/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Printer className="h-4 w-4 text-slate-950" />
+                  <Printer className="h-4 w-4 text-white" />
                   <span>Settle & Print Thermal Receipt</span>
-                  <span className="rounded bg-black/30 px-2 py-0.5 text-[10px] font-mono text-slate-950 border border-black/20">
+                  <span className="rounded bg-black/20 px-2 py-0.5 text-[10px] font-mono text-white">
                     Press [Space]
                   </span>
                 </button>
 
-                <p className="text-center text-[10px] text-slate-400">
-                  ⚡ Workflow: <kbd className="rounded bg-slate-800 px-1 py-0.5 text-amber-300 font-mono">Enter</kbd> to add items → When finished, press <kbd className="rounded bg-amber-500/30 text-amber-300 font-bold px-1.5 py-0.5 font-mono border border-amber-400/30">Space</kbd> to print!
+                <p className="text-center text-[10px] text-[#64748B]">
+                  ⚡ Workflow: <kbd className="rounded bg-slate-100 border border-slate-200 px-1 py-0.5 text-slate-700 font-mono">Enter</kbd> to add items → When finished, press <kbd className="rounded bg-emerald-50 text-emerald-700 font-bold px-1.5 py-0.5 font-mono border border-emerald-200">Space</kbd> to print!
                 </p>
               </div>
             </div>
@@ -1139,31 +1139,31 @@ export function FastBillingModal({
 
       {/* Bill Print Preview & Settlement Modal (Step 11 & 12) */}
       {isPrintPreviewOpen && previewOrder && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/90 p-3 backdrop-blur-md animate-in fade-in">
-          <div className="flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-3xl border border-slate-700 bg-slate-950 shadow-2xl">
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-slate-950/60 p-3 backdrop-blur-sm animate-in fade-in">
+          <div className="flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl">
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-slate-800 p-4 bg-slate-900">
+            <div className="flex items-center justify-between border-b border-slate-200 p-4 bg-slate-50">
               <div className="flex items-center gap-2">
-                <span className="rounded-xl bg-purple-500/20 p-2 text-purple-400 border border-purple-500/30">
+                <span className="rounded-xl bg-purple-50 p-2 text-purple-600 border border-purple-200">
                   <Printer className="h-5 w-5" />
                 </span>
                 <div>
-                  <h3 className="text-sm font-bold text-white">Bill Verification & Print Slip</h3>
-                  <p className="text-[11px] text-slate-400">Order #{previewOrder.order_number}</p>
+                  <h3 className="text-sm font-bold text-[#0F172A]">Bill Verification & Print Slip</h3>
+                  <p className="text-[11px] text-[#64748B]">Order #{previewOrder.order_number}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setIsPrintPreviewOpen(false)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-bold transition-colors cursor-pointer border border-slate-700"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-[#0F172A] text-xs font-bold transition-colors cursor-pointer border border-slate-200 shadow-xs"
                 >
-                  <Edit className="w-3.5 h-3.5" />
+                  <Edit className="w-3.5 h-3.5 text-[#10B981]" />
                   <span>Edit Bill Items</span>
                 </button>
                 <button
                   onClick={() => setIsPrintPreviewOpen(false)}
-                  className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white"
+                  className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-[#0F172A]"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -1174,7 +1174,7 @@ export function FastBillingModal({
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {/* Payment Method Selector */}
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-2 uppercase tracking-wider">
+                <label className="block text-xs font-bold text-[#0F172A] mb-2 uppercase tracking-wider">
                   Payment Method:
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -1183,8 +1183,8 @@ export function FastBillingModal({
                     onClick={() => setPaymentMethod('CASH')}
                     className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                       paymentMethod === 'CASH'
-                        ? 'bg-emerald-950/60 border-emerald-500 text-emerald-300 ring-2 ring-emerald-500/40 shadow-lg'
-                        : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                        ? 'bg-emerald-50 border-[#10B981] text-emerald-700 ring-2 ring-emerald-200 shadow-sm'
+                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-[#0F172A]'
                     }`}
                   >
                     <Banknote className="w-4 h-4 mb-1" />
@@ -1195,8 +1195,8 @@ export function FastBillingModal({
                     onClick={() => setPaymentMethod('UPI')}
                     className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                       paymentMethod === 'UPI'
-                        ? 'bg-purple-950/60 border-purple-500 text-purple-300 ring-2 ring-purple-500/40 shadow-lg'
-                        : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                        ? 'bg-purple-50 border-purple-500 text-purple-700 ring-2 ring-purple-200 shadow-sm'
+                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-[#0F172A]'
                     }`}
                   >
                     <QrCode className="w-4 h-4 mb-1" />
@@ -1207,8 +1207,8 @@ export function FastBillingModal({
                     onClick={() => setPaymentMethod('CARD')}
                     className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                       paymentMethod === 'CARD'
-                        ? 'bg-sky-950/60 border-sky-500 text-sky-300 ring-2 ring-sky-500/40 shadow-lg'
-                        : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                        ? 'bg-sky-50 border-sky-500 text-sky-700 ring-2 ring-sky-200 shadow-sm'
+                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-[#0F172A]'
                     }`}
                   >
                     <CreditCard className="w-4 h-4 mb-1" />
@@ -1218,9 +1218,9 @@ export function FastBillingModal({
               </div>
 
               {/* Exact 80mm Thermal Receipt Layout (Step 12) */}
-              <div className="bg-white p-5 text-black font-mono text-xs rounded-2xl shadow-inner select-none print:m-0 print:p-0">
+              <div className="bg-white p-5 text-black font-mono text-xs rounded-2xl border border-slate-200 shadow-inner select-none print:m-0 print:p-0">
                 <div className="text-center space-y-1 pb-3 border-b border-dashed border-gray-400">
-                  <h2 className="text-base font-black tracking-wider uppercase">NAGA HOTEL</h2>
+                  <h2 className="text-base font-black tracking-wider uppercase">SR HOTEL</h2>
                   <p className="text-[11px] font-semibold text-gray-700">Chettinad & South Indian Cuisine</p>
                   <p className="text-[10px] text-gray-600">42, Anna Salai, Heritage Plaza, Chennai - 600002</p>
                   <p className="text-[10px] text-gray-600">GSTIN: 33AAAAA0000A1Z5 | Ph: +91 98765 43210</p>
@@ -1285,25 +1285,25 @@ export function FastBillingModal({
 
                 <div className="pt-3 border-t border-dashed border-gray-400 text-center space-y-0.5">
                   <p className="text-[10px] font-bold">THANK YOU! VISIT AGAIN</p>
-                  <p className="text-[9px] text-gray-500">For feedback: feedback@nagahotel.com</p>
+                  <p className="text-[9px] text-gray-500">For feedback: feedback@srhotel.com</p>
                 </div>
               </div>
             </div>
 
             {/* Print Confirmation Actions */}
-            <div className="border-t border-slate-800 p-4 bg-slate-900 flex items-center justify-between gap-3">
+            <div className="border-t border-slate-200 p-4 bg-slate-50 flex items-center justify-between gap-3">
               <button
                 type="button"
                 onClick={() => setIsPrintPreviewOpen(false)}
-                className="px-3.5 py-2.5 rounded-xl bg-slate-800 text-xs font-bold text-amber-300 hover:bg-slate-700 hover:text-white border border-slate-700 cursor-pointer flex items-center gap-1.5"
+                className="px-3.5 py-2.5 rounded-xl bg-white text-xs font-bold text-slate-700 hover:bg-slate-100 hover:text-[#0F172A] border border-slate-200 cursor-pointer flex items-center gap-1.5 shadow-xs"
               >
-                <Edit className="w-3.5 h-3.5" />
+                <Edit className="w-3.5 h-3.5 text-[#10B981]" />
                 <span>← Edit Bill Items</span>
               </button>
               <button
                 type="button"
                 onClick={handleResetForNextCustomer}
-                className="px-3 py-2.5 rounded-xl bg-slate-800 text-xs font-semibold text-slate-300 hover:text-white cursor-pointer"
+                className="px-3 py-2.5 rounded-xl bg-white text-xs font-semibold text-slate-600 hover:text-[#0F172A] border border-slate-200 cursor-pointer shadow-xs"
               >
                 Next Bill [Esc]
               </button>
@@ -1312,7 +1312,7 @@ export function FastBillingModal({
                 onClick={() => {
                   if (typeof window !== 'undefined') window.print();
                 }}
-                className="flex-1 py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition-colors shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+                className="flex-1 py-3 px-4 rounded-xl bg-[#10B981] hover:bg-[#059669] text-white font-black text-xs transition-colors shadow-md flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Printer className="h-4 w-4" />
                 <span>Re-print Thermal Receipt [Space / Enter]</span>

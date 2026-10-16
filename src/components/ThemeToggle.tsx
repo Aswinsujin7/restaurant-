@@ -32,7 +32,7 @@ export function ThemeToggle() {
       onClick={toggleTheme}
       aria-label="Toggle light and dark appearance"
       title="Toggle light and dark appearance"
-      className="theme-toggle inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-700/70 bg-slate-900/70 text-slate-300 transition-colors hover:bg-slate-800 hover:text-white"
+      className="theme-toggle inline-flex h-9 w-9 items-center justify-center rounded-xl border border-[#E2E8F0] bg-white text-[#64748B] transition-colors hover:bg-slate-100 hover:text-[#0F172A] cursor-pointer shadow-xs"
     >
       <Sun className="theme-sun h-4 w-4" />
       <Moon className="theme-moon h-4 w-4" />

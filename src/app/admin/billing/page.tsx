@@ -96,17 +96,17 @@ export default function BillingHistoryPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-full bg-[#F1F5F9] text-[#0F172A] p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E2E8F0]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/30 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-[#10B981] border border-emerald-200 flex items-center justify-center">
               <History className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-2xl font-black text-white">Billing History & Reports</h1>
-              <p className="text-xs text-slate-400">
+              <h1 className="text-2xl font-black text-[#0F172A]">Billing History & Reports</h1>
+              <p className="text-xs text-[#64748B]">
                 Audited payment records, revenue analytics, and tax compliance ledger
               </p>
             </div>
@@ -115,61 +115,61 @@ export default function BillingHistoryPage() {
 
         {/* Revenue Analytics Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
-            <div className="flex items-center justify-between text-xs text-slate-400">
-              <span className="uppercase font-semibold tracking-wider">Total Sales (Gross)</span>
-              <TrendingUp className="w-4 h-4 text-emerald-400" />
+          <div className="bg-white border border-[#E2E8F0] rounded-2xl p-4 flex flex-col justify-between shadow-sm">
+            <div className="flex items-center justify-between text-xs text-[#64748B]">
+              <span className="uppercase font-bold tracking-wider">Total Sales (Gross)</span>
+              <TrendingUp className="w-4 h-4 text-[#10B981]" />
             </div>
             <div className="mt-2">
-              <span className="text-2xl font-black text-amber-400">
+              <span className="text-2xl font-black text-[#10B981]">
                 ₹{totalRevenue.toFixed(2)}
               </span>
-              <p className="text-[11px] text-slate-500 mt-0.5">
+              <p className="text-[11px] text-[#64748B] mt-0.5">
                 {state.payments.length} orders settled
               </p>
             </div>
           </div>
 
-          <div className="bg-slate-900/80 border border-purple-900/40 rounded-2xl p-4 flex flex-col justify-between">
-            <div className="flex items-center justify-between text-xs text-purple-300">
-              <span className="uppercase font-semibold tracking-wider">UPI Collections</span>
-              <QrCode className="w-4 h-4 text-purple-400" />
+          <div className="bg-white border border-purple-200 rounded-2xl p-4 flex flex-col justify-between shadow-sm">
+            <div className="flex items-center justify-between text-xs text-purple-700">
+              <span className="uppercase font-bold tracking-wider">UPI Collections</span>
+              <QrCode className="w-4 h-4 text-purple-600" />
             </div>
             <div className="mt-2">
-              <span className="text-2xl font-black text-purple-300">
+              <span className="text-2xl font-black text-purple-700">
                 ₹{upiRevenue.toFixed(2)}
               </span>
-              <p className="text-[11px] text-purple-400/80 mt-0.5">
+              <p className="text-[11px] text-[#64748B] mt-0.5">
                 {state.payments.filter((p) => p.payment_method === 'UPI').length} transactions
               </p>
             </div>
           </div>
 
-          <div className="bg-slate-900/80 border border-emerald-900/40 rounded-2xl p-4 flex flex-col justify-between">
-            <div className="flex items-center justify-between text-xs text-emerald-300">
-              <span className="uppercase font-semibold tracking-wider">Cash Register</span>
-              <Banknote className="w-4 h-4 text-emerald-400" />
+          <div className="bg-white border border-emerald-200 rounded-2xl p-4 flex flex-col justify-between shadow-sm">
+            <div className="flex items-center justify-between text-xs text-emerald-700">
+              <span className="uppercase font-bold tracking-wider">Cash Register</span>
+              <Banknote className="w-4 h-4 text-emerald-600" />
             </div>
             <div className="mt-2">
-              <span className="text-2xl font-black text-emerald-300">
+              <span className="text-2xl font-black text-emerald-700">
                 ₹{cashRevenue.toFixed(2)}
               </span>
-              <p className="text-[11px] text-emerald-400/80 mt-0.5">
+              <p className="text-[11px] text-[#64748B] mt-0.5">
                 {state.payments.filter((p) => p.payment_method === 'CASH').length} transactions
               </p>
             </div>
           </div>
 
-          <div className="bg-slate-900/80 border border-sky-900/40 rounded-2xl p-4 flex flex-col justify-between">
-            <div className="flex items-center justify-between text-xs text-sky-300">
-              <span className="uppercase font-semibold tracking-wider">Card Terminal</span>
-              <CreditCard className="w-4 h-4 text-sky-400" />
+          <div className="bg-white border border-sky-200 rounded-2xl p-4 flex flex-col justify-between shadow-sm">
+            <div className="flex items-center justify-between text-xs text-sky-700">
+              <span className="uppercase font-bold tracking-wider">Card Terminal</span>
+              <CreditCard className="w-4 h-4 text-sky-600" />
             </div>
             <div className="mt-2">
-              <span className="text-2xl font-black text-sky-300">
+              <span className="text-2xl font-black text-sky-700">
                 ₹{cardRevenue.toFixed(2)}
               </span>
-              <p className="text-[11px] text-sky-400/80 mt-0.5">
+              <p className="text-[11px] text-[#64748B] mt-0.5">
                 {state.payments.filter((p) => p.payment_method === 'CARD').length} transactions
               </p>
             </div>
@@ -177,7 +177,7 @@ export default function BillingHistoryPage() {
         </div>
 
         {/* Filter Controls */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-slate-900/60 border border-slate-800 rounded-2xl">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-white border border-[#E2E8F0] rounded-2xl shadow-sm">
           {/* Payment Method Pills */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
             {[
@@ -188,11 +188,12 @@ export default function BillingHistoryPage() {
             ].map((tab) => (
               <button
                 key={tab.id}
+                type="button"
                 onClick={() => setMethodFilter(tab.id as typeof methodFilter)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   methodFilter === tab.id
-                    ? 'bg-amber-500 text-slate-950'
-                    : 'bg-slate-950 text-slate-400 hover:text-white'
+                    ? 'bg-[#10B981] text-white shadow-sm'
+                    : 'bg-slate-100 text-slate-600 hover:text-[#0F172A] hover:bg-slate-200'
                 }`}
               >
                 {tab.label}
@@ -202,22 +203,22 @@ export default function BillingHistoryPage() {
 
           {/* Search Bar */}
           <div className="relative">
-            <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5" />
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
             <input
               type="text"
               placeholder="Search Invoice # or Customer..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 pr-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 w-full sm:w-64"
+              className="pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs text-[#0F172A] placeholder:text-slate-400 focus:outline-none focus:border-[#10B981] focus:ring-1 focus:ring-[#10B981] w-full sm:w-64"
             />
           </div>
         </div>
 
         {/* Payment History Table */}
-        <div className="border border-slate-800 rounded-2xl overflow-hidden bg-slate-900/60 shadow-xl">
+        <div className="border border-[#E2E8F0] rounded-2xl overflow-hidden bg-white shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950/80 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-800">
+              <thead className="bg-slate-50 text-[#64748B] font-bold uppercase tracking-wider border-b border-slate-200">
                 <tr>
                   <th className="p-3.5">Invoice #</th>
                   <th className="p-3.5">Date & Time</th>
@@ -230,7 +231,7 @@ export default function BillingHistoryPage() {
                   <th className="p-3.5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800">
+              <tbody className="divide-y divide-slate-100">
                 {filteredPayments.map((p) => {
                   const formattedTime = new Date(p.created_at).toLocaleString('en-IN', {
                     day: '2-digit',
@@ -240,46 +241,47 @@ export default function BillingHistoryPage() {
                   });
 
                   return (
-                    <tr key={p.id} className="hover:bg-slate-800/40 transition-colors">
-                      <td className="p-3.5 font-mono font-bold text-white">
+                    <tr key={p.id} className="hover:bg-slate-50/70 transition-colors">
+                      <td className="p-3.5 font-mono font-bold text-[#0F172A]">
                         {p.order_number}
                       </td>
-                      <td className="p-3.5 text-slate-400">{formattedTime}</td>
-                      <td className="p-3.5 font-bold text-amber-400">T{p.table_number}</td>
-                      <td className="p-3.5 text-slate-200 font-medium">{p.customer_name}</td>
+                      <td className="p-3.5 text-[#64748B]">{formattedTime}</td>
+                      <td className="p-3.5 font-bold text-amber-700">T{p.table_number}</td>
+                      <td className="p-3.5 text-[#0F172A] font-bold">{p.customer_name}</td>
                       <td className="p-3.5">
                         <span
                           className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold ${
                             p.payment_method === 'UPI'
-                              ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                              ? 'bg-purple-50 text-purple-700 border border-purple-200'
                               : p.payment_method === 'CASH'
-                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                              : 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              : 'bg-sky-50 text-sky-700 border border-sky-200'
                           }`}
                         >
                           {p.payment_method}
                         </span>
                         {p.payment_reference && (
-                          <span className="block text-[10px] text-slate-500 font-mono mt-0.5 truncate max-w-[120px]">
+                          <span className="block text-[10px] text-[#64748B] font-mono mt-0.5 truncate max-w-[120px]">
                             {p.payment_reference}
                           </span>
                         )}
                       </td>
-                      <td className="p-3.5 text-right text-slate-300">
+                      <td className="p-3.5 text-right text-slate-600 font-semibold">
                         ₹{p.subtotal.toFixed(2)}
                       </td>
-                      <td className="p-3.5 text-right text-slate-400">
+                      <td className="p-3.5 text-right text-[#64748B]">
                         ₹{p.tax_amount.toFixed(2)}
                       </td>
-                      <td className="p-3.5 text-right font-black text-amber-400 text-sm">
+                      <td className="p-3.5 text-right font-black text-[#10B981] text-sm">
                         ₹{p.final_total.toFixed(2)}
                       </td>
                       <td className="p-3.5 text-right">
                         <button
+                          type="button"
                           onClick={() => handleOpenReceipt(p)}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-colors"
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold transition-colors cursor-pointer"
                         >
-                          <Printer className="w-3 h-3 text-amber-400" />
+                          <Printer className="w-3 h-3 text-[#10B981]" />
                           <span>Receipt</span>
                         </button>
                       </td>
@@ -292,9 +294,9 @@ export default function BillingHistoryPage() {
         </div>
 
         {filteredPayments.length === 0 && (
-          <div className="text-center py-12 bg-slate-900/40 border border-dashed border-slate-800 rounded-2xl">
-            <Receipt className="w-8 h-8 text-slate-500 mx-auto mb-2" />
-            <p className="text-sm text-slate-400 font-medium">No payment records found</p>
+          <div className="text-center py-12 bg-white border border-dashed border-slate-200 rounded-2xl shadow-sm">
+            <Receipt className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+            <p className="text-sm text-[#64748B] font-medium">No payment records found</p>
           </div>
         )}
       </div>

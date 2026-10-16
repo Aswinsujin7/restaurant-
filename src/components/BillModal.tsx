@@ -284,27 +284,27 @@ export function BillModal({ order, onClose }: BillModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-slate-900 border border-slate-700/80 rounded-2xl max-w-2xl w-full p-6 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+      <div className="bg-white border border-[#E2E8F0] rounded-2xl max-w-2xl w-full p-6 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden text-[#0F172A]">
         {/* Modal Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+        <div className="flex items-center justify-between pb-4 border-b border-[#E2E8F0]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-[#10B981]">
               <Receipt className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-base font-bold text-white">
+                <h3 className="text-base font-bold text-[#0F172A]">
                   {order.table_number > 0 ? `Checkout Table ${order.table_number}` : 'Checkout Walk-in Order'}
                 </h3>
-                <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-[#0F172A] border border-[#E2E8F0]">
                   {order.order_number}
                 </span>
                 <span
                   className={`px-2 py-0.5 rounded text-[11px] font-bold border flex items-center gap-1 ${
                     (order.pricing_section === 'AC' || (order.section && order.section.toUpperCase().includes('AC')))
-                      ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
-                      : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                      ? 'bg-sky-50 text-sky-700 border-sky-200'
+                      : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                   }`}
                 >
                   {(order.pricing_section === 'AC' || (order.section && order.section.toUpperCase().includes('AC')))
@@ -312,8 +312,8 @@ export function BillModal({ order, onClose }: BillModalProps) {
                     : '🌿 Non-AC Pricing'}
                 </span>
               </div>
-              <p className="text-xs text-slate-400">
-                Customer: <strong className="text-slate-200">{order.customer_name}</strong> •{' '}
+              <p className="text-xs text-[#64748B]">
+                Customer: <strong className="text-[#0F172A]">{order.customer_name}</strong> •{' '}
                 {order.guest_count || 1} Guests
                 {order.section ? ` • ${order.section}` : ''}
               </p>
@@ -321,49 +321,49 @@ export function BillModal({ order, onClose }: BillModalProps) {
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-[#64748B] hover:text-[#0F172A] hover:bg-slate-100 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Quick Action Hint Bar */}
-        <div className="flex items-center justify-between text-[11px] text-slate-300 bg-slate-950/80 px-3.5 py-2 mt-3 rounded-xl border border-slate-800">
-          <span className="flex items-center gap-1.5 text-amber-400 font-bold">
+        <div className="flex items-center justify-between text-[11px] text-[#0F172A] bg-[#F1F5F9] px-3.5 py-2 mt-3 rounded-xl border border-[#E2E8F0]">
+          <span className="flex items-center gap-1.5 text-[#10B981] font-bold">
             <Keyboard className="w-3.5 h-3.5" />
             Fast Cashier Action:
           </span>
           <span className="flex items-center gap-1.5">
-            <span>Press <kbd className="bg-amber-500 text-slate-950 font-black px-1.5 py-0.5 rounded font-mono text-[10px]">Space</kbd> or <kbd className="bg-slate-800 text-slate-200 font-bold px-1.5 py-0.5 rounded font-mono text-[10px]">Enter</kbd> to collect money & print receipt</span>
+            <span className="text-[#64748B]">Press <kbd className="bg-white text-[#0F172A] font-black px-1.5 py-0.5 rounded font-mono text-[10px] border border-[#E2E8F0] shadow-xs">Space</kbd> or <kbd className="bg-white text-[#0F172A] font-bold px-1.5 py-0.5 rounded font-mono text-[10px] border border-[#E2E8F0] shadow-xs">Enter</kbd> to collect money & print receipt</span>
           </span>
         </div>
 
         {/* Modal Scrollable Body */}
         <div className="overflow-y-auto flex-1 my-4 pr-1 space-y-4">
           {errorMessage && (
-            <div className="p-3 bg-rose-950/60 border border-rose-800 text-rose-300 text-xs rounded-xl flex items-center gap-2">
+            <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-center gap-2">
               <span>{errorMessage}</span>
             </div>
           )}
 
           {/* Itemized Order Table with Direct '-' and '+' Controls */}
-          <div className="border border-slate-800 rounded-2xl overflow-hidden bg-slate-950/60 shadow-lg">
-            <div className="px-4 py-2.5 bg-slate-900 border-b border-slate-800 flex justify-between items-center text-xs">
+          <div className="border border-[#E2E8F0] rounded-2xl overflow-hidden bg-white shadow-xs">
+            <div className="px-4 py-2.5 bg-[#F8FAFC] border-b border-[#E2E8F0] flex justify-between items-center text-xs">
               <div className="flex items-center gap-2">
-                <span className="font-bold text-slate-200">Bill Items ({items.length})</span>
-                <span className="text-[10px] text-slate-400">
-                  • Use <kbd className="bg-rose-950 text-rose-300 font-bold px-1.5 py-0.5 rounded border border-rose-800">-</kbd> to reduce qty or cancel food
+                <span className="font-bold text-[#0F172A]">Bill Items ({items.length})</span>
+                <span className="text-[10px] text-[#64748B]">
+                  • Use <kbd className="bg-red-50 text-red-700 font-bold px-1.5 py-0.5 rounded border border-red-200">-</kbd> to reduce qty or cancel food
                 </span>
               </div>
-              <span className="text-[10px] font-bold text-amber-400 bg-amber-950/40 border border-amber-800/40 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
                 ⚡ Direct Quick Edit
               </span>
             </div>
 
             {/* Items list */}
-            <div className="divide-y divide-slate-800/60 max-h-52 overflow-y-auto">
+            <div className="divide-y divide-[#E2E8F0] max-h-52 overflow-y-auto">
               {items.length === 0 ? (
-                <div className="p-6 text-center text-xs text-slate-500">
+                <div className="p-6 text-center text-xs text-[#64748B]">
                   No items in bill. Add items using the search bar below.
                 </div>
               ) : (
@@ -375,35 +375,35 @@ export function BillModal({ order, onClose }: BillModalProps) {
                       key={item.id || idx}
                       className={`px-4 py-2.5 flex items-center justify-between text-xs transition-colors ${
                         isCancelled
-                          ? 'bg-rose-950/20 border-l-4 border-l-rose-500'
-                          : 'hover:bg-slate-900/30'
+                          ? 'bg-red-50/50 border-l-4 border-l-[#EF4444]'
+                          : 'hover:bg-slate-50'
                       }`}
                     >
                       <div className="flex items-center gap-2.5 min-w-0 flex-1">
                         {!isCancelled ? (
-                          <div className="flex items-center rounded-lg border border-slate-700 bg-slate-900 p-0.5 shrink-0">
+                          <div className="flex items-center rounded-lg border border-[#E2E8F0] bg-white p-0.5 shrink-0">
                             <button
                               type="button"
                               onClick={() => handleUpdateItemQty(idx, -1)}
-                              className="w-7 h-7 flex items-center justify-center text-rose-300 hover:text-white rounded bg-rose-950/60 hover:bg-rose-600 border border-rose-800/60 font-black cursor-pointer transition-colors shadow-sm"
+                              className="w-7 h-7 flex items-center justify-center text-red-600 hover:text-white rounded bg-red-50 hover:bg-[#EF4444] border border-red-200 font-black cursor-pointer transition-colors shadow-xs"
                               title="Click '-' to reduce quantity or cancel item"
                             >
                               <Minus className="w-3.5 h-3.5" />
                             </button>
-                            <span className="w-7 text-center font-black text-amber-400 text-xs">
+                            <span className="w-7 text-center font-black text-[#0F172A] text-xs">
                               {item.quantity}
                             </span>
                             <button
                               type="button"
                               onClick={() => handleUpdateItemQty(idx, 1)}
-                              className="w-7 h-7 flex items-center justify-center text-slate-300 hover:text-white rounded hover:bg-slate-800 border border-slate-700/60 font-bold cursor-pointer transition-colors"
+                              className="w-7 h-7 flex items-center justify-center text-[#0F172A] hover:bg-slate-100 rounded border border-[#E2E8F0] font-bold cursor-pointer transition-colors"
                               title="Increase quantity"
                             >
                               <Plus className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         ) : (
-                          <span className="w-7 h-7 rounded-lg bg-rose-950/50 text-rose-400 text-xs font-black flex items-center justify-center shrink-0 border border-rose-800 line-through">
+                          <span className="w-7 h-7 rounded-lg bg-red-50 text-[#EF4444] text-xs font-black flex items-center justify-center shrink-0 border border-red-200 line-through">
                             {item.quantity}×
                           </span>
                         )}
@@ -412,21 +412,21 @@ export function BillModal({ order, onClose }: BillModalProps) {
                           <div className="flex items-center gap-2 flex-wrap">
                             <span
                               className={`font-bold block truncate ${
-                                isCancelled ? 'text-slate-400 line-through' : 'text-white'
+                                isCancelled ? 'text-slate-400 line-through' : 'text-[#0F172A]'
                               }`}
                             >
                               {item.item_name}
                             </span>
                             {isCancelled && (
-                              <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-rose-500/20 text-rose-400 border border-rose-500/40 uppercase tracking-wider">
+                              <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-red-100 text-[#EF4444] border border-red-200 uppercase tracking-wider">
                                 CANCELLED (₹0)
                               </span>
                             )}
                           </div>
-                          <span className="text-[10px] text-slate-400 block">
+                          <span className="text-[10px] text-[#64748B] block">
                             ₹{item.unit_price} each{item.pricing_section ? ` (${item.pricing_section})` : ''}
                             {isCancelled && (
-                              <span className="text-rose-400/90 ml-1.5 italic">
+                              <span className="text-[#EF4444] ml-1.5 italic">
                                 • {item.cancel_reason || 'Customer cancelled food'} (Not billed, not printed)
                               </span>
                             )}
@@ -437,15 +437,15 @@ export function BillModal({ order, onClose }: BillModalProps) {
                       <div className="flex items-center gap-2.5 shrink-0">
                         {isCancelled ? (
                           <div className="text-right">
-                            <span className="text-[10px] text-slate-500 line-through block">
+                            <span className="text-[10px] text-slate-400 line-through block">
                               ₹{item.total_price.toFixed(2)}
                             </span>
-                            <span className="font-black text-rose-400 text-xs">
+                            <span className="font-black text-[#EF4444] text-xs">
                               ₹0.00
                             </span>
                           </div>
                         ) : (
-                          <span className="font-black text-amber-400 text-sm">
+                          <span className="font-black text-[#0F172A] text-sm">
                             ₹{item.total_price.toFixed(2)}
                           </span>
                         )}
@@ -455,17 +455,17 @@ export function BillModal({ order, onClose }: BillModalProps) {
                             <button
                               type="button"
                               onClick={() => handleToggleItemCancel(idx)}
-                              className="px-2 py-1 rounded-lg bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800 text-emerald-300 text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                              className="px-2 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
                               title="Restore/Uncancel this item"
                             >
-                              <RotateCcw className="w-3 h-3 text-emerald-400" />
+                              <RotateCcw className="w-3 h-3 text-[#10B981]" />
                               <span>Restore</span>
                             </button>
                           ) : (
                             <button
                               type="button"
                               onClick={() => handleToggleItemCancel(idx)}
-                              className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-950/40 transition-colors cursor-pointer"
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-[#EF4444] hover:bg-red-50 transition-colors cursor-pointer"
                               title="Mark as cancelled by customer"
                             >
                               <Ban className="w-3.5 h-3.5" />
@@ -474,7 +474,7 @@ export function BillModal({ order, onClose }: BillModalProps) {
                           <button
                             type="button"
                             onClick={() => handleRemoveItem(idx)}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-950/40 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-[#EF4444] hover:bg-red-50 transition-colors cursor-pointer"
                             title="Delete item from bill"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -488,12 +488,12 @@ export function BillModal({ order, onClose }: BillModalProps) {
             </div>
 
             {/* Add Extra Dish Section (Always available) */}
-            <div className="p-3 bg-slate-900/90 border-t border-slate-800 space-y-2">
-                <span className="text-[11px] font-bold text-slate-300 block">
+            <div className="p-3 bg-[#F8FAFC] border-t border-[#E2E8F0] space-y-2">
+                <span className="text-[11px] font-bold text-[#0F172A] block">
                   + Add Extra Item to Bill (Counter Adjustment):
                 </span>
                 <div className="relative">
-                  <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5" />
+                  <Search className="w-3.5 h-3.5 text-[#64748B] absolute left-2.5 top-2.5" />
                   <input
                     type="text"
                     value={addItemQuery}
@@ -505,12 +505,12 @@ export function BillModal({ order, onClose }: BillModalProps) {
                       if (addItemQuery.trim().length > 0) setIsAddItemDropdownOpen(true);
                     }}
                     placeholder="Search dish # or name to add... (e.g. 1, 6, Biryani, Parotta)"
-                    className="w-full pl-8 pr-3 py-1.5 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                    className="w-full pl-8 pr-3 py-1.5 bg-white border border-[#E2E8F0] rounded-xl text-xs text-[#0F172A] placeholder-slate-400 focus:outline-none focus:border-[#10B981]"
                   />
 
                   {/* Dropdown for Add Item */}
                   {isAddItemDropdownOpen && matchingDishes.length > 0 && (
-                    <div className="absolute left-0 right-0 top-full mt-1 z-30 max-h-48 overflow-y-auto bg-slate-900 border border-slate-700 rounded-xl shadow-2xl divide-y divide-slate-800">
+                    <div className="absolute left-0 right-0 top-full mt-1 z-30 max-h-48 overflow-y-auto bg-white border border-[#E2E8F0] rounded-xl shadow-xl divide-y divide-[#E2E8F0]">
                       {matchingDishes.map((dish) => {
                         const nonAcPrice = dish.price_non_ac ?? dish.non_ac_price ?? dish.price;
                         const acPrice = dish.price_ac ?? dish.ac_price ?? nonAcPrice;
@@ -521,17 +521,17 @@ export function BillModal({ order, onClose }: BillModalProps) {
                           <div
                             key={dish.id}
                             onClick={() => handleAddDish(dish)}
-                            className="px-3 py-2 flex items-center justify-between text-xs hover:bg-slate-800 cursor-pointer transition-colors"
+                            className="px-3 py-2 flex items-center justify-between text-xs hover:bg-slate-50 cursor-pointer transition-colors"
                           >
                             <div className="flex items-center gap-2">
-                              <span className="font-mono text-[10px] font-bold text-amber-400 bg-slate-950 px-1 py-0.5 rounded border border-slate-800">
+                              <span className="font-mono text-[10px] font-bold text-[#10B981] bg-slate-100 px-1 py-0.5 rounded border border-[#E2E8F0]">
                                 #{itemNum}
                               </span>
-                              <span className="font-bold text-white">{dish.name}</span>
+                              <span className="font-bold text-[#0F172A]">{dish.name}</span>
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className="text-amber-400 font-bold">₹{unitPrice}</span>
-                              <span className="text-[10px] bg-amber-500 text-slate-950 font-black px-1.5 py-0.5 rounded">
+                              <span className="text-[#0F172A] font-bold">₹{unitPrice}</span>
+                              <span className="text-[10px] bg-[#10B981] text-white font-bold px-1.5 py-0.5 rounded">
                                 + Add
                               </span>
                             </div>
@@ -545,29 +545,29 @@ export function BillModal({ order, onClose }: BillModalProps) {
           </div>
 
           {/* Bill Calculation & Discounts */}
-          <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-4 space-y-2.5 text-xs">
-            <div className="flex justify-between text-slate-300">
+          <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-4 space-y-2.5 text-xs">
+            <div className="flex justify-between text-[#64748B]">
               <span>Subtotal:</span>
-              <span className="font-semibold text-white">₹{subtotal.toFixed(2)}</span>
+              <span className="font-semibold text-[#0F172A]">₹{subtotal.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between text-slate-400 text-[11px]">
+            <div className="flex justify-between text-[#64748B] text-[11px]">
               <span>GST ({taxRate}% - 2.5% CGST + 2.5% SGST):</span>
-              <span>₹{taxAmount.toFixed(2)}</span>
+              <span className="font-medium text-[#0F172A]">₹{taxAmount.toFixed(2)}</span>
             </div>
 
             {/* Discount Inputs */}
-            <div className="flex items-center justify-between pt-1 border-t border-slate-800/80">
-              <span className="text-slate-300 flex items-center gap-1">
-                <Percent className="w-3.5 h-3.5 text-amber-400" />
+            <div className="flex items-center justify-between pt-1 border-t border-[#E2E8F0]">
+              <span className="text-[#0F172A] flex items-center gap-1 font-medium">
+                <Percent className="w-3.5 h-3.5 text-[#10B981]" />
                 Discount / Offer:
               </span>
               <div className="flex items-center gap-1.5">
-                <div className="flex bg-slate-900 border border-slate-700 rounded-lg overflow-hidden text-[11px]">
+                <div className="flex bg-white border border-[#E2E8F0] rounded-lg overflow-hidden text-[11px]">
                   <button
                     type="button"
                     onClick={() => setDiscountType('flat')}
-                    className={`px-2 py-1 ${
-                      discountType === 'flat' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-400'
+                    className={`px-2 py-1 font-bold ${
+                      discountType === 'flat' ? 'bg-[#10B981] text-white' : 'text-[#64748B] hover:text-[#0F172A]'
                     }`}
                   >
                     ₹
@@ -575,8 +575,8 @@ export function BillModal({ order, onClose }: BillModalProps) {
                   <button
                     type="button"
                     onClick={() => setDiscountType('percent')}
-                    className={`px-2 py-1 ${
-                      discountType === 'percent' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-400'
+                    className={`px-2 py-1 font-bold ${
+                      discountType === 'percent' ? 'bg-[#10B981] text-white' : 'text-[#64748B] hover:text-[#0F172A]'
                     }`}
                   >
                     %
@@ -588,40 +588,40 @@ export function BillModal({ order, onClose }: BillModalProps) {
                   value={discountInput}
                   onChange={(e) => setDiscountInput(e.target.value)}
                   placeholder="0"
-                  className="w-20 px-2 py-1 bg-slate-900 border border-slate-700 rounded-lg text-white text-right focus:outline-none focus:border-amber-500 text-xs"
+                  className="w-20 px-2 py-1 bg-white border border-[#E2E8F0] rounded-lg text-[#0F172A] text-right focus:outline-none focus:border-[#10B981] text-xs font-semibold"
                 />
               </div>
             </div>
 
             {computedDiscount > 0 && (
-              <div className="flex justify-between text-emerald-400 text-xs font-semibold">
+              <div className="flex justify-between text-[#10B981] text-xs font-semibold">
                 <span>Discount applied:</span>
                 <span>-₹{computedDiscount.toFixed(2)}</span>
               </div>
             )}
 
             {/* Final Amount */}
-            <div className="pt-2 border-t border-slate-700 flex justify-between items-center">
-              <span className="text-sm font-bold text-white uppercase tracking-wider">
+            <div className="pt-2 border-t border-[#E2E8F0] flex justify-between items-center">
+              <span className="text-sm font-bold text-[#0F172A] uppercase tracking-wider">
                 Total Payable:
               </span>
-              <span className="text-xl font-black text-amber-400">₹{finalTotal.toFixed(2)}</span>
+              <span className="text-xl font-black text-[#10B981]">₹{finalTotal.toFixed(2)}</span>
             </div>
           </div>
 
           {/* Payment Method Selector */}
           <div>
-            <label className="block text-xs font-bold text-slate-300 mb-2 uppercase tracking-wider">
+            <label className="block text-xs font-bold text-[#0F172A] mb-2 uppercase tracking-wider">
               Select Payment Method
             </label>
             <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => setPaymentMethod('UPI')}
-                className={`flex flex-col items-center justify-center p-3 rounded-xl border text-xs font-bold transition-all ${
+                className={`flex flex-col items-center justify-center p-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                   paymentMethod === 'UPI'
-                    ? 'bg-purple-950/60 border-purple-500 text-purple-300 ring-2 ring-purple-500/40 shadow-lg'
-                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                    ? 'bg-emerald-50 border-[#10B981] text-[#10B981] ring-2 ring-[#10B981]/30 shadow-xs'
+                    : 'bg-white border-[#E2E8F0] text-[#64748B] hover:text-[#0F172A] hover:border-slate-300'
                 }`}
               >
                 <QrCode className="w-5 h-5 mb-1" />
@@ -631,10 +631,10 @@ export function BillModal({ order, onClose }: BillModalProps) {
               <button
                 type="button"
                 onClick={() => setPaymentMethod('CASH')}
-                className={`flex flex-col items-center justify-center p-3 rounded-xl border text-xs font-bold transition-all ${
+                className={`flex flex-col items-center justify-center p-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                   paymentMethod === 'CASH'
-                    ? 'bg-emerald-950/60 border-emerald-500 text-emerald-300 ring-2 ring-emerald-500/40 shadow-lg'
-                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                    ? 'bg-emerald-50 border-[#10B981] text-[#10B981] ring-2 ring-[#10B981]/30 shadow-xs'
+                    : 'bg-white border-[#E2E8F0] text-[#64748B] hover:text-[#0F172A] hover:border-slate-300'
                 }`}
               >
                 <Banknote className="w-5 h-5 mb-1" />
@@ -644,10 +644,10 @@ export function BillModal({ order, onClose }: BillModalProps) {
               <button
                 type="button"
                 onClick={() => setPaymentMethod('CARD')}
-                className={`flex flex-col items-center justify-center p-3 rounded-xl border text-xs font-bold transition-all ${
+                className={`flex flex-col items-center justify-center p-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                   paymentMethod === 'CARD'
-                    ? 'bg-sky-950/60 border-sky-500 text-sky-300 ring-2 ring-sky-500/40 shadow-lg'
-                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                    ? 'bg-emerald-50 border-[#10B981] text-[#10B981] ring-2 ring-[#10B981]/30 shadow-xs'
+                    : 'bg-white border-[#E2E8F0] text-[#64748B] hover:text-[#0F172A] hover:border-slate-300'
                 }`}
               >
                 <CreditCard className="w-5 h-5 mb-1" />
@@ -658,21 +658,21 @@ export function BillModal({ order, onClose }: BillModalProps) {
 
           {/* Method-Specific Input Fields */}
           {paymentMethod === 'UPI' && (
-            <div className="p-4 bg-purple-950/20 border border-purple-800/40 rounded-xl space-y-3">
+            <div className="p-4 bg-slate-50 border border-[#E2E8F0] rounded-xl space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-xs font-bold text-white block">UPI Payment (GPay, PhonePe, Paytm)</span>
-                  <span className="text-[11px] text-purple-300 font-mono">VPA: nagahotel@okhdfcbank</span>
+                  <span className="text-xs font-bold text-[#0F172A] block">UPI Payment (GPay, PhonePe, Paytm)</span>
+                  <span className="text-[11px] text-[#10B981] font-mono font-bold">VPA: srhotel@okhdfcbank</span>
                 </div>
                 {/* Visual QR Code Badge */}
-                <div className="w-14 h-14 bg-white p-1 rounded-lg flex items-center justify-center shadow-md">
-                  <div className="w-full h-full bg-slate-950 flex flex-col items-center justify-center text-[7px] text-white font-mono leading-none">
-                    <QrCode className="w-9 h-9 text-purple-400" />
+                <div className="w-14 h-14 bg-white p-1 rounded-lg flex items-center justify-center border border-[#E2E8F0] shadow-xs">
+                  <div className="w-full h-full bg-[#0F172A] rounded flex flex-col items-center justify-center text-[7px] text-white font-mono leading-none">
+                    <QrCode className="w-8 h-8 text-[#10B981]" />
                   </div>
                 </div>
               </div>
               <div>
-                <label className="block text-[11px] font-medium text-slate-300 mb-1">
+                <label className="block text-[11px] font-medium text-[#64748B] mb-1">
                   UPI Transaction ID / Ref No (Optional):
                 </label>
                 <input
@@ -680,18 +680,18 @@ export function BillModal({ order, onClose }: BillModalProps) {
                   value={paymentReference}
                   onChange={(e) => setPaymentReference(e.target.value)}
                   placeholder="e.g. 428941098273"
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs focus:outline-none focus:border-purple-500"
+                  className="w-full px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg text-[#0F172A] text-xs focus:outline-none focus:border-[#10B981]"
                 />
               </div>
             </div>
           )}
 
           {paymentMethod === 'CASH' && (
-            <div className="p-4 bg-emerald-950/20 border border-emerald-800/40 rounded-xl space-y-3">
-              <span className="text-xs font-bold text-white block">Cash Calculation</span>
+            <div className="p-4 bg-slate-50 border border-[#E2E8F0] rounded-xl space-y-3">
+              <span className="text-xs font-bold text-[#0F172A] block">Cash Calculation</span>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-medium text-slate-300 mb-1">
+                  <label className="block text-[11px] font-medium text-[#64748B] mb-1">
                     Cash Tendered (₹):
                   </label>
                   <input
@@ -699,14 +699,14 @@ export function BillModal({ order, onClose }: BillModalProps) {
                     value={cashTendered}
                     onChange={(e) => setCashTendered(e.target.value)}
                     placeholder={finalTotal.toString()}
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs font-bold focus:outline-none focus:border-emerald-500"
+                    className="w-full px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg text-[#0F172A] text-xs font-bold focus:outline-none focus:border-[#10B981]"
                   />
                 </div>
                 <div>
-                  <span className="block text-[11px] font-medium text-slate-300 mb-1">
+                  <span className="block text-[11px] font-medium text-[#64748B] mb-1">
                     Change / Return:
                   </span>
-                  <div className="px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-emerald-400 font-black text-sm">
+                  <div className="px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg text-[#10B981] font-black text-sm">
                     ₹{changeDue.toFixed(2)}
                   </div>
                 </div>
@@ -718,7 +718,7 @@ export function BillModal({ order, onClose }: BillModalProps) {
                     key={val}
                     type="button"
                     onClick={() => setCashTendered(val.toString())}
-                    className="px-2.5 py-1 text-[11px] rounded bg-slate-900 border border-slate-700 text-slate-300 hover:text-white hover:border-slate-500 transition-colors"
+                    className="px-2.5 py-1 text-[11px] rounded bg-white border border-[#E2E8F0] text-[#0F172A] hover:bg-slate-100 font-semibold transition-colors cursor-pointer"
                   >
                     ₹{val}
                   </button>
@@ -728,10 +728,10 @@ export function BillModal({ order, onClose }: BillModalProps) {
           )}
 
           {paymentMethod === 'CARD' && (
-            <div className="p-4 bg-sky-950/20 border border-sky-800/40 rounded-xl space-y-3">
-              <span className="text-xs font-bold text-white block">Credit / Debit Card Terminal</span>
+            <div className="p-4 bg-slate-50 border border-[#E2E8F0] rounded-xl space-y-3">
+              <span className="text-xs font-bold text-[#0F172A] block">Credit / Debit Card Terminal</span>
               <div>
-                <label className="block text-[11px] font-medium text-slate-300 mb-1">
+                <label className="block text-[11px] font-medium text-[#64748B] mb-1">
                   Card Last 4 Digits or POS Auth Code:
                 </label>
                 <input
@@ -739,7 +739,7 @@ export function BillModal({ order, onClose }: BillModalProps) {
                   value={paymentReference}
                   onChange={(e) => setPaymentReference(e.target.value)}
                   placeholder="e.g. Auth-8910 or Card **** 4242"
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs focus:outline-none focus:border-sky-500"
+                  className="w-full px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg text-[#0F172A] text-xs focus:outline-none focus:border-[#10B981]"
                 />
               </div>
             </div>
@@ -747,11 +747,11 @@ export function BillModal({ order, onClose }: BillModalProps) {
         </div>
 
         {/* Modal Footer / Confirm Action */}
-        <div className="pt-4 border-t border-slate-800 flex items-center justify-between gap-3">
+        <div className="pt-4 border-t border-[#E2E8F0] flex items-center justify-between gap-3">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors"
+            className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#0F172A] text-xs font-semibold transition-colors cursor-pointer"
           >
             Cancel
           </button>
@@ -759,11 +759,11 @@ export function BillModal({ order, onClose }: BillModalProps) {
             type="button"
             onClick={handleConfirmPayment}
             disabled={isProcessing}
-            className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-sm transition-all shadow-lg shadow-amber-950/50 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            className="flex-1 py-3 px-4 rounded-xl bg-[#10B981] hover:bg-[#059669] text-white font-black text-sm transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
           >
-            <Printer className="w-4 h-4 text-slate-950" />
+            <Printer className="w-4 h-4 text-white" />
             <span>Collect ₹{finalTotal.toFixed(2)} & Print Receipt</span>
-            <kbd className="rounded bg-black/25 px-2 py-0.5 text-xs font-mono font-bold text-slate-950 border border-black/20">
+            <kbd className="rounded bg-black/20 px-2 py-0.5 text-xs font-mono font-bold text-white border border-white/20">
               Press Space
             </kbd>
           </button>

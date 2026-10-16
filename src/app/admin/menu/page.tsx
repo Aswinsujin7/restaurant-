@@ -439,17 +439,17 @@ export default function AdminMenuPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-full bg-[#F1F5F9] text-[#0F172A] p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E2E8F0]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30 flex items-center justify-center">
               <MenuSquare className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-2xl font-black text-white">Menu & Dining Setup</h1>
-              <p className="text-xs text-slate-400">
+              <h1 className="text-2xl font-black text-[#0F172A]">Menu & Dining Setup</h1>
+              <p className="text-xs text-[#64748B]">
                 Configure AC/Non-AC product prices, restaurant dining sections, categories, and stock availability
               </p>
             </div>
@@ -458,36 +458,36 @@ export default function AdminMenuPage() {
           <div className="flex items-center gap-2">
             <Link
               href="/admin/inventory"
-              className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-300 transition-colors hover:border-amber-500/40 hover:bg-slate-800 hover:text-white"
+              className="flex items-center gap-1.5 rounded-xl border border-[#E2E8F0] bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 hover:text-[#0F172A] shadow-sm"
             >
-              <Boxes className="h-4 w-4 text-amber-400" />
+              <Boxes className="h-4 w-4 text-[#10B981]" />
               <span>Inventory</span>
             </Link>
             <button
               onClick={() => setShowCategoryModal(true)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-300 hover:text-white transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-50 border border-[#E2E8F0] text-xs font-semibold text-slate-700 hover:text-[#0F172A] transition-colors cursor-pointer shadow-sm"
             >
-              <FolderPlus className="w-4 h-4 text-amber-400" />
+              <FolderPlus className="w-4 h-4 text-[#10B981]" />
               <span>+ Category</span>
             </button>
             <button
               onClick={openAddItemModal}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition-colors shadow-md shadow-amber-950/40 cursor-pointer"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-white font-bold text-xs transition-colors shadow-sm cursor-pointer"
             >
-              <Plus className="w-4 h-4 text-slate-950" />
+              <Plus className="w-4 h-4 text-white" />
               <span>Add Product</span>
             </button>
           </div>
         </div>
 
         {/* Top Tab Switcher: Menu vs Tables vs Audit Log */}
-        <div className="flex items-center gap-2 border-b border-slate-800 pb-2 overflow-x-auto">
+        <div className="flex items-center gap-2 border-b border-[#E2E8F0] pb-2 overflow-x-auto">
           <button
             onClick={() => setActiveTab('MENU')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'MENU'
-                ? 'bg-amber-500 text-slate-950 shadow-md font-black'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                ? 'bg-[#10B981] text-white shadow-sm font-black'
+                : 'text-slate-600 hover:text-[#0F172A] hover:bg-white'
             }`}
           >
             <MenuSquare className="w-4 h-4" />
@@ -497,8 +497,8 @@ export default function AdminMenuPage() {
             onClick={() => setActiveTab('TABLES')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'TABLES'
-                ? 'bg-amber-500 text-slate-950 shadow-md font-black'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                ? 'bg-[#10B981] text-white shadow-sm font-black'
+                : 'text-slate-600 hover:text-[#0F172A] hover:bg-white'
             }`}
           >
             <LayoutGrid className="w-4 h-4" />
@@ -508,22 +508,22 @@ export default function AdminMenuPage() {
             onClick={() => setActiveTab('PRICE_CHANGES')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'PRICE_CHANGES'
-                ? 'bg-amber-500 text-slate-950 shadow-md font-black'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                ? 'bg-[#10B981] text-white shadow-sm font-black'
+                : 'text-slate-600 hover:text-[#0F172A] hover:bg-white'
             }`}
           >
-            <Tag className="w-4 h-4 text-amber-400" />
+            <Tag className="w-4 h-4 text-[#10B981]" />
             <span>Food Price Changes ({priceChangeLogs.length})</span>
           </button>
           <button
             onClick={() => setActiveTab('WAITER_CANCELS')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'WAITER_CANCELS'
-                ? 'bg-rose-500 text-white shadow-md font-black'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                ? 'bg-rose-600 text-white shadow-sm font-black'
+                : 'text-slate-600 hover:text-[#0F172A] hover:bg-white'
             }`}
           >
-            <Ban className="w-4 h-4 text-rose-400" />
+            <Ban className="w-4 h-4 text-rose-500" />
             <span>Waiter Cancellations ({waiterCancelLogs.length})</span>
           </button>
         </div>
@@ -534,7 +534,7 @@ export default function AdminMenuPage() {
         {activeTab === 'MENU' && (
           <div className="space-y-4">
             {/* Filter Controls */}
-            <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 p-3 bg-slate-900/60 border border-slate-800 rounded-2xl">
+            <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 p-3 bg-white border border-[#E2E8F0] rounded-2xl shadow-sm">
               {/* Categories Pills */}
               <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0">
                 <button
@@ -544,8 +544,8 @@ export default function AdminMenuPage() {
                   }}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                     selectedCategory === 'ALL' && pricingFilter === 'ALL'
-                      ? 'bg-amber-500 text-slate-950 shadow-md font-black'
-                      : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+                      ? 'bg-[#10B981] text-white shadow-sm font-black'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
                   }`}
                 >
                   All Categories
@@ -562,14 +562,14 @@ export default function AdminMenuPage() {
                       }}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                         isSelected
-                          ? 'bg-amber-500 text-slate-950 shadow-md font-black ring-2 ring-amber-400/40'
-                          : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+                          ? 'bg-[#10B981] text-white shadow-sm font-black'
+                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
                       }`}
                     >
                       <span>{cat.name}</span>
                       <span
                         className={`ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full ${
-                          isSelected ? 'bg-slate-950/20 text-slate-950 font-black' : 'bg-slate-900 text-slate-500'
+                          isSelected ? 'bg-black/20 text-white font-bold' : 'bg-white text-slate-600 border border-slate-200'
                         }`}
                       >
                         {count}
@@ -586,15 +586,15 @@ export default function AdminMenuPage() {
                   onClick={() => setPricingFilter(pricingFilter === 'MISSING_PRICE' ? 'ALL' : 'MISSING_PRICE')}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors flex items-center gap-1.5 cursor-pointer ${
                     pricingFilter === 'MISSING_PRICE'
-                      ? 'bg-rose-950 text-rose-300 border-rose-500'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                      ? 'bg-rose-50 text-rose-700 border-rose-300'
+                      : 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'
                   }`}
                   title="Filter products that are missing either AC or Non-AC prices"
                 >
                   <AlertCircle className="w-3.5 h-3.5" />
                   <span>Missing AC/Non-AC Price</span>
                   {missingPricingCount > 0 && (
-                    <span className="px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[10px] font-black">
+                    <span className="px-1.5 py-0.2 rounded-full bg-rose-600 text-white text-[10px] font-black">
                       {missingPricingCount}
                     </span>
                   )}
@@ -603,7 +603,7 @@ export default function AdminMenuPage() {
                 <select
                   value={availabilityFilter}
                   onChange={(e) => setAvailabilityFilter(e.target.value as typeof availabilityFilter)}
-                  className="px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-300 focus:outline-none focus:border-amber-500"
+                  className="px-3 py-1.5 bg-white border border-[#E2E8F0] rounded-xl text-xs text-slate-700 focus:outline-none focus:border-[#10B981]"
                 >
                   <option value="ALL">All Stock</option>
                   <option value="AVAILABLE">In Stock Only</option>
@@ -611,23 +611,23 @@ export default function AdminMenuPage() {
                 </select>
 
                 <div className="relative">
-                  <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5" />
+                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
                   <input
                     type="text"
                     placeholder="Search dish # or name..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-8 pr-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 w-48"
+                    className="pl-8 pr-3 py-1.5 bg-white border border-[#E2E8F0] rounded-xl text-xs text-[#0F172A] placeholder-slate-400 focus:outline-none focus:border-[#10B981] w-48"
                   />
                 </div>
               </div>
             </div>
 
             {/* Menu Items Table */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+            <div className="bg-white border border-[#E2E8F0] rounded-2xl overflow-hidden shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-950/80 text-slate-400 font-bold border-b border-slate-800 uppercase tracking-wider text-[10px]">
+                  <thead className="bg-slate-50 text-[#64748B] font-bold border-b border-[#E2E8F0] uppercase tracking-wider text-[10px]">
                     <tr>
                       <th className="p-3.5 w-12 text-center">Type</th>
                       <th className="p-3.5">Dish Details</th>
@@ -640,10 +640,10 @@ export default function AdminMenuPage() {
                       <th className="p-3.5 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/60">
+                  <tbody className="divide-y divide-slate-100">
                     {filteredMenuItems.length === 0 ? (
                       <tr>
-                        <td colSpan={9} className="text-center py-12 text-slate-500 text-xs">
+                        <td colSpan={9} className="text-center py-12 text-[#64748B] text-xs">
                           No menu items found for this selection.
                         </td>
                       </tr>
@@ -654,46 +654,46 @@ export default function AdminMenuPage() {
                         const acPrice = item.price_ac ?? item.ac_price ?? nonAcPrice;
 
                         return (
-                          <tr key={item.id} className="hover:bg-slate-800/30 transition-colors">
+                          <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
                             <td className="p-3.5 text-center">
                               <VegBadge isVeg={item.is_veg} />
                             </td>
                             <td className="p-3.5">
                               <div className="flex items-center gap-2">
-                                <span className="flex h-5 w-6 shrink-0 items-center justify-center rounded bg-slate-950 border border-slate-700/80 font-mono text-[10px] font-black text-amber-400">
+                                <span className="flex h-5 w-6 shrink-0 items-center justify-center rounded bg-slate-100 border border-slate-200 font-mono text-[10px] font-black text-[#0F172A]">
                                   #{item.item_number ?? getMenuItemNumber(item)}
                                 </span>
-                                <span className="font-bold text-white text-sm">{item.name}</span>
+                                <span className="font-bold text-[#0F172A] text-sm">{item.name}</span>
                               </div>
                               {item.description && (
-                                <p className="text-[11px] text-slate-400 line-clamp-1 mt-0.5">
+                                <p className="text-[11px] text-[#64748B] line-clamp-1 mt-0.5">
                                   {item.description}
                                 </p>
                               )}
                             </td>
-                            <td className="p-3.5 text-slate-300 font-medium">
+                            <td className="p-3.5 text-slate-700 font-medium">
                               {category?.name || 'General'}
                             </td>
                             <td className="p-3.5 text-right">
-                              <span className="font-black text-amber-400 text-sm">
+                              <span className="font-black text-[#0F172A] text-sm">
                                 ₹{nonAcPrice.toFixed(2)}
                               </span>
-                              <span className="block text-[10px] text-slate-500">Non-AC</span>
+                              <span className="block text-[10px] text-[#64748B]">Non-AC</span>
                             </td>
                             <td className="p-3.5 text-right">
-                              <span className="font-black text-cyan-400 text-sm">
+                              <span className="font-black text-cyan-700 text-sm">
                                 ₹{acPrice.toFixed(2)}
                               </span>
-                              <span className="block text-[10px] text-cyan-400/70">AC Dining</span>
+                              <span className="block text-[10px] text-cyan-600 font-medium">AC Dining</span>
                             </td>
                             <td className="p-3.5 text-center">
-                              <div className="flex items-center justify-center gap-0.5 text-rose-400">
+                              <div className="flex items-center justify-center gap-0.5 text-rose-500">
                                 {item.spicy_level > 0 ? (
                                   Array.from({ length: item.spicy_level }).map((_, i) => (
                                     <Flame key={i} className="w-3.5 h-3.5 fill-rose-500" />
                                   ))
                                 ) : (
-                                  <span className="text-[10px] text-slate-500">Mild</span>
+                                  <span className="text-[10px] text-slate-400">Mild</span>
                                 )}
                               </div>
                             </td>
@@ -702,18 +702,18 @@ export default function AdminMenuPage() {
                                 onClick={() => toggleItemAvailability(item.id)}
                                 className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
                                   item.is_available
-                                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/30'
-                                    : 'bg-rose-500/20 text-rose-400 border border-rose-500/40 hover:bg-rose-500/30'
+                                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
+                                    : 'bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100'
                                 }`}
                               >
                                 {item.is_available ? (
                                   <>
-                                    <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                                    <CheckCircle2 className="w-3 h-3 text-[#10B981]" />
                                     <span>In Stock</span>
                                   </>
                                 ) : (
                                   <>
-                                    <XCircle className="w-3 h-3 text-rose-400" />
+                                    <XCircle className="w-3 h-3 text-rose-600" />
                                     <span>Out of Stock</span>
                                   </>
                                 )}
@@ -723,8 +723,8 @@ export default function AdminMenuPage() {
                               <span
                                 className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
                                   (item.is_active ?? true)
-                                    ? 'bg-blue-500/15 text-blue-300 border border-blue-500/30'
-                                    : 'bg-slate-800 text-slate-500 border border-slate-700'
+                                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                    : 'bg-slate-100 text-slate-500 border border-slate-200'
                                 }`}
                               >
                                 {(item.is_active ?? true) ? 'Active' : 'Inactive'}
@@ -735,14 +735,14 @@ export default function AdminMenuPage() {
                                 <button
                                   onClick={() => openEditItemModal(item)}
                                   title="Edit Item & Pricing"
-                                  className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
+                                  className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-[#0F172A] transition-colors cursor-pointer border border-slate-200"
                                 >
                                   <Edit className="w-3.5 h-3.5" />
                                 </button>
                                 <button
                                   onClick={() => deleteMenuItem(item.id, 'admin')}
                                   title="Delete Item"
-                                  className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-400 transition-colors cursor-pointer"
+                                  className="p-1.5 rounded-lg bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer border border-slate-200"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </button>
@@ -765,28 +765,28 @@ export default function AdminMenuPage() {
         {activeTab === 'TABLES' && (
           <div className="space-y-4 animate-in fade-in">
             {tableActionMessage && (
-              <div className="p-3 bg-emerald-950/80 border border-emerald-700 text-emerald-300 rounded-xl text-xs font-semibold flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <div className="p-3 bg-emerald-50 border border-emerald-300 text-emerald-800 rounded-xl text-xs font-semibold flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-[#10B981]" />
                 <span>{tableActionMessage}</span>
               </div>
             )}
             {tableActionError && (
-              <div className="p-3 bg-rose-950/80 border border-rose-800 text-rose-300 text-xs rounded-xl flex items-center gap-2">
-                <ShieldAlert className="w-4 h-4 text-rose-400" />
+              <div className="p-3 bg-rose-50 border border-rose-300 text-rose-800 text-xs rounded-xl flex items-center gap-2">
+                <ShieldAlert className="w-4 h-4 text-rose-600" />
                 <span>{tableActionError}</span>
               </div>
             )}
 
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+            <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 space-y-4 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E2E8F0]">
                 <div>
-                  <h3 className="text-base font-bold text-white">Table Section Assignment & Pricing Mode</h3>
-                  <p className="text-xs text-slate-400">
+                  <h3 className="text-base font-bold text-[#0F172A]">Table Section Assignment & Pricing Mode</h3>
+                  <p className="text-xs text-[#64748B]">
                     Assign each table to AC or Non-AC. AC tables automatically bill at AC prices; Non-AC tables bill at Non-AC prices.
                   </p>
                 </div>
-                <div className="text-xs text-slate-400">
-                  <span className="font-semibold text-white">Active Protection:</span> Occupied tables cannot be reassigned until settled.
+                <div className="text-xs text-[#64748B]">
+                  <span className="font-semibold text-[#0F172A]">Active Protection:</span> Occupied tables cannot be reassigned until settled.
                 </div>
               </div>
 
@@ -802,42 +802,42 @@ export default function AdminMenuPage() {
                       key={table.id}
                       className={`p-4 rounded-2xl border transition-all ${
                         isFree
-                          ? 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
-                          : 'bg-slate-950/90 border-amber-800/40'
+                          ? 'bg-slate-50/70 border-slate-200 hover:border-slate-300'
+                          : 'bg-amber-50/40 border-amber-200'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2 mb-3">
                         <div className="flex items-center gap-2.5">
                           <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm ${
-                            isAc ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                            isAc ? 'bg-cyan-50 text-cyan-700 border border-cyan-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                           }`}>
                             T{table.table_number}
                           </div>
                           <div>
-                            <h4 className="font-bold text-white text-sm">{table.table_label}</h4>
-                            <span className="text-[11px] text-slate-400">Capacity: {table.capacity} guests</span>
+                            <h4 className="font-bold text-[#0F172A] text-sm">{table.table_label}</h4>
+                            <span className="text-[11px] text-[#64748B]">Capacity: {table.capacity} guests</span>
                           </div>
                         </div>
 
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-black border flex items-center gap-1 ${
                           isAc
-                            ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
-                            : 'bg-slate-800 text-slate-300 border-slate-700'
+                            ? 'bg-cyan-50 text-cyan-700 border-cyan-200'
+                            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                         }`}>
-                          {isAc ? <Snowflake className="w-3 h-3 text-cyan-400" /> : <Sun className="w-3 h-3 text-amber-400" />}
+                          {isAc ? <Snowflake className="w-3 h-3 text-cyan-600" /> : <Sun className="w-3 h-3 text-emerald-600" />}
                           {isAc ? 'AC PRICING' : 'NON-AC PRICING'}
                         </span>
                       </div>
 
-                      <div className="space-y-1.5 text-xs text-slate-300 bg-slate-900/80 p-2.5 rounded-xl border border-slate-800 mb-3">
+                      <div className="space-y-1.5 text-xs text-slate-700 bg-white p-2.5 rounded-xl border border-slate-200 mb-3 shadow-xs">
                         <div className="flex justify-between">
-                          <span className="text-slate-400">Current Section:</span>
-                          <span className="font-semibold text-white">{table.section}</span>
+                          <span className="text-[#64748B]">Current Section:</span>
+                          <span className="font-semibold text-[#0F172A]">{table.section}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-slate-400">Status:</span>
+                          <span className="text-[#64748B]">Status:</span>
                           <span className={`font-bold ${
-                            isFree ? 'text-emerald-400' : table.status === 'BILL_REQUESTED' ? 'text-purple-400' : 'text-amber-400'
+                            isFree ? 'text-[#10B981]' : table.status === 'BILL_REQUESTED' ? 'text-purple-600' : 'text-amber-600'
                           }`}>
                             {table.status} {table.current_customer_name ? `(${table.current_customer_name})` : ''}
                           </span>
@@ -849,8 +849,8 @@ export default function AdminMenuPage() {
                         disabled={!isFree}
                         className={`w-full py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                           isFree
-                            ? 'bg-slate-800 hover:bg-slate-700 text-white cursor-pointer'
-                            : 'bg-slate-900/50 text-slate-500 border border-slate-800/50 cursor-not-allowed'
+                            ? 'bg-white hover:bg-slate-100 text-[#0F172A] border border-slate-200 shadow-sm cursor-pointer'
+                            : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
                         }`}
                         title={!isFree ? 'Occupied table cannot be reassigned while order is active' : 'Configure table section and AC pricing mode'}
                       >
@@ -866,26 +866,20 @@ export default function AdminMenuPage() {
         )}
 
         {/* =========================================================================
-            TAB 3: AUDIT TRAIL & CANCELLATION LOG (IMMUTABLE - NO DELETIONS)
-        ========================================================================= */}
-        {/* =========================================================================
-            TAB 3: ACTIVITY & AUDIT LOG (MATCHING EXACT USER SCREENSHOT DESIGN)
-        ========================================================================= */}
-        {/* =========================================================================
             TAB 3: FOOD PRICE CHANGES INDIVIDUAL LOG (IMMUTABLE)
         ========================================================================= */}
         {activeTab === 'PRICE_CHANGES' && (
-          <div className="bg-white text-slate-900 rounded-2xl border border-slate-200 p-6 shadow-xl space-y-5 animate-in fade-in">
+          <div className="bg-white text-[#0F172A] rounded-2xl border border-[#E2E8F0] p-6 shadow-sm space-y-5 animate-in fade-in">
             {/* Header: Title, Subtitle, and Export / Reset buttons */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="p-1.5 rounded-lg bg-amber-500/10 text-amber-600 border border-amber-500/20">
-                    <Tag className="w-5 h-5 text-amber-600" />
+                  <span className="p-1.5 rounded-lg bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/25">
+                    <Tag className="w-5 h-5 text-[#10B981]" />
                   </span>
-                  <h2 className="text-xl font-bold text-slate-900">Food Price Changes & Rate Revisions Log</h2>
+                  <h2 className="text-xl font-bold text-[#0F172A]">Food Price Changes & Rate Revisions Log</h2>
                 </div>
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-[#64748B] mt-1">
                   Individual immutable ledger of all dish price modifications (Non-AC and AC rates). Deletions are permanently disabled.
                 </p>
               </div>
@@ -904,7 +898,7 @@ export default function AdminMenuPage() {
                 <button
                   type="button"
                   onClick={handleExportPriceChangesCSV}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-sm cursor-pointer transition"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-sm cursor-pointer transition"
                   title="Export price changes to CSV"
                 >
                   <Download className="w-3.5 h-3.5 text-slate-600" />
@@ -913,7 +907,7 @@ export default function AdminMenuPage() {
                 <button
                   type="button"
                   onClick={() => setPriceSearchQuery('')}
-                  className="inline-flex items-center px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-sm cursor-pointer transition"
+                  className="inline-flex items-center px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-sm cursor-pointer transition"
                   title="Reset search filter"
                 >
                   <span>Reset Search</span>
@@ -923,36 +917,36 @@ export default function AdminMenuPage() {
 
             {/* Filter Bar: Dedicated Search */}
             <div className="relative">
-              <Search className="w-4 h-4 text-amber-500 absolute left-3 top-2.5" />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
               <input
                 type="text"
                 placeholder="Search food item name, dish # (code), or admin name who changed price..."
                 value={priceSearchQuery}
                 onChange={(e) => setPriceSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-xl bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:border-amber-500 transition"
+                className="w-full pl-9 pr-3 py-2 text-xs border border-[#E2E8F0] rounded-xl bg-white text-[#0F172A] placeholder-slate-400 focus:outline-none focus:border-[#10B981] transition"
               />
             </div>
 
             {/* Status Sub-bar */}
-            <div className="flex flex-wrap items-center gap-6 text-xs text-slate-600 pt-1 border-t border-slate-100">
+            <div className="flex flex-wrap items-center gap-6 text-xs text-[#64748B] pt-1 border-t border-slate-100">
               <span>
-                Total Price Changes Recorded: <strong className="text-slate-900 font-bold">{priceChangeLogs.length}</strong>
+                Total Price Changes Recorded: <strong className="text-[#0F172A] font-bold">{priceChangeLogs.length}</strong>
               </span>
               <span>
-                Filtered Results: <strong className="text-slate-900 font-bold">{filteredPriceChanges.length}</strong>
+                Filtered Results: <strong className="text-[#0F172A] font-bold">{filteredPriceChanges.length}</strong>
               </span>
               <div className="flex items-center gap-2">
                 <span>System Policy:</span>
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold border border-emerald-200">
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[11px] font-bold border border-emerald-200">
                   Append-Only / Immutable
                 </span>
               </div>
             </div>
 
             {/* Dedicated Food Price Changes Table */}
-            <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+            <div className="overflow-x-auto rounded-xl border border-[#E2E8F0] bg-white">
               <table className="w-full text-left border-collapse min-w-[1050px] text-xs">
-                <thead className="bg-slate-50 text-[11px] font-bold text-slate-600 uppercase border-b border-slate-200">
+                <thead className="bg-slate-50 text-[11px] font-bold text-[#64748B] uppercase border-b border-[#E2E8F0]">
                   <tr>
                     <th className="px-4 py-3.5 font-bold whitespace-nowrap">DATE</th>
                     <th className="px-4 py-3.5 font-bold whitespace-nowrap">EXACT TIME</th>
@@ -971,7 +965,7 @@ export default function AdminMenuPage() {
                 <tbody className="divide-y divide-slate-100">
                   {filteredPriceChanges.length === 0 ? (
                     <tr>
-                      <td colSpan={12} className="px-4 py-12 text-center text-slate-500">
+                      <td colSpan={12} className="px-4 py-12 text-center text-[#64748B]">
                         No food price changes recorded yet.
                       </td>
                     </tr>
@@ -984,12 +978,12 @@ export default function AdminMenuPage() {
                       return (
                         <tr key={entry.id} className="hover:bg-slate-50/80 transition-colors">
                           <td className="px-4 py-3.5 font-mono text-slate-700 whitespace-nowrap">{dateStr}</td>
-                          <td className="px-4 py-3.5 font-mono text-slate-500 whitespace-nowrap">{timeStr}</td>
-                          <td className="px-4 py-3.5 font-mono font-bold text-amber-700 whitespace-nowrap">
+                          <td className="px-4 py-3.5 font-mono text-[#64748B] whitespace-nowrap">{timeStr}</td>
+                          <td className="px-4 py-3.5 font-mono font-bold text-[#0F172A] whitespace-nowrap">
                             #{entry.item_number ?? 'Auto'}
                           </td>
-                          <td className="px-4 py-3.5 font-bold text-slate-900">{entry.item_name}</td>
-                          <td className="px-4 py-3.5 font-bold text-slate-900 whitespace-nowrap">
+                          <td className="px-4 py-3.5 font-bold text-[#0F172A]">{entry.item_name}</td>
+                          <td className="px-4 py-3.5 font-bold text-[#0F172A] whitespace-nowrap">
                             {entry.changed_by_name || 'Admin'}
                           </td>
                           <td className="px-4 py-3.5 whitespace-nowrap">
@@ -998,33 +992,33 @@ export default function AdminMenuPage() {
                             </span>
                           </td>
                           <td className="px-4 py-3.5 whitespace-nowrap">
-                            <span className="px-2 py-0.5 rounded-md bg-rose-100/80 text-rose-800 text-[11px] font-mono border border-rose-200/60 line-through">
+                            <span className="px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 text-[11px] font-mono border border-rose-200 line-through">
                               ₹{entry.old_price_non_ac.toFixed(2)}
                             </span>
                           </td>
                           <td className="px-4 py-3.5 whitespace-nowrap">
-                            <span className="px-2 py-0.5 rounded-md bg-emerald-100/90 text-emerald-800 text-[11px] font-mono font-bold border border-emerald-200/80">
+                            <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 text-[11px] font-mono font-bold border border-emerald-200">
                               ₹{entry.new_price_non_ac.toFixed(2)}
                             </span>
                           </td>
                           <td className="px-4 py-3.5 whitespace-nowrap">
-                            <span className="px-2 py-0.5 rounded-md bg-rose-100/80 text-rose-800 text-[11px] font-mono border border-rose-200/60 line-through">
+                            <span className="px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 text-[11px] font-mono border border-rose-200 line-through">
                               ₹{entry.old_price_ac.toFixed(2)}
                             </span>
                           </td>
                           <td className="px-4 py-3.5 whitespace-nowrap">
-                            <span className="px-2 py-0.5 rounded-md bg-emerald-100/90 text-emerald-800 text-[11px] font-mono font-bold border border-emerald-200/80">
+                            <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 text-[11px] font-mono font-bold border border-emerald-200">
                               ₹{entry.new_price_ac.toFixed(2)}
                             </span>
                           </td>
                           <td className="px-4 py-3.5 whitespace-nowrap">
-                            <span className="px-2 py-0.5 rounded-md text-[11px] font-mono font-bold bg-slate-100 text-slate-800 border border-slate-200">
+                            <span className="px-2 py-0.5 rounded-md text-[11px] font-mono font-bold bg-slate-100 text-[#0F172A] border border-slate-200">
                               {nonAcDiff >= 0 ? `+₹${nonAcDiff.toFixed(2)}` : `-₹${Math.abs(nonAcDiff).toFixed(2)}`} / {acDiff >= 0 ? `+₹${acDiff.toFixed(2)}` : `-₹${Math.abs(acDiff).toFixed(2)}`}
                             </span>
                           </td>
                           <td className="px-4 py-3.5 whitespace-nowrap">
                             <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                              <Lock className="w-3 h-3 text-emerald-600" />
+                              <Lock className="w-3 h-3 text-[#10B981]" />
                               <span>Non-Deletable</span>
                             </span>
                           </td>
@@ -1042,17 +1036,17 @@ export default function AdminMenuPage() {
             TAB 4: WAITER ORDER CANCELLATIONS INDIVIDUAL LOG (IMMUTABLE)
         ========================================================================= */}
         {activeTab === 'WAITER_CANCELS' && (
-          <div className="bg-white text-slate-900 rounded-2xl border border-slate-200 p-6 shadow-xl space-y-5 animate-in fade-in">
+          <div className="bg-white text-[#0F172A] rounded-2xl border border-[#E2E8F0] p-6 shadow-sm space-y-5 animate-in fade-in">
             {/* Header: Title, Subtitle, and Export / Reset buttons */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="p-1.5 rounded-lg bg-rose-500/10 text-rose-600 border border-rose-500/20">
+                  <span className="p-1.5 rounded-lg bg-rose-50 text-rose-600 border border-rose-200">
                     <Ban className="w-5 h-5 text-rose-600" />
                   </span>
-                  <h2 className="text-xl font-bold text-slate-900">Waiter Order Cancellations & Voided Items Log</h2>
+                  <h2 className="text-xl font-bold text-[#0F172A]">Waiter Order Cancellations & Voided Items Log</h2>
                 </div>
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-[#64748B] mt-1">
                   Individual immutable ledger of every item cancelled from tables by floor waiters. Deletions are permanently disabled.
                 </p>
               </div>
@@ -1061,17 +1055,17 @@ export default function AdminMenuPage() {
                 <button
                   type="button"
                   onClick={() => setActiveTab('PRICE_CHANGES')}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-200 bg-amber-50 hover:bg-amber-100 text-xs font-bold text-amber-700 shadow-sm cursor-pointer transition"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-bold text-slate-700 shadow-sm cursor-pointer transition"
                   title="Switch to Food Price Changes"
                 >
-                  <Tag className="w-3.5 h-3.5 text-amber-600" />
+                  <Tag className="w-3.5 h-3.5 text-[#10B981]" />
                   <span>Switch to Price Changes ({priceChangeLogs.length})</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
                 <button
                   type="button"
                   onClick={handleExportWaiterCancelsCSV}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-sm cursor-pointer transition"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-sm cursor-pointer transition"
                   title="Export cancellations to CSV"
                 >
                   <Download className="w-3.5 h-3.5 text-slate-600" />
@@ -1083,7 +1077,7 @@ export default function AdminMenuPage() {
                     setCancelSearchQuery('');
                     setCancelReasonFilter('ALL');
                   }}
-                  className="inline-flex items-center px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-sm cursor-pointer transition"
+                  className="inline-flex items-center px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-sm cursor-pointer transition"
                   title="Reset cancel filters"
                 >
                   <span>Reset Filters</span>
@@ -1094,20 +1088,20 @@ export default function AdminMenuPage() {
             {/* Filter Bar: Dedicated Search + Reason Filter */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="relative md:col-span-2">
-                <Search className="w-4 h-4 text-rose-500 absolute left-3 top-2.5" />
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                 <input
                   type="text"
                   placeholder="Search waiter name, table #, order #, dish name, or cancel reason..."
                   value={cancelSearchQuery}
                   onChange={(e) => setCancelSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-xl bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:border-rose-500 transition"
+                  className="w-full pl-9 pr-3 py-2 text-xs border border-[#E2E8F0] rounded-xl bg-white text-[#0F172A] placeholder-slate-400 focus:outline-none focus:border-[#10B981] transition"
                 />
               </div>
 
               <select
                 value={cancelReasonFilter}
                 onChange={(e) => setCancelReasonFilter(e.target.value)}
-                className="px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white text-slate-700 focus:outline-none focus:border-rose-500 cursor-pointer transition"
+                className="px-3 py-2 text-xs border border-[#E2E8F0] rounded-xl bg-white text-slate-700 focus:outline-none focus:border-[#10B981] cursor-pointer transition"
               >
                 <option value="ALL">All Cancellation Reasons</option>
                 <option value="changed mind">Customer Changed Mind</option>
@@ -1118,28 +1112,28 @@ export default function AdminMenuPage() {
             </div>
 
             {/* Status Sub-bar with Voided Sales Amount */}
-            <div className="flex flex-wrap items-center gap-6 text-xs text-slate-600 pt-1 border-t border-slate-100">
+            <div className="flex flex-wrap items-center gap-6 text-xs text-[#64748B] pt-1 border-t border-slate-100">
               <span>
-                Total Cancellations Recorded: <strong className="text-slate-900 font-bold">{waiterCancelLogs.length}</strong>
+                Total Cancellations Recorded: <strong className="text-[#0F172A] font-bold">{waiterCancelLogs.length}</strong>
               </span>
               <span>
-                Filtered Results: <strong className="text-slate-900 font-bold">{filteredWaiterCancels.length}</strong>
+                Filtered Results: <strong className="text-[#0F172A] font-bold">{filteredWaiterCancels.length}</strong>
               </span>
               <span>
                 Total Voided Amount: <strong className="text-rose-600 font-bold">₹{totalVoidAmount.toFixed(2)}</strong>
               </span>
               <div className="flex items-center gap-2">
                 <span>System Policy:</span>
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold border border-emerald-200">
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[11px] font-bold border border-emerald-200">
                   Append-Only / Immutable
                 </span>
               </div>
             </div>
 
             {/* Dedicated Waiter Cancellations Table */}
-            <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+            <div className="overflow-x-auto rounded-xl border border-[#E2E8F0] bg-white">
               <table className="w-full text-left border-collapse min-w-[1100px] text-xs">
-                <thead className="bg-slate-50 text-[11px] font-bold text-slate-600 uppercase border-b border-slate-200">
+                <thead className="bg-slate-50 text-[11px] font-bold text-[#64748B] uppercase border-b border-[#E2E8F0]">
                   <tr>
                     <th className="px-4 py-3.5 font-bold whitespace-nowrap">DATE</th>
                     <th className="px-4 py-3.5 font-bold whitespace-nowrap">EXACT TIME</th>
@@ -1158,7 +1152,7 @@ export default function AdminMenuPage() {
                 <tbody className="divide-y divide-slate-100">
                   {filteredWaiterCancels.length === 0 ? (
                     <tr>
-                      <td colSpan={12} className="px-4 py-12 text-center text-slate-500">
+                      <td colSpan={12} className="px-4 py-12 text-center text-[#64748B]">
                         No waiter cancellations recorded yet.
                       </td>
                     </tr>
@@ -1169,9 +1163,9 @@ export default function AdminMenuPage() {
                       return (
                         <tr key={entry.id} className="hover:bg-slate-50/80 transition-colors">
                           <td className="px-4 py-3.5 font-mono text-slate-700 whitespace-nowrap">{dateStr}</td>
-                          <td className="px-4 py-3.5 font-mono text-slate-500 whitespace-nowrap">{timeStr}</td>
+                          <td className="px-4 py-3.5 font-mono text-[#64748B] whitespace-nowrap">{timeStr}</td>
                           <td className="px-4 py-3.5 whitespace-nowrap">
-                            <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-900 font-bold border border-slate-200">
+                            <span className="px-2 py-0.5 rounded-md bg-slate-100 text-[#0F172A] font-bold border border-slate-200">
                               Table {entry.table_number ?? 'N/A'}
                             </span>
                           </td>
@@ -1181,11 +1175,11 @@ export default function AdminMenuPage() {
                           <td className="px-4 py-3.5 text-slate-700 whitespace-nowrap">
                             {entry.customer_name || 'Walk-in'}
                           </td>
-                          <td className="px-4 py-3.5 font-bold text-slate-900">
-                            {entry.item_name} {entry.item_number !== undefined && <span className="font-mono text-amber-600 font-normal">#{entry.item_number}</span>}
+                          <td className="px-4 py-3.5 font-bold text-[#0F172A]">
+                            {entry.item_name} {entry.item_number !== undefined && <span className="font-mono text-[#10B981] font-normal">#{entry.item_number}</span>}
                           </td>
                           <td className="px-4 py-3.5 whitespace-nowrap">
-                            <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[11px] font-bold border border-rose-200">
+                            <span className="px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 text-[11px] font-bold border border-rose-200">
                               {entry.quantity}x
                             </span>
                           </td>
@@ -1193,7 +1187,7 @@ export default function AdminMenuPage() {
                             ₹{entry.unit_price.toFixed(2)}
                           </td>
                           <td className="px-4 py-3.5 whitespace-nowrap">
-                            <span className="px-2 py-0.5 rounded-md bg-rose-100 text-rose-800 text-[11px] font-mono font-bold border border-rose-300">
+                            <span className="px-2 py-0.5 rounded-md bg-rose-50 text-rose-800 text-[11px] font-mono font-bold border border-rose-200">
                               ₹{entry.total_void_amount.toFixed(2)}
                             </span>
                           </td>
@@ -1202,12 +1196,12 @@ export default function AdminMenuPage() {
                               "{entry.cancel_reason}"
                             </span>
                           </td>
-                          <td className="px-4 py-3.5 font-bold text-slate-900 whitespace-nowrap">
-                            {entry.cancelled_by_name} <span className="text-[10px] text-slate-500 font-normal capitalize">({entry.cancelled_by_role})</span>
+                          <td className="px-4 py-3.5 font-bold text-[#0F172A] whitespace-nowrap">
+                            {entry.cancelled_by_name} <span className="text-[10px] text-[#64748B] font-normal capitalize">({entry.cancelled_by_role})</span>
                           </td>
                           <td className="px-4 py-3.5 whitespace-nowrap">
                             <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                              <Lock className="w-3 h-3 text-emerald-600" />
+                              <Lock className="w-3 h-3 text-[#10B981]" />
                               <span>Non-Deletable</span>
                             </span>
                           </td>
@@ -1226,23 +1220,23 @@ export default function AdminMenuPage() {
           MODAL: ADD / EDIT PRODUCT & DUAL PRICING
       ========================================================================= */}
       {showItemModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h3 className="font-bold text-white text-base">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white border border-[#E2E8F0] rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 text-[#0F172A]">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0]">
+              <h3 className="font-bold text-[#0F172A] text-base">
                 {editingItem ? 'Edit Product & Pricing' : 'Add New Product'}
               </h3>
               <button
                 onClick={() => setShowItemModal(false)}
-                className="p-1 rounded text-slate-400 hover:text-white"
+                className="p-1 rounded text-slate-400 hover:text-slate-700 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {formError && (
-              <div className="p-3 bg-rose-950/80 border border-rose-800 text-rose-300 text-xs rounded-xl flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
                 <span>{formError}</span>
               </div>
             )}
@@ -1250,39 +1244,39 @@ export default function AdminMenuPage() {
             <form onSubmit={handleSaveItem} className="space-y-3.5 text-xs">
               <div className="grid grid-cols-3 gap-3">
                 <div className="col-span-1">
-                  <label className="block font-semibold text-slate-300 mb-1">Dish # (Code)</label>
+                  <label className="block font-semibold text-slate-700 mb-1">Dish # (Code)</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-2 text-amber-400 font-mono font-bold text-xs">#</span>
+                    <span className="absolute left-3 top-2 text-[#10B981] font-mono font-bold text-xs">#</span>
                     <input
                       type="number"
                       min="1"
                       placeholder="Auto"
                       value={itemNumber}
                       onChange={(e) => setItemNumber(e.target.value)}
-                      className="w-full pl-7 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white font-mono text-sm focus:outline-none focus:border-amber-500"
+                      className="w-full pl-7 pr-3 py-2 bg-white border border-[#E2E8F0] rounded-xl text-[#0F172A] font-mono text-sm focus:outline-none focus:border-[#10B981]"
                     />
                   </div>
-                  <p className="mt-1 text-[10px] text-slate-500">For fast billing</p>
+                  <p className="mt-1 text-[10px] text-[#64748B]">For fast billing</p>
                 </div>
                 <div className="col-span-2">
-                  <label className="block font-semibold text-slate-300 mb-1">Product Name *</label>
+                  <label className="block font-semibold text-slate-700 mb-1">Product Name *</label>
                   <input
                     type="text"
                     required
                     placeholder="e.g. Chicken Biryani / Malabar Parotta"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                    className="w-full px-3 py-2 bg-white border border-[#E2E8F0] rounded-xl text-[#0F172A] focus:outline-none focus:border-[#10B981]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-300 mb-1">Category *</label>
+                <label className="block font-semibold text-slate-700 mb-1">Category *</label>
                 <select
                   value={categoryId}
                   onChange={(e) => setCategoryId(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                  className="w-full px-3 py-2 bg-white border border-[#E2E8F0] rounded-xl text-[#0F172A] focus:outline-none focus:border-[#10B981]"
                 >
                   {state.categories.map((c) => (
                     <option key={c.id} value={c.id}>
@@ -1293,10 +1287,10 @@ export default function AdminMenuPage() {
               </div>
 
               {/* DUAL PRICING CONTROLS */}
-              <div className="grid grid-cols-2 gap-3 p-3 bg-slate-950/80 border border-slate-800 rounded-xl">
+              <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
                 <div>
-                  <label className="block font-bold text-amber-400 mb-1 flex items-center gap-1">
-                    <Sun className="w-3.5 h-3.5 text-amber-400" />
+                  <label className="block font-bold text-[#0F172A] mb-1 flex items-center gap-1">
+                    <Sun className="w-3.5 h-3.5 text-[#10B981]" />
                     <span>Non-AC Price (₹) *</span>
                   </label>
                   <input
@@ -1307,14 +1301,14 @@ export default function AdminMenuPage() {
                     placeholder="e.g. 200.00"
                     value={priceNonAc}
                     onChange={(e) => setPriceNonAc(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-black text-sm focus:outline-none focus:border-amber-500"
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-[#0F172A] font-black text-sm focus:outline-none focus:border-[#10B981]"
                   />
-                  <p className="mt-1 text-[10px] text-slate-500">Standard & Non-AC tables</p>
+                  <p className="mt-1 text-[10px] text-[#64748B]">Standard & Non-AC tables</p>
                 </div>
 
                 <div>
-                  <label className="block font-bold text-cyan-400 mb-1 flex items-center gap-1">
-                    <Snowflake className="w-3.5 h-3.5 text-cyan-400" />
+                  <label className="block font-bold text-cyan-800 mb-1 flex items-center gap-1">
+                    <Snowflake className="w-3.5 h-3.5 text-cyan-600" />
                     <span>AC Price (₹) *</span>
                   </label>
                   <input
@@ -1325,23 +1319,23 @@ export default function AdminMenuPage() {
                     placeholder="e.g. 220.00"
                     value={priceAc}
                     onChange={(e) => setPriceAc(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-900 border border-cyan-800/80 rounded-xl text-cyan-300 font-black text-sm focus:outline-none focus:border-cyan-400"
+                    className="w-full px-3 py-2 bg-white border border-cyan-200 rounded-xl text-cyan-900 font-black text-sm focus:outline-none focus:border-cyan-500"
                   />
-                  <p className="mt-1 text-[10px] text-slate-500">AC Hall & AC section tables</p>
+                  <p className="mt-1 text-[10px] text-[#64748B]">AC Hall & AC section tables</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-300 mb-1">Dietary Type</label>
+                  <label className="block font-semibold text-slate-700 mb-1">Dietary Type</label>
                   <div className="flex gap-2">
                     <button
                       type="button"
                       onClick={() => setIsVeg(true)}
                       className={`flex-1 py-2 rounded-xl font-bold border transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${
                         isVeg
-                          ? 'bg-emerald-950 border-emerald-500 text-emerald-300'
-                          : 'bg-slate-950 border-slate-800 text-slate-400'
+                          ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                          : 'bg-white border-slate-200 text-slate-600'
                       }`}
                     >
                       <VegBadge isVeg={true} />
@@ -1352,8 +1346,8 @@ export default function AdminMenuPage() {
                       onClick={() => setIsVeg(false)}
                       className={`flex-1 py-2 rounded-xl font-bold border transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${
                         !isVeg
-                          ? 'bg-rose-950 border-rose-500 text-rose-300'
-                          : 'bg-slate-950 border-slate-800 text-slate-400'
+                          ? 'bg-rose-50 border-rose-300 text-rose-800'
+                          : 'bg-white border-slate-200 text-slate-600'
                       }`}
                     >
                       <VegBadge isVeg={false} />
@@ -1363,11 +1357,11 @@ export default function AdminMenuPage() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-300 mb-1">Spice Level</label>
+                  <label className="block font-semibold text-slate-700 mb-1">Spice Level</label>
                   <select
                     value={spicyLevel}
                     onChange={(e) => setSpicyLevel(parseInt(e.target.value))}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                    className="w-full px-3 py-2 bg-white border border-[#E2E8F0] rounded-xl text-[#0F172A] focus:outline-none focus:border-[#10B981]"
                   >
                     <option value="0">0 - None / Sweet</option>
                     <option value="1">1 - Mild</option>
@@ -1380,30 +1374,30 @@ export default function AdminMenuPage() {
               {/* Status & Availability Toggles */}
               <div className="grid grid-cols-2 gap-3 pt-1">
                 <div>
-                  <label className="block font-semibold text-slate-300 mb-1">Stock Availability</label>
+                  <label className="block font-semibold text-slate-700 mb-1">Stock Availability</label>
                   <button
                     type="button"
                     onClick={() => setIsAvailable(!isAvailable)}
                     className={`w-full py-2 px-3 rounded-xl font-bold border text-xs flex items-center justify-center gap-2 cursor-pointer ${
                       isAvailable
-                        ? 'bg-emerald-950/60 border-emerald-600 text-emerald-300'
-                        : 'bg-rose-950/60 border-rose-600 text-rose-300'
+                        ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                        : 'bg-rose-50 border-rose-300 text-rose-800'
                     }`}
                   >
-                    {isAvailable ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <XCircle className="w-4 h-4 text-rose-400" />}
+                    {isAvailable ? <CheckCircle2 className="w-4 h-4 text-[#10B981]" /> : <XCircle className="w-4 h-4 text-rose-600" />}
                     <span>{isAvailable ? 'In Stock' : 'Out of Stock'}</span>
                   </button>
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-300 mb-1">Catalog Status</label>
+                  <label className="block font-semibold text-slate-700 mb-1">Catalog Status</label>
                   <button
                     type="button"
                     onClick={() => setIsActive(!isActive)}
                     className={`w-full py-2 px-3 rounded-xl font-bold border text-xs flex items-center justify-center gap-2 cursor-pointer ${
                       isActive
-                        ? 'bg-blue-950/60 border-blue-600 text-blue-300'
-                        : 'bg-slate-950 border-slate-800 text-slate-400'
+                        ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                        : 'bg-slate-100 border-slate-200 text-slate-600'
                     }`}
                   >
                     <span>{isActive ? 'Active (Visible)' : 'Inactive (Hidden)'}</span>
@@ -1412,27 +1406,27 @@ export default function AdminMenuPage() {
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-300 mb-1">Description (optional)</label>
+                <label className="block font-semibold text-slate-700 mb-1">Description (optional)</label>
                 <textarea
                   rows={2}
                   placeholder="Ingredients and culinary notes..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                  className="w-full px-3 py-2 bg-white border border-[#E2E8F0] rounded-xl text-[#0F172A] focus:outline-none focus:border-[#10B981]"
                 />
               </div>
 
-              <div className="pt-3 border-t border-slate-800 flex justify-end gap-2">
+              <div className="pt-3 border-t border-[#E2E8F0] flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setShowItemModal(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold cursor-pointer border border-slate-200"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-white font-bold transition-colors cursor-pointer shadow-sm"
                 >
                   {editingItem ? 'Save Pricing & Details' : 'Create Product'}
                 </button>
@@ -1446,21 +1440,21 @@ export default function AdminMenuPage() {
           MODAL: EDIT TABLE SECTION & AC PRICING ASSIGNMENT
       ========================================================================= */}
       {editingTable && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white border border-[#E2E8F0] rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 text-[#0F172A]">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0]">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-black">
+                <div className="w-8 h-8 rounded-lg bg-[#10B981]/15 text-[#10B981] flex items-center justify-center font-black">
                   T{editingTable.table_number}
                 </div>
                 <div>
-                  <h3 className="font-bold text-white text-sm">Configure Table {editingTable.table_number}</h3>
-                  <p className="text-[11px] text-slate-400">Assign Section & AC / Non-AC Pricing</p>
+                  <h3 className="font-bold text-[#0F172A] text-sm">Configure Table {editingTable.table_number}</h3>
+                  <p className="text-[11px] text-[#64748B]">Assign Section & AC / Non-AC Pricing</p>
                 </div>
               </div>
               <button
                 onClick={() => setEditingTable(null)}
-                className="p-1 rounded text-slate-400 hover:text-white"
+                className="p-1 rounded text-slate-400 hover:text-slate-700 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1468,32 +1462,32 @@ export default function AdminMenuPage() {
 
             <form onSubmit={handleSaveTableSection} className="space-y-4 text-xs">
               <div>
-                <label className="block font-semibold text-slate-300 mb-1">Section Name:</label>
+                <label className="block font-semibold text-slate-700 mb-1">Section Name:</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. AC Family Hall / Main Dining / Garden Terrace"
                   value={tableSectionName}
                   onChange={(e) => setTableSectionName(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                  className="w-full px-3 py-2 bg-white border border-[#E2E8F0] rounded-xl text-[#0F172A] focus:outline-none focus:border-[#10B981]"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-300 mb-1">Pricing Section Mode:</label>
+                <label className="block font-semibold text-slate-700 mb-1">Pricing Section Mode:</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setTablePricingSection('NON_AC')}
                     className={`py-3 px-3 rounded-xl border font-bold text-xs flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
                       tablePricingSection === 'NON_AC'
-                        ? 'bg-amber-950/60 border-amber-500 text-amber-300 ring-2 ring-amber-500/30'
-                        : 'bg-slate-950 border-slate-800 text-slate-400'
+                        ? 'bg-emerald-50 border-[#10B981] text-emerald-900 ring-2 ring-emerald-500/20'
+                        : 'bg-slate-50 border-slate-200 text-slate-600'
                     }`}
                   >
-                    <Sun className="w-4 h-4 text-amber-400" />
+                    <Sun className="w-4 h-4 text-emerald-600" />
                     <span>Non-AC Pricing</span>
-                    <span className="text-[10px] text-slate-400 font-normal">Normal dish rates</span>
+                    <span className="text-[10px] text-[#64748B] font-normal">Normal dish rates</span>
                   </button>
 
                   <button
@@ -1501,37 +1495,37 @@ export default function AdminMenuPage() {
                     onClick={() => setTablePricingSection('AC')}
                     className={`py-3 px-3 rounded-xl border font-bold text-xs flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
                       tablePricingSection === 'AC'
-                        ? 'bg-cyan-950/60 border-cyan-500 text-cyan-300 ring-2 ring-cyan-500/30'
-                        : 'bg-slate-950 border-slate-800 text-slate-400'
+                        ? 'bg-cyan-50 border-cyan-500 text-cyan-900 ring-2 ring-cyan-500/20'
+                        : 'bg-slate-50 border-slate-200 text-slate-600'
                     }`}
                   >
-                    <Snowflake className="w-4 h-4 text-cyan-400" />
+                    <Snowflake className="w-4 h-4 text-cyan-600" />
                     <span>AC Pricing</span>
-                    <span className="text-[10px] text-slate-400 font-normal">AC section rates</span>
+                    <span className="text-[10px] text-[#64748B] font-normal">AC section rates</span>
                   </button>
                 </div>
               </div>
 
-              <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl text-[11px] text-slate-400">
-                <span className="text-white font-bold block mb-0.5">Automated Waiter & Cashier Sync</span>
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-[11px] text-[#64748B]">
+                <span className="text-[#0F172A] font-bold block mb-0.5">Automated Waiter & Cashier Sync</span>
                 When a waiter seats guests at Table {editingTable.table_number}, the system will automatically charge the{' '}
-                <strong className={tablePricingSection === 'AC' ? 'text-cyan-400' : 'text-amber-400'}>
+                <strong className={tablePricingSection === 'AC' ? 'text-cyan-700' : 'text-[#10B981]'}>
                   {tablePricingSection}
                 </strong>{' '}
                 rates. Waiters cannot accidentally choose conflicting pricing modes.
               </div>
 
-              <div className="pt-3 border-t border-slate-800 flex justify-end gap-2">
+              <div className="pt-3 border-t border-[#E2E8F0] flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setEditingTable(null)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold cursor-pointer border border-slate-200"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-white font-bold transition-colors cursor-pointer shadow-sm"
                 >
                   Save Section Assignment
                 </button>
@@ -1545,13 +1539,13 @@ export default function AdminMenuPage() {
           MODAL: ADD CATEGORY
       ========================================================================= */}
       {showCategoryModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-              <h3 className="font-bold text-white text-sm">Add New Menu Category</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white border border-[#E2E8F0] rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4 text-[#0F172A]">
+            <div className="flex items-center justify-between pb-2 border-b border-[#E2E8F0]">
+              <h3 className="font-bold text-[#0F172A] text-sm">Add New Menu Category</h3>
               <button
                 onClick={() => setShowCategoryModal(false)}
-                className="p-1 rounded text-slate-400 hover:text-white"
+                className="p-1 rounded text-slate-400 hover:text-slate-700 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1559,28 +1553,28 @@ export default function AdminMenuPage() {
 
             <form onSubmit={handleSaveCategory} className="space-y-3 text-xs">
               <div>
-                <label className="block font-semibold text-slate-300 mb-1">Category Name:</label>
+                <label className="block font-semibold text-slate-700 mb-1">Category Name:</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Seafood Delights"
                   value={newCategoryName}
                   onChange={(e) => setNewCategoryName(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                  className="w-full px-3 py-2 bg-white border border-[#E2E8F0] rounded-xl text-[#0F172A] focus:outline-none focus:border-[#10B981]"
                 />
               </div>
 
-              <div className="pt-3 border-t border-slate-800 flex justify-end gap-2">
+              <div className="pt-3 border-t border-[#E2E8F0] flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setShowCategoryModal(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold cursor-pointer border border-slate-200"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-white font-bold transition-colors cursor-pointer shadow-sm"
                 >
                   Add Category
                 </button>

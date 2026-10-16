@@ -1,38 +1,47 @@
 @import "tailwindcss";
 
-@theme {
-  --color-slate-950: #15191c;
-  --color-slate-900: #1d2327;
-  --color-slate-800: #273035;
-  --color-slate-700: #39454a;
-  --color-slate-600: #526166;
-  --color-slate-500: #748186;
-  --color-slate-400: #a0abad;
-  --color-slate-300: #c5cecc;
-  --color-slate-200: #dce3df;
-  --color-slate-100: #f1f4ef;
-  --color-amber-300: #e9ca91;
-  --color-amber-400: #dfbb79;
-  --color-amber-500: #c99c58;
-  --color-amber-600: #a87c43;
-  --color-amber-700: #765a35;
+:root {
+  color-scheme: light;
+  --primary-sidebar: #0F172A;
+  --primary-accent: #10B981;
+  --primary-accent-hover: #059669;
+  --main-bg: #F1F5F9;
+  --card-bg: #FFFFFF;
+  --text-primary: #0F172A;
+  --text-secondary: #64748B;
+  --border-color: #E2E8F0;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+  --input-bg: #FFFFFF;
 }
 
-:root {
-  color-scheme: dark;
-  --background: #15191c;
-  --foreground: #f1f4ef;
+@theme {
+  --color-primary-sidebar: #0F172A;
+  --color-primary-accent: #10B981;
+  --color-primary-accent-hover: #059669;
+  --color-main-bg: #F1F5F9;
+  --color-card-bg: #FFFFFF;
+  --color-text-primary: #0F172A;
+  --color-text-secondary: #64748B;
+  --color-border-color: #E2E8F0;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+  --color-input-bg: #FFFFFF;
 }
 
 body {
-  background:
-    radial-gradient(ellipse at 50% -20%, rgba(201, 156, 88, .11), transparent 55%),
-    #15191c;
-  color: #f1f4ef;
+  background-color: #F1F5F9;
+  color: #0F172A;
   min-height: 100vh;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
-::selection { background: #c99c58; color: #15191c; }
+::selection {
+  background: #10B981;
+  color: #FFFFFF;
+}
 
 @keyframes pulse-slow {
   0%, 100% { opacity: 1; transform: scale(1); }
@@ -40,7 +49,7 @@ body {
 }
 .animate-pulse-slow { animation: pulse-slow 3s ease-in-out infinite; }
 
-/* Keep printed POS receipts clean and legible. */
+/* Keep printed POS receipts clean, high-contrast, and legible. */
 @media print {
   body * { visibility: hidden; }
   .print\:m-0, .print\:m-0 * { visibility: visible; }
@@ -50,9 +59,11 @@ body {
   }
 }
 
-::-webkit-scrollbar { width: 7px; height: 7px; }
-::-webkit-scrollbar-track { background: #1d2327; }
-::-webkit-scrollbar-thumb { background: #526166; border-radius: 99px; }
-::-webkit-scrollbar-thumb:hover { background: #c99c58; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #F1F5F9; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
 
-input, select, textarea { color-scheme: dark; }
+input, select, textarea {
+  color-scheme: light;
+}

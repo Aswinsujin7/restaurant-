@@ -49,7 +49,7 @@ export function RoleSwitcher() {
   ];
 
   return (
-    <div className="flex items-center gap-1.5 p-1 bg-slate-900/60 backdrop-blur-md border border-slate-700/60 rounded-xl overflow-x-auto max-w-full">
+    <div className="flex items-center gap-1.5 p-1 bg-slate-100 border border-slate-200 rounded-xl overflow-x-auto max-w-full">
       {roles.map((item) => {
         const Icon = item.icon;
         const isActive = state.activeRole === item.role || pathname.startsWith(item.path);
@@ -61,8 +61,8 @@ export function RoleSwitcher() {
             onClick={() => setRole(item.role)}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
               isActive
-                ? 'bg-amber-500 text-slate-950 shadow-md font-bold'
-                : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                ? 'bg-[#10B981] text-white shadow-sm font-bold'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/70'
             }`}
           >
             <Icon className="w-3.5 h-3.5" />

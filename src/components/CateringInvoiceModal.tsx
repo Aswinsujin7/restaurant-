@@ -53,17 +53,17 @@ export function CateringInvoiceModal({
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-2xl w-full p-4 sm:p-6 shadow-2xl flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+      <div className="bg-white border border-[#E2E8F0] rounded-3xl max-w-2xl w-full p-4 sm:p-6 shadow-2xl flex flex-col max-h-[92vh] text-[#0F172A]">
         {/* Header Actions */}
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0]">
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-xl bg-amber-500/20 text-amber-400">
+            <span className="p-2 rounded-xl bg-emerald-50 text-[#10B981] border border-emerald-200">
               <FileText className="w-5 h-5" />
             </span>
             <div>
-              <h3 className="font-black text-white text-base">Catering Tax Invoice</h3>
-              <span className="text-xs text-amber-400 font-mono font-bold">
+              <h3 className="font-black text-[#0F172A] text-base">Catering Tax Invoice</h3>
+              <span className="text-xs text-[#10B981] font-mono font-bold">
                 {catering.invoice_number}
               </span>
             </div>
@@ -73,24 +73,24 @@ export function CateringInvoiceModal({
             {catering.balance_due > 0 && onSettleBalance && (
               <button
                 onClick={() => onSettleBalance(catering)}
-                className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-colors cursor-pointer"
+                className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 font-bold text-xs transition-colors cursor-pointer"
               >
                 Settle Balance (₹{catering.balance_due.toLocaleString('en-IN')})
               </button>
             )}
             <button
               onClick={handlePrint}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-white font-bold text-xs transition-colors cursor-pointer shadow-sm"
             >
               <Printer className="w-3.5 h-3.5" />
               <span>Print Invoice</span>
-              <kbd className="rounded bg-black/20 px-1.5 py-0.5 text-[10px] font-mono font-bold text-slate-950 border border-black/15">
+              <kbd className="rounded bg-black/20 px-1.5 py-0.5 text-[10px] font-mono font-bold text-white border border-white/20">
                 Space
               </kbd>
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className="p-1.5 rounded-lg text-[#64748B] hover:text-[#0F172A] hover:bg-slate-100 transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -98,11 +98,11 @@ export function CateringInvoiceModal({
         </div>
 
         {/* Printable Invoice Container */}
-        <div className="overflow-y-auto flex-1 my-3 bg-white text-slate-900 p-6 rounded-2xl shadow-inner font-sans text-xs">
+        <div className="overflow-y-auto flex-1 my-3 bg-white text-slate-900 p-6 rounded-2xl border border-[#E2E8F0] shadow-sm font-sans text-xs">
           {/* Letterhead */}
           <div className="flex justify-between items-start pb-4 border-b-2 border-slate-900">
             <div>
-              <h1 className="text-xl font-black tracking-tight text-slate-950">NAGA HOTEL</h1>
+              <h1 className="text-xl font-black tracking-tight text-slate-950">SR HOTEL</h1>
               <p className="text-slate-600 text-[11px] font-medium">
                 Premium Chettinad & Multicuisine Catering Services
               </p>
@@ -236,13 +236,13 @@ export function CateringInvoiceModal({
 
           {/* Footer Note */}
           <div className="mt-6 pt-3 border-t border-dashed border-slate-300 text-center text-[10px] text-slate-500">
-            This is a computer-generated catering tax invoice from Naga Hotel. Valid without physical signature.
+            This is a computer-generated catering tax invoice from SR Hotel. Valid without physical signature.
           </div>
         </div>
 
         <button
           onClick={onClose}
-          className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition-colors cursor-pointer"
+          className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#0F172A] font-bold text-xs transition-colors cursor-pointer"
         >
           Close Invoice
         </button>

@@ -49,30 +49,30 @@ export function ParcelReceiptModal({ parcel, onClose, autoPrint }: ParcelReceipt
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-md w-full p-6 shadow-2xl flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in">
+      <div className="bg-white border border-[#E2E8F0] rounded-3xl max-w-md w-full p-6 shadow-2xl flex flex-col max-h-[92vh]">
         {/* Header Actions */}
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-200">
           <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
+            <span className="p-1.5 rounded-lg bg-emerald-50 text-[#10B981] border border-emerald-200">
               <CheckCircle className="w-4 h-4" />
             </span>
-            <span className="font-bold text-white text-sm">Parcel Receipt & KOT</span>
+            <span className="font-bold text-[#0F172A] text-sm">Parcel Receipt & KOT</span>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#10B981] hover:bg-[#059669] text-white font-bold text-xs transition-colors cursor-pointer shadow-xs"
             >
               <Printer className="w-3.5 h-3.5" />
               <span>Print Slip</span>
-              <kbd className="rounded bg-black/20 px-1.5 py-0.5 text-[10px] font-mono font-bold text-slate-950 border border-black/15">
+              <kbd className="rounded bg-black/20 px-1.5 py-0.5 text-[10px] font-mono font-bold text-white">
                 Space
               </kbd>
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-[#0F172A] hover:bg-slate-100 transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -80,9 +80,9 @@ export function ParcelReceiptModal({ parcel, onClose, autoPrint }: ParcelReceipt
         </div>
 
         {/* Thermal Slip Content */}
-        <div className="overflow-y-auto flex-1 my-3 bg-white text-slate-900 p-5 rounded-2xl shadow-inner font-mono text-xs select-all">
+        <div className="overflow-y-auto flex-1 my-3 bg-white text-slate-900 p-5 rounded-2xl border border-slate-200 shadow-inner font-mono text-xs select-all">
           <div className="text-center pb-3 border-b border-dashed border-slate-400 space-y-1">
-            <h2 className="text-base font-black tracking-wider uppercase">NAGA HOTEL</h2>
+            <h2 className="text-base font-black tracking-wider uppercase">SR HOTEL</h2>
             <p className="text-[10px] text-slate-600 font-sans">
               Authentic Chettinad & Multicuisine Restaurant
             </p>
@@ -92,11 +92,11 @@ export function ParcelReceiptModal({ parcel, onClose, autoPrint }: ParcelReceipt
           </div>
 
           {/* Token Box */}
-          <div className="my-3 py-2 px-3 bg-slate-100 rounded-lg border-2 border-dashed border-slate-400 text-center">
+          <div className="my-3 py-2 px-3 bg-slate-50 rounded-lg border-2 border-dashed border-slate-300 text-center">
             <span className="text-[10px] font-sans font-black text-slate-500 uppercase tracking-widest block">
               PARCEL TOKEN NUMBER
             </span>
-            <span className="text-2xl font-black tracking-tight text-slate-900">
+            <span className="text-2xl font-black tracking-tight text-[#0F172A]">
               {parcel.token_number}
             </span>
             <span className="text-[10px] text-emerald-700 font-bold block">
@@ -158,7 +158,7 @@ export function ParcelReceiptModal({ parcel, onClose, autoPrint }: ParcelReceipt
             </div>
             <div className="flex justify-between font-black text-sm pt-1 border-t border-slate-400">
               <span>TOTAL PAID</span>
-              <span>₹{parcel.final_total.toFixed(2)}</span>
+              <span className="text-[#10B981]">₹{parcel.final_total.toFixed(2)}</span>
             </div>
           </div>
 
@@ -175,7 +175,7 @@ export function ParcelReceiptModal({ parcel, onClose, autoPrint }: ParcelReceipt
 
         <button
           onClick={onClose}
-          className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition-colors cursor-pointer"
+          className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#0F172A] border border-slate-200 font-bold text-xs transition-colors cursor-pointer"
         >
           Close Slip
         </button>
